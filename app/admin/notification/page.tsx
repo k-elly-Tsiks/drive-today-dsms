@@ -20,6 +20,18 @@ type Notification = {
 
 const supabase = createClient()
 
+// ── Skeleton Loader (Matching AdminDashboard) ────────────
+function Skeleton({ w = '100%', h = '14px', r = '6px' }: { w?: string; h?: string; r?: string }) {
+  return (
+    <div style={{
+      width: w, height: h, borderRadius: r,
+      background: 'linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%)',
+      backgroundSize: '200% 100%',
+      animation: 'shimmer 1.4s infinite',
+    }} />
+  )
+}
+
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
@@ -30,9 +42,14 @@ export default function NotificationsPage() {
   const router = useRouter()
   const routerRef = useRef(router)
 
-  const blue = '#1e3a8a'
-  const orange = '#f97316'
-  const lightBlue = '#e8f0fe'
+  // Design tokens aligned with AdminDashboard
+  const textDark = '#1e293b'
+  const textBody = '#64748b'
+  const textMuted = '#94a3b8'
+  const orange = '#e8731a'
+  const danger = '#ef4444'
+  const success = '#10b981'
+  const primary = '#3b82f6'
 
   const notificationTypes = [
     { id: 'all', label: 'All', icon: '🔔' },
@@ -145,15 +162,15 @@ export default function NotificationsPage() {
 
   function getTypeColour(type: string) {
     const colours: Record<string, string> = {
-      approval: '#059669',
-      rejection: '#dc2626',
-      cancellation: '#d97706',
-      payment: '#7c3aed',
-      slot_allocation: blue,
-      quotation: '#0891b2',
+      approval: success,
+      rejection: danger,
+      cancellation: orange,
+      payment: '#8b5cf6',
+      slot_allocation: primary,
+      quotation: '#06b6d4',
       lesson_reminder: orange,
     }
-    return colours[type] || '#6b7280'
+    return colours[type] || textBody
   }
 
   function timeAgo(dateString: string) {
@@ -170,300 +187,312 @@ export default function NotificationsPage() {
     })
   }
 
-  // ─── Loading state ───────────────────────────────────────────────────────────
-
-  if (loading) {
-    return (
-      <div style={{
-        minHeight: '100vh', display: 'flex',
-        alignItems: 'center', justifyContent: 'center',
-        background: lightBlue,
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{
-            width: '56px', height: '56px', borderRadius: '50%',
-            background: `linear-gradient(135deg, ${blue}, ${orange})`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 16px', fontSize: '24px', fontWeight: '800', color: 'white',
-          }}>DT</div>
-        <p style={{ color: blue, fontWeight: '600' }}>Loading Notifications...</p>
-      </div>
-      </div>
-    )
-  }
-
   // ─── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f0f4ff', padding: '24px' }}>
+    <>
+      <style>{`
+        @keyframes shimmer {
+          0%   { background-position: 200% 0 }
+          100% { background-position: -200% 0 }
+        }
+      `}</style>
+      
+      <div style={{ minHeight: '100%', padding: '0 0 24px' }}>
 
-      {/* Header */}
-      <div style={{
-        display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: '24px', flexWrap: 'wrap', gap: '12px',
-      }}>
-        <div>
-          <h1 style={{ color: blue, fontSize: '22px', fontWeight: '800', margin: 0 }}>
-            🔔 Notifications
-            {unreadCount > 0 && (
-              <span style={{
-                background: '#dc2626', color: 'white',
-                borderRadius: '20px', padding: '2px 8px',
-                fontSize: '13px', fontWeight: '700',
-                marginLeft: '10px',
-              }}>
-                {unreadCount} unread
-              </span>
-            )}
-          </h1>
-          <p style={{ color: '#6b7280', fontSize: '13px', margin: '4px 0 0' }}>
-            All system notifications across all users
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          {unreadCount > 0 && (
-            <button
-              onClick={markAllAsRead}
-              disabled={markingAll}
-              style={{
-                padding: '10px 18px', borderRadius: '10px',
-                border: `2px solid ${blue}`,
-                background: 'white', color: blue,
-                fontSize: '13px', fontWeight: '600',
-                cursor: markingAll ? 'not-allowed' : 'pointer',
-              }}
-            >
-              {markingAll ? 'Marking...' : '✓ Mark all as read'}
-            </button>
-          )}
-          <button
-            onClick={() => router.push('/admin/dashboard')}
-            style={{
-              padding: '10px 18px', borderRadius: '10px',
-              border: 'none', background: blue,
-              color: 'white', fontSize: '13px',
-              fontWeight: '600', cursor: 'pointer',
-            }}
-          >
-            ← Dashboard
-          </button>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-        gap: '12px', marginBottom: '24px',
-      }}>
-        {[
-          { label: 'Total', value: notifications.length, colour: blue },
-          { label: 'Unread', value: unreadCount, colour: '#dc2626' },
-          { label: 'Read', value: notifications.length - unreadCount, colour: '#059669' },
-          {
-            label: 'Today', colour: orange,
-            value: notifications.filter(n => {
-              const today = new Date().toISOString().split('T')[0]
-              return n.created_at?.startsWith(today)
-            }).length,
-          },
-        ].map((stat, i) => (
-          <div key={i} style={{
-            background: 'white', borderRadius: '12px',
-            padding: '16px', textAlign: 'center',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-            borderTop: `3px solid ${stat.colour}`,
-          }}>
-            <p style={{ margin: '0 0 4px', fontSize: '24px', fontWeight: '800', color: stat.colour }}>
-              {stat.value}
-            </p>
-            <p style={{ margin: 0, fontSize: '11px', color: '#6b7280' }}>
-              {stat.label}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* Search and Filter */}
-      <div style={{
-        background: 'white', borderRadius: '14px',
-        padding: '16px 20px', marginBottom: '16px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-        display: 'flex', gap: '12px',
-        alignItems: 'center', flexWrap: 'wrap',
-      }}>
-        <input
-          type="text"
-          placeholder="🔍 Search notifications..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{
-            flex: 1, minWidth: '200px',
-            padding: '10px 14px', borderRadius: '10px',
-            border: '1px solid #e5e7eb',
-            fontSize: '13px', outline: 'none',
-          }}
-        />
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {notificationTypes.map(t => (
-            <button
-              key={t.id}
-              onClick={() => setFilter(t.id)}
-              style={{
-                padding: '8px 14px', borderRadius: '20px',
-                border: filter === t.id ? 'none' : '1px solid #e5e7eb',
-                background: filter === t.id
-                  ? `linear-gradient(135deg, ${blue}, ${orange})`
-                  : 'white',
-                color: filter === t.id ? 'white' : '#6b7280',
-                fontSize: '12px',
-                fontWeight: filter === t.id ? '700' : '400',
-                cursor: 'pointer',
-              }}
-            >
-              {t.icon} {t.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Notifications List */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {filteredNotifications.length === 0 ? (
-          <div style={{
-            background: 'white', borderRadius: '14px',
-            padding: '60px', textAlign: 'center',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-          }}>
-            <p style={{ fontSize: '48px', marginBottom: '12px' }}>🔔</p>
-            <p style={{ color: '#374151', fontSize: '16px', fontWeight: '600', margin: '0 0 4px' }}>
-              No notifications found
-            </p>
-            <p style={{ color: '#9ca3af', fontSize: '13px', margin: 0 }}>
-              Notifications will appear here when system events occur
-            </p>
-          </div>
-        ) : (
-          filteredNotifications.map((notification) => (
-            <div
-              key={notification.notification_id}
-              style={{
-                background: notification.is_read ? 'white' : '#f0f4ff',
-                borderRadius: '12px',
-                padding: '16px 20px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                border: notification.is_read
-                  ? '1px solid #f3f4f6'
-                  : `1px solid ${lightBlue}`,
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '14px',
-              }}
-            >
-              {/* Type icon */}
-              <div style={{
-                width: '42px', height: '42px',
-                borderRadius: '50%',
-                background: `${getTypeColour(notification.type)}20`,
-                display: 'flex', alignItems: 'center',
-                justifyContent: 'center', fontSize: '18px',
-                flexShrink: 0,
-              }}>
-                {getTypeIcon(notification.type)}
-              </div>
-
-              {/* Content */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{
-                  display: 'flex', justifyContent: 'space-between',
-                  alignItems: 'flex-start', gap: '8px',
-                  marginBottom: '4px',
+        {/* Header */}
+        <div style={{
+          display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '24px', flexWrap: 'wrap', gap: '12px',
+        }}>
+          <div>
+            <h1 style={{ color: textDark, fontSize: '22px', fontWeight: '800', margin: 0 }}>
+              🔔 Notifications
+              {!loading && unreadCount > 0 && (
+                <span style={{
+                  background: danger, color: 'white',
+                  borderRadius: '20px', padding: '2px 8px',
+                  fontSize: '13px', fontWeight: '700',
+                  marginLeft: '10px',
                 }}>
-                  <div>
-                    <span style={{
-                      background: `${getTypeColour(notification.type)}20`,
-                      color: getTypeColour(notification.type),
-                      padding: '2px 8px', borderRadius: '10px',
-                      fontSize: '10px', fontWeight: '700',
-                      textTransform: 'uppercase',
-                      marginRight: '6px',
-                    }}>
-                      {notification.type?.replace('_', ' ')}
-                    </span>
-                    {!notification.is_read && (
-                      <span style={{
-                        background: '#dc2626', color: 'white',
-                        padding: '2px 6px', borderRadius: '10px',
-                        fontSize: '10px', fontWeight: '700',
-                      }}>
-                        NEW
-                      </span>
-                    )}
+                  {unreadCount} unread
+                </span>
+              )}
+            </h1>
+            <p style={{ color: textBody, fontSize: '13px', margin: '4px 0 0' }}>
+              All system notifications across all users
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            {!loading && unreadCount > 0 && (
+              <button
+                onClick={markAllAsRead}
+                disabled={markingAll}
+                style={{
+                  padding: '10px 18px', borderRadius: '8px',
+                  border: `1px solid ${textBody}`,
+                  background: 'white', color: textDark,
+                  fontSize: '13px', fontWeight: '600',
+                  cursor: markingAll ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {markingAll ? 'Marking...' : '✓ Mark all as read'}
+              </button>
+            )}
+            <button
+              onClick={() => router.push('/admin/dashboard')}
+              style={{
+                padding: '10px 18px', borderRadius: '8px',
+                border: 'none', background: primary,
+                color: 'white', fontSize: '13px',
+                fontWeight: '600', cursor: 'pointer',
+              }}
+            >
+              ← Dashboard
+            </button>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+          gap: '16px', marginBottom: '24px',
+        }}>
+          {loading ? (
+            Array(4).fill(0).map((_, i) => (
+              <div key={i} style={{ background: 'white', borderRadius: '10px', padding: '20px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}><Skeleton w="30px" h="28px" r="4px" /></div>
+                <div style={{ display: 'flex', justifyContent: 'center' }}><Skeleton w="50px" h="11px" r="4px" /></div>
+              </div>
+            ))
+          ) : (
+            [
+              { label: 'Total', value: notifications.length, colour: primary },
+              { label: 'Unread', value: unreadCount, colour: danger },
+              { label: 'Read', value: notifications.length - unreadCount, colour: success },
+              {
+                label: 'Today', colour: orange,
+                value: notifications.filter(n => {
+                  const today = new Date().toISOString().split('T')[0]
+                  return n.created_at?.startsWith(today)
+                }).length,
+              },
+            ].map((stat, i) => (
+              <div key={i} style={{
+                background: 'white', borderRadius: '10px',
+                padding: '20px', textAlign: 'center',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                borderTop: `3px solid ${stat.colour}`,
+              }}>
+                <p style={{ margin: '0 0 6px', fontSize: '28px', fontWeight: '800', color: stat.colour, lineHeight: 1.1 }}>
+                  {stat.value}
+                </p>
+                <p style={{ margin: 0, fontSize: '11px', color: textMuted, fontWeight: '600', textTransform: 'uppercase' }}>
+                  {stat.label}
+                </p>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Search and Filter */}
+        <div style={{
+          background: 'white', borderRadius: '10px',
+          padding: '16px 20px', marginBottom: '24px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+          display: 'flex', gap: '12px',
+          alignItems: 'center', flexWrap: 'wrap',
+        }}>
+          <input
+            type="text"
+            placeholder="🔍 Search notifications..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{
+              flex: 1, minWidth: '200px',
+              padding: '10px 14px', borderRadius: '8px',
+              border: '1px solid #e2e8f0',
+              fontSize: '13px', outline: 'none',
+            }}
+          />
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {notificationTypes.map(t => (
+              <button
+                key={t.id}
+                onClick={() => setFilter(t.id)}
+                style={{
+                  padding: '8px 14px', borderRadius: '20px',
+                  border: filter === t.id ? 'none' : '1px solid #e2e8f0',
+                  background: filter === t.id ? textDark : 'white',
+                  color: filter === t.id ? 'white' : textBody,
+                  fontSize: '12px',
+                  fontWeight: filter === t.id ? '700' : '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+              >
+                {t.icon} {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Notifications List */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {loading ? (
+            Array(5).fill(0).map((_, i) => (
+              <div key={i} style={{ background: 'white', borderRadius: '10px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+                <Skeleton w="42px" h="42px" r="50%" />
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                    <Skeleton w="80px" h="14px" r="10px" />
+                    <Skeleton w="60px" h="11px" r="4px" />
                   </div>
-                  <span style={{ fontSize: '11px', color: '#9ca3af', flexShrink: 0 }}>
-                    {timeAgo(notification.created_at)}
-                  </span>
+                  <div style={{ marginBottom: '8px' }}><Skeleton w="180px" h="12px" r="4px" /></div>
+                  <Skeleton w="100%" h="13px" r="4px" />
+                  <div style={{ marginTop: '6px' }}><Skeleton w="70%" h="13px" r="4px" /></div>
+                </div>
+              </div>
+            ))
+          ) : filteredNotifications.length === 0 ? (
+            <div style={{
+              background: 'white', borderRadius: '10px',
+              padding: '60px', textAlign: 'center',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+            }}>
+              <p style={{ fontSize: '48px', marginBottom: '12px' }}>🔔</p>
+              <p style={{ color: textDark, fontSize: '16px', fontWeight: '700', margin: '0 0 4px' }}>
+                No notifications found
+              </p>
+              <p style={{ color: textBody, fontSize: '13px', margin: 0 }}>
+                Notifications will appear here when system events occur
+              </p>
+            </div>
+          ) : (
+            filteredNotifications.map((notification) => (
+              <div
+                key={notification.notification_id}
+                style={{
+                  background: notification.is_read ? 'white' : '#f8fafc',
+                  borderRadius: '10px',
+                  padding: '20px',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                  borderLeft: notification.is_read ? '3px solid transparent' : `3px solid ${primary}`,
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '16px',
+                }}
+              >
+                {/* Type icon */}
+                <div style={{
+                  width: '42px', height: '42px',
+                  borderRadius: '50%',
+                  background: `${getTypeColour(notification.type)}15`,
+                  display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', fontSize: '18px',
+                  flexShrink: 0,
+                }}>
+                  {getTypeIcon(notification.type)}
                 </div>
 
-                {/* Recipient */}
-                <p style={{ margin: '0 0 4px', fontSize: '12px', color: '#6b7280' }}>
-                  To: <strong>{notification.recipient?.first_name} {notification.recipient?.surname}</strong>
-                  <span style={{
-                    background: '#f3f4f6', color: '#374151',
-                    padding: '1px 6px', borderRadius: '8px',
-                    fontSize: '10px', marginLeft: '6px',
-                    textTransform: 'capitalize',
+                {/* Content */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    display: 'flex', justifyContent: 'space-between',
+                    alignItems: 'flex-start', gap: '8px',
+                    marginBottom: '6px',
                   }}>
-                    {notification.recipient?.role}
-                  </span>
-                </p>
+                    <div>
+                      <span style={{
+                        background: `${getTypeColour(notification.type)}15`,
+                        color: getTypeColour(notification.type),
+                        padding: '3px 8px', borderRadius: '10px',
+                        fontSize: '10px', fontWeight: '800',
+                        textTransform: 'uppercase',
+                        marginRight: '6px',
+                        letterSpacing: '0.5px'
+                      }}>
+                        {notification.type?.replace('_', ' ')}
+                      </span>
+                      {!notification.is_read && (
+                        <span style={{
+                          background: danger, color: 'white',
+                          padding: '3px 8px', borderRadius: '10px',
+                          fontSize: '10px', fontWeight: '800',
+                          letterSpacing: '0.5px'
+                        }}>
+                          NEW
+                        </span>
+                      )}
+                    </div>
+                    <span style={{ fontSize: '11px', color: textMuted, fontWeight: '600', flexShrink: 0 }}>
+                      {timeAgo(notification.created_at)}
+                    </span>
+                  </div>
 
-                {/* Message */}
-                <p style={{
-                  margin: 0, fontSize: '13px',
-                  color: '#374151', lineHeight: '1.5',
+                  {/* Recipient */}
+                  <p style={{ margin: '0 0 6px', fontSize: '12px', color: textBody, fontWeight: '500' }}>
+                    To: <strong style={{ color: textDark }}>{notification.recipient?.first_name} {notification.recipient?.surname}</strong>
+                    <span style={{
+                      background: '#e2e8f0', color: textDark,
+                      padding: '2px 8px', borderRadius: '8px',
+                      fontSize: '10px', marginLeft: '8px',
+                      textTransform: 'capitalize',
+                      fontWeight: '600'
+                    }}>
+                      {notification.recipient?.role}
+                    </span>
+                  </p>
+
+                  {/* Message */}
+                  <p style={{
+                    margin: 0, fontSize: '14px',
+                    color: textDark, lineHeight: '1.5',
+                    fontWeight: notification.is_read ? '500' : '600'
+                  }}>
+                    {notification.message}
+                  </p>
+                </div>
+
+                {/* Actions */}
+                <div style={{
+                  display: 'flex', flexDirection: 'column',
+                  gap: '8px', flexShrink: 0,
                 }}>
-                  {notification.message}
-                </p>
-              </div>
-
-              {/* Actions */}
-              <div style={{
-                display: 'flex', flexDirection: 'column',
-                gap: '6px', flexShrink: 0,
-              }}>
-                {!notification.is_read && (
+                  {!notification.is_read && (
+                    <button
+                      onClick={() => markAsRead(notification.notification_id)}
+                      style={{
+                        padding: '6px 12px', borderRadius: '6px',
+                        border: 'none', background: '#dcfce7',
+                        color: '#16a34a', fontSize: '11px',
+                        fontWeight: '700', cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      Mark Read
+                    </button>
+                  )}
                   <button
-                    onClick={() => markAsRead(notification.notification_id)}
+                    onClick={() => deleteNotification(notification.notification_id)}
                     style={{
-                      padding: '5px 10px', borderRadius: '6px',
-                      border: 'none', background: '#d1fae5',
-                      color: '#065f46', fontSize: '11px',
+                      padding: '6px 12px', borderRadius: '6px',
+                      border: 'none', background: '#fee2e2',
+                      color: danger, fontSize: '11px',
                       fontWeight: '700', cursor: 'pointer',
-                      whiteSpace: 'nowrap',
                     }}
                   >
-                    Mark read
+                    Delete
                   </button>
-                )}
-                <button
-                  onClick={() => deleteNotification(notification.notification_id)}
-                  style={{
-                    padding: '5px 10px', borderRadius: '6px',
-                    border: 'none', background: '#fee2e2',
-                    color: '#991b1b', fontSize: '11px',
-                    fontWeight: '700', cursor: 'pointer',
-                  }}
-                >
-                  Delete
-                </button>
+                </div>
               </div>
-            </div>
-          ))
-        )}
-      </div>
+            ))
+          )}
+        </div>
 
-    </div>
+      </div>
+    </>
   )
 }
