@@ -45,11 +45,7 @@ const Icons = {
 export default function PaymentsPage() {
   const supabase = createClient()
   const [activeTab, setActiveTab] = useState('overview')
-  // kept for future UI skeletons
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(true)
-
-
   const [payments, setPayments] = useState<Payment[]>([])
   const [billings, setBillings] = useState<BillingItem[]>([])
   const [learners, setLearners] = useState<Learner[]>([])
@@ -58,12 +54,6 @@ export default function PaymentsPage() {
   const [showQuoteModal, setShowQuoteModal] = useState(false)
   const [showPriceModal, setShowPriceModal] = useState(false)
   const [selectedItem, setSelectedItem] = useState<BillingItem | null>(null)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _setSelectedItem = setSelectedItem
-
-
-
-
   const [editingPrice, setEditingPrice] = useState<PriceItem | null>(null)
   
 

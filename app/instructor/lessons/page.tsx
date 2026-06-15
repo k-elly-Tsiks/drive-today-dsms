@@ -3,8 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Layers, CalendarCheck, AlertCircle, CheckCircle2 } from 'lucide-react'
-
+import { Layers, CalendarCheck, Users, History, CheckCircle, AlertCircle, CheckCircle2 } from 'lucide-react'
 
 type Booking = {
   booking_id: string
@@ -41,17 +40,7 @@ export default function InstructorLessonsPage() {
     setLoading(false)
   }, [router])
 
-  useEffect(() => {
-    // Note: ESLint rule react-hooks/set-state-in-effect is failing in this project.
-    // Keep behavior but execute in a microtask.
-    const t = setTimeout(() => {
-      loadBookings().catch(() => {})
-    }, 0)
-    return () => clearTimeout(t)
-  }, [loadBookings])
-
-
-
+  useEffect(() => { loadBookings() }, [loadBookings])
 
   // Logic for filtered lists
   const today = new Date().toISOString().split('T')[0]
