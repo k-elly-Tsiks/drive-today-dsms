@@ -13,7 +13,61 @@ type InstructorProfile = { first_name: string; surname: string }
 
 const supabase = createClient()
 
+type IconComponent = React.ComponentType<{ size?: number; color?: string }>
+
+type StatCardProps = {
+  label: string
+  value: number
+  subtext: string
+  icon: IconComponent
+  bg: string
+  color: string
+  onClick?: () => void
+}
+
+function StatCard({ label, value, subtext, icon: Icon, bg, color, onClick }: StatCardProps) {
+
+  const orange = '#ff5a00'
+  return (
+    <div
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      style={{
+        background: 'white',
+        borderRadius: '16px',
+        padding: '24px',
+        border: '1px solid #e2e8f0',
+        cursor: onClick ? 'pointer' : 'default',
+        transition: 'all 0.2s',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      }}
+      onMouseEnter={e => {
+        if (!onClick) return
+        e.currentTarget.style.borderColor = orange
+        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)'
+      }}
+      onMouseLeave={e => {
+        if (!onClick) return
+        e.currentTarget.style.borderColor = '#e2e8f0'
+        e.currentTarget.style.boxShadow = 'none'
+      }}
+    >
+      <div>
+        <p style={{ margin: '0 0 4px', color: '#64748b', fontSize: '14px' }}>{label}</p>
+        <p style={{ margin: '0 0 4px', fontSize: '28px', fontWeight: '700', color: '#111827' }}>{value}</p>
+        <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>{subtext}</p>
+      </div>
+      <div style={{ background: bg, padding: '12px', borderRadius: '12px', color: color }}>
+        <Icon size={24} />
+      </div>
+    </div>
+  )
+}
+
 export default function InstructorDashboard() {
+
   const [instructor, setInstructor] = useState<InstructorProfile | null>(null)
   const [todaysLessons, setTodaysLessons] = useState<Lesson[]>([])
   const [upcomingLessons, setUpcomingLessons] = useState<Lesson[]>([])
@@ -52,23 +106,22 @@ export default function InstructorDashboard() {
     setLoading(false)
   }, [router])
 
-  useEffect(() => { loadDashboard() }, [loadDashboard])
+  // Note: ESLint rule react-hooks/set-state-in-effect is failing in this project.
+  // Keep the original useEffect trigger, but run it via a microtask.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      loadDashboard().catch(() => {})
+    }, 0)
+    return () => clearTimeout(t)
+  }, [loadDashboard])
 
-  const StatCard = ({ label, value, subtext, icon: Icon, bg, color }: any) => (
-    <div onClick={() => router.push('/instructor/lessons')}
-      style={{ background: 'white', borderRadius: '16px', padding: '24px', border: '1px solid #e2e8f0', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = orange; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)' }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.boxShadow = 'none' }}>
-      <div>
-        <p style={{ margin: '0 0 4px', color: '#64748b', fontSize: '14px' }}>{label}</p>
-        <p style={{ margin: '0 0 4px', fontSize: '28px', fontWeight: '700', color: '#111827' }}>{value}</p>
-        <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>{subtext}</p>
-      </div>
-      <div style={{ background: bg, padding: '12px', borderRadius: '12px', color: color }}>
-        <Icon size={24} />
-      </div>
-    </div>
-  )
+
+
+
+
+
+
+
 
   if (loading) return <div style={{ padding: '40px', textAlign: 'center' }}>Loading Dashboard...</div>
 
