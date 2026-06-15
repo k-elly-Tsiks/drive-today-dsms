@@ -34,3 +34,283 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+```
+drive-today-dsms
+├─ AGENTS.md
+├─ app
+│  ├─ admin
+│  │  ├─ dashboard
+│  │  │  └─ page.tsx
+│  │  ├─ expenses
+│  │  │  └─ page.tsx
+│  │  ├─ instructor
+│  │  │  └─ page.tsx
+│  │  ├─ layout.tsx
+│  │  ├─ learner
+│  │  │  └─ page.tsx
+│  │  ├─ lessons
+│  │  │  └─ page.tsx
+│  │  ├─ materials
+│  │  │  └─ page.tsx
+│  │  ├─ notification
+│  │  │  └─ page.tsx
+│  │  ├─ page.tsx
+│  │  ├─ payments
+│  │  │  └─ page.tsx
+│  │  ├─ progress
+│  │  │  ├─ page.tsx
+│  │  │  └─ types.ts
+│  │  ├─ questions
+│  │  │  └─ page.tsx
+│  │  ├─ reports
+│  │  │  └─ page.tsx
+│  │  └─ settings
+│  │     └─ page.tsx
+│  ├─ favicon.ico
+│  ├─ globals.css
+│  ├─ instructor
+│  │  ├─ dashboard
+│  │  │  └─ page.tsx
+│  │  ├─ lessons
+│  │  │  └─ page.tsx
+│  │  ├─ notifications
+│  │  │  └─ page.tsx
+│  │  ├─ page.tsx
+│  │  ├─ profile
+│  │  │  └─ page.tsx
+│  │  └─ progress
+│  │     └─ page.tsx
+│  ├─ layout.tsx
+│  ├─ learner
+│  │  ├─ dashboard
+│  │  │  └─ page.tsx
+│  │  ├─ lessons
+│  │  │  └─ page.tsx
+│  │  ├─ materials
+│  │  │  └─ page.tsx
+│  │  ├─ notification
+│  │  │  └─ page.tsx
+│  │  ├─ page.tsx
+│  │  ├─ payments
+│  │  │  └─ page.tsx
+│  │  ├─ practice
+│  │  │  └─ page.tsx
+│  │  ├─ profile
+│  │  │  └─ page.tsx
+│  │  └─ progress
+│  │     └─ page.tsx
+│  ├─ login
+│  │  └─ page.tsx
+│  ├─ page.tsx
+│  └─ signup
+│     └─ page.tsx
+├─ CLAUDE.md
+├─ eslint.config.mjs
+├─ lib
+│  └─ supabase
+│     ├─ client.ts
+│     └─ server.ts
+├─ next.config.ts
+├─ package-lock.json
+├─ package.json
+├─ pnpm-lock.yaml
+├─ postcss.config.mjs
+├─ public
+│  ├─ file.svg
+│  ├─ globe.svg
+│  ├─ images
+│  │  └─ drivetodaylogo.PNG
+│  ├─ next.svg
+│  ├─ vercel.svg
+│  └─ window.svg
+├─ README.md
+└─ tsconfig.json
+
+```
+```
+drive-today-dsms
+├─ AGENTS.md
+├─ app
+│  ├─ admin
+│  │  ├─ dashboard
+│  │  │  └─ page.tsx
+│  │  ├─ expenses
+│  │  │  └─ page.tsx
+│  │  ├─ instructor
+│  │  │  └─ page.tsx
+│  │  ├─ layout.tsx
+│  │  ├─ learner
+│  │  │  └─ page.tsx
+│  │  ├─ lessons
+│  │  │  └─ page.tsx
+│  │  ├─ materials
+│  │  │  └─ page.tsx
+│  │  ├─ notification
+│  │  │  └─ page.tsx
+│  │  ├─ page.tsx
+│  │  ├─ payments
+│  │  │  └─ page.tsx
+│  │  ├─ progress
+│  │  │  ├─ page.tsx
+│  │  │  └─ types.ts
+│  │  ├─ questions
+│  │  │  └─ page.tsx
+│  │  ├─ reports
+│  │  │  └─ page.tsx
+│  │  └─ settings
+│  │     └─ page.tsx
+│  ├─ favicon.ico
+│  ├─ globals.css
+│  ├─ instructor
+│  │  ├─ dashboard
+│  │  │  └─ page.tsx
+│  │  ├─ lessons
+│  │  │  └─ page.tsx
+│  │  ├─ notifications
+│  │  │  └─ page.tsx
+│  │  ├─ page.tsx
+│  │  ├─ profile
+│  │  │  └─ page.tsx
+│  │  └─ progress
+│  │     └─ page.tsx
+│  ├─ layout.tsx
+│  ├─ learner
+│  │  ├─ dashboard
+│  │  │  └─ page.tsx
+│  │  ├─ lessons
+│  │  │  └─ page.tsx
+│  │  ├─ materials
+│  │  │  └─ page.tsx
+│  │  ├─ notification
+│  │  │  └─ page.tsx
+│  │  ├─ page.tsx
+│  │  ├─ payments
+│  │  │  └─ page.tsx
+│  │  ├─ practice
+│  │  │  └─ page.tsx
+│  │  ├─ profile
+│  │  │  └─ page.tsx
+│  │  └─ progress
+│  │     └─ page.tsx
+│  ├─ login
+│  │  └─ page.tsx
+│  ├─ page.tsx
+│  └─ signup
+│     └─ page.tsx
+├─ CLAUDE.md
+├─ eslint.config.mjs
+├─ lib
+│  └─ supabase
+│     ├─ client.ts
+│     └─ server.ts
+├─ next.config.ts
+├─ package-lock.json
+├─ package.json
+├─ pnpm-lock.yaml
+├─ postcss.config.mjs
+├─ public
+│  ├─ file.svg
+│  ├─ globe.svg
+│  ├─ images
+│  │  └─ drivetodaylogo.PNG
+│  ├─ next.svg
+│  ├─ vercel.svg
+│  └─ window.svg
+├─ README.md
+└─ tsconfig.json
+
+```
+```
+drive-today-dsms
+├─ AGENTS.md
+├─ app
+│  ├─ admin
+│  │  ├─ dashboard
+│  │  │  └─ page.tsx
+│  │  ├─ expenses
+│  │  │  └─ page.tsx
+│  │  ├─ instructor
+│  │  │  └─ page.tsx
+│  │  ├─ layout.tsx
+│  │  ├─ learner
+│  │  │  └─ page.tsx
+│  │  ├─ lessons
+│  │  │  └─ page.tsx
+│  │  ├─ materials
+│  │  │  └─ page.tsx
+│  │  ├─ notification
+│  │  │  └─ page.tsx
+│  │  ├─ page.tsx
+│  │  ├─ payments
+│  │  │  └─ page.tsx
+│  │  ├─ progress
+│  │  │  ├─ page.tsx
+│  │  │  └─ types.ts
+│  │  ├─ questions
+│  │  │  └─ page.tsx
+│  │  ├─ reports
+│  │  │  └─ page.tsx
+│  │  └─ settings
+│  │     └─ page.tsx
+│  ├─ favicon.ico
+│  ├─ globals.css
+│  ├─ instructor
+│  │  ├─ dashboard
+│  │  │  └─ page.tsx
+│  │  ├─ lessons
+│  │  │  └─ page.tsx
+│  │  ├─ notifications
+│  │  │  └─ page.tsx
+│  │  ├─ page.tsx
+│  │  ├─ profile
+│  │  │  └─ page.tsx
+│  │  └─ progress
+│  │     └─ page.tsx
+│  ├─ layout.tsx
+│  ├─ learner
+│  │  ├─ dashboard
+│  │  │  └─ page.tsx
+│  │  ├─ lessons
+│  │  │  └─ page.tsx
+│  │  ├─ materials
+│  │  │  └─ page.tsx
+│  │  ├─ notification
+│  │  │  └─ page.tsx
+│  │  ├─ page.tsx
+│  │  ├─ payments
+│  │  │  └─ page.tsx
+│  │  ├─ practice
+│  │  │  └─ page.tsx
+│  │  ├─ profile
+│  │  │  └─ page.tsx
+│  │  └─ progress
+│  │     └─ page.tsx
+│  ├─ login
+│  │  └─ page.tsx
+│  ├─ page.tsx
+│  └─ signup
+│     └─ page.tsx
+├─ CLAUDE.md
+├─ eslint.config.mjs
+├─ lib
+│  └─ supabase
+│     ├─ client.ts
+│     └─ server.ts
+├─ next.config.ts
+├─ package-lock.json
+├─ package.json
+├─ pnpm-lock.yaml
+├─ postcss.config.mjs
+├─ public
+│  ├─ file.svg
+│  ├─ globe.svg
+│  ├─ images
+│  │  └─ drivetodaylogo.PNG
+│  ├─ next.svg
+│  ├─ vercel.svg
+│  └─ window.svg
+├─ README.md
+└─ tsconfig.json
+
+```

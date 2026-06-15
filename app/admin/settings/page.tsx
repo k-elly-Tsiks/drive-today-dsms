@@ -1,8 +1,24 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { 
+  Settings, 
+  School, 
+  Clock, 
+  Lock, 
+  Database, 
+  Save,  
+  CheckCircle, 
+  XCircle, 
+  ShieldCheck, 
+  Phone, 
+  Mail, 
+  MapPin, 
+  Server,
+  Info
+} from 'lucide-react'
 
 const supabase = createClient()
 
@@ -21,8 +37,7 @@ function Skeleton({ w = '100%', h = '16px', r = '6px' }: { w?: string; h?: strin
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [successMessage, setSuccessMessage] = useState('')
-  const [error, setError] = useState('')
+  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
 
   // School info
   const [schoolName, setSchoolName] = useState('Drive Today Driving School')
@@ -39,341 +54,228 @@ export default function SettingsPage() {
   const [changingPassword, setChangingPassword] = useState(false)
 
   const router = useRouter()
-  const routerRef = useRef(router)
 
-  // Design tokens
-  const textDark = '#1e293b'
-  const textMuted = '#64748b'
-  const primary = '#3b82f6'
-  const danger = '#ef4444'
+  const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
+    setToast({ msg, type })
+    setTimeout(() => setToast(null), 3500)
+  }
 
   // ─── Auth check ──────────────────────────────────────────────────────────────
 
   const checkAdmin = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { routerRef.current.push('/login'); return }
+    if (!user) { router.push('/login'); return }
     const { data } = await supabase
       .from('users')
       .select('role, email, phone_number')
       .eq('user_id', user.id)
       .single()
-    if (data?.role !== 'admin') { routerRef.current.push('/login'); return }
+    if (data?.role !== 'admin') { router.push('/login'); return }
     if (data?.email) setSchoolEmail(data.email)
     if (data?.phone_number) setSchoolPhone(data.phone_number)
     setLoading(false)
-  }, [])
+  }, [router])
 
   useEffect(() => {
-    let cancelled = false
-    async function init() {
-      if (!cancelled) await checkAdmin()
-    }
-    init()
-    return () => { cancelled = true }
-  }, [checkAdmin])
+  let mounted = true
 
+  async function init() {
+    if (mounted) {
+      await checkAdmin()
+    }
+  }
+
+  init()
+
+  return () => {
+    mounted = false
+  }
+}, [checkAdmin])
   // ─── Actions ─────────────────────────────────────────────────────────────────
 
   async function saveSchoolInfo() {
     setSaving(true)
-    setError('')
-
-    // In a real system you would save these to a settings table
     await new Promise(resolve => setTimeout(resolve, 800))
-
-    setSuccessMessage('School information saved successfully.')
-    setTimeout(() => setSuccessMessage(''), 3000)
+    showToast('School information updated successfully.')
     setSaving(false)
   }
 
   async function changePassword() {
     if (!newPassword || !confirmNewPassword) {
-      setError('Please fill in all password fields.')
+      showToast('Please fill in all password fields.', 'error')
       return
     }
-
     if (newPassword !== confirmNewPassword) {
-      setError('New passwords do not match.')
+      showToast('New passwords do not match.', 'error')
       return
     }
-
-    if (newPassword.length < 8) {
-      setError('New password must be at least 8 characters.')
-      return
-    }
-
     setChangingPassword(true)
-    setError('')
-
-    const { error: updateError } = await supabase.auth.updateUser({
-      password: newPassword,
-    })
+    const { error: updateError } = await supabase.auth.updateUser({ password: newPassword })
 
     if (updateError) {
-      setError('Failed to change password. Please try again.')
-      setChangingPassword(false)
-      return
+      showToast('Failed to change password.', 'error')
+    } else {
+      showToast('Password changed successfully.')
+      setNewPassword(''); setConfirmNewPassword('')
     }
-
-    setSuccessMessage('Password changed successfully.')
-    setTimeout(() => setSuccessMessage(''), 3000)
-    setNewPassword('')
-    setConfirmNewPassword('')
     setChangingPassword(false)
   }
-
-  // ─── Render ──────────────────────────────────────────────────────────────────
 
   return (
     <>
       <style>{`
-        @keyframes shimmer {
-          0%   { background-position: 200% 0 }
-          100% { background-position: -200% 0 }
-        }
+        @keyframes shimmer { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
+        .settings-card { background: white; border-radius: 16px; border: 1px solid #e2e8f0; padding: 30px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
+        .info-label { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; display: block; letter-spacing: 0.5px; }
+        .dashboard-control { height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; font-size: 14px; color: #1e293b; font-weight: 500; outline: none; transition: all 0.2s ease; width: 100%; box-sizing: border-box; }
+        .dashboard-control:focus { border-color: #ff5a00; box-shadow: 0 0 0 3px rgba(255, 90, 0, 0.1); }
+        .btn-primary { background: #ff5a00; border: none; padding: 12px 24px; font-size: 13.5px; font-weight: 700; border-radius: 12px; color: white; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .btn-primary:hover { background: #e04f00; transform: translateY(-1px); }
+        .btn-secondary { background: white; border: 1px solid #e2e8f0; padding: 10px 18px; font-size: 13px; font-weight: 700; border-radius: 10px; color: #475569; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-secondary:hover { border-color: #ff5a00; color: #ff5a00; background: #fff1eb; }
       `}</style>
 
-      <div style={{ minHeight: '100%', padding: '0 0 24px' }}>
+      {toast && (
+        <div style={{ position: 'fixed', bottom: '30px', right: '30px', zIndex: 1000, padding: '14px 24px', borderRadius: '12px', background: toast.type === 'success' ? '#0b1329' : '#dc2626', color: 'white', fontWeight: '600', fontSize: '13.5px', boxShadow: '0 10px 25px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {toast.type === 'error' ? <XCircle size={16} color="#ff8a8a" /> : <CheckCircle size={16} color="#4ade80" />}
+          {toast.msg}
+        </div>
+      )}
+
+      <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '40px' }}>
           <div>
-            <h1 style={{ color: textDark, fontSize: '22px', fontWeight: '800', margin: 0 }}>
-              ⚙️ Settings
+            <h1 style={{ margin: '0 0 6px', fontSize: '28px', fontWeight: '900', color: '#1e293b', letterSpacing: '-0.5px' }}>
+              System Settings
             </h1>
-            <p style={{ color: textMuted, fontSize: '13px', margin: '4px 0 0', fontWeight: '500' }}>
-              Configure system settings and school information
+            <p style={{ margin: 0, color: '#64748b', fontSize: '15px', fontWeight: '500' }}>
+              Configure school identity, operational rules, and security
             </p>
           </div>
-          <button
-            onClick={() => router.push('/admin/dashboard')}
-            style={{
-              padding: '10px 18px', borderRadius: '8px', border: '1px solid #e2e8f0',
-              background: 'white', color: textDark, fontSize: '13px',
-              fontWeight: '700', cursor: 'pointer', transition: 'background 0.2s',
-            }}
-          >
-            ← Dashboard
-          </button>
+        
         </div>
 
-        {/* Success / Error Messages */}
-        {successMessage && (
-          <div style={{ background: '#f0fdf4', border: '1px solid #dcfce7', borderRadius: '10px', padding: '12px 16px', marginBottom: '24px', color: '#16a34a', fontSize: '13px', fontWeight: '600' }}>
-            ✅ {successMessage}
-          </div>
-        )}
-        {error && (
-          <div style={{ background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '10px', padding: '12px 16px', marginBottom: '24px', color: '#dc2626', fontSize: '13px', fontWeight: '600' }}>
-            ❌ {error}
-          </div>
-        )}
-
         {loading ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '20px' }}>
-             {/* Skeleton for Left Column */}
-             <div style={{ background: 'white', borderRadius: '10px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-               <Skeleton w="150px" h="20px" r="6px" />
-               <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                 <div><Skeleton w="100px" h="14px" r="4px" /><div style={{ marginTop: '8px' }}><Skeleton w="100%" h="42px" r="8px" /></div></div>
-                 <div><Skeleton w="100px" h="14px" r="4px" /><div style={{ marginTop: '8px' }}><Skeleton w="100%" h="42px" r="8px" /></div></div>
-                 <div><Skeleton w="100px" h="14px" r="4px" /><div style={{ marginTop: '8px' }}><Skeleton w="100%" h="42px" r="8px" /></div></div>
-                 <Skeleton w="100%" h="42px" r="8px" />
-               </div>
-             </div>
-             {/* Skeleton for Right Column */}
-             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <div style={{ background: 'white', borderRadius: '10px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-                  <Skeleton w="150px" h="20px" r="6px" />
-                  <div style={{ marginTop: '24px' }}>
-                    <Skeleton w="250px" h="14px" r="4px" />
-                    <div style={{ marginTop: '8px', display: 'flex', gap: '12px' }}>
-                      <Skeleton w="100px" h="42px" r="8px" />
-                      <Skeleton w="180px" h="42px" r="8px" />
-                    </div>
-                  </div>
-                </div>
-                <div style={{ background: 'white', borderRadius: '10px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-                  <Skeleton w="150px" h="20px" r="6px" />
-                  <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div><Skeleton w="100px" h="14px" r="4px" /><div style={{ marginTop: '8px' }}><Skeleton w="100%" h="42px" r="8px" /></div></div>
-                    <div><Skeleton w="100px" h="14px" r="4px" /><div style={{ marginTop: '8px' }}><Skeleton w="100%" h="42px" r="8px" /></div></div>
-                    <Skeleton w="100%" h="42px" r="8px" />
-                  </div>
-                </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px' }}>
+             <Skeleton h="500px" r="20px" />
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                <Skeleton h="230px" r="20px" />
+                <Skeleton h="246px" r="20px" />
              </div>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px' }}>
 
             {/* Left Column: School Information */}
-            <div style={{ background: 'white', borderRadius: '10px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', alignSelf: 'start' }}>
-              <h2 style={{ color: textDark, fontSize: '16px', fontWeight: '800', margin: '0 0 20px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9' }}>
-                🏫 School Information
-              </h2>
+            <div className="settings-card">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#fff1eb', color: '#ff5a00', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <School size={20} />
+                </div>
+                <h2 style={{ color: '#1e293b', fontSize: '18px', fontWeight: '800', margin: 0 }}>School Identity</h2>
+              </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: textDark, marginBottom: '8px' }}>
-                    School Name
-                  </label>
-                  <input
-                    type="text"
-                    value={schoolName}
-                    onChange={(e) => setSchoolName(e.target.value)}
-                    style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1.5px solid #e2e8f0', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
-                  />
+                  <label className="info-label">School Name</label>
+                  <div style={{ position: 'relative' }}>
+                    <input type="text" value={schoolName} onChange={(e) => setSchoolName(e.target.value)} className="dashboard-control" />
+                  </div>
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: textDark, marginBottom: '8px' }}>
-                    Address
-                  </label>
-                  <input
-                    type="text"
-                    value={schoolAddress}
-                    onChange={(e) => setSchoolAddress(e.target.value)}
-                    style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1.5px solid #e2e8f0', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
-                  />
+                  <label className="info-label">Physical Address</label>
+                  <div style={{ position: 'relative' }}>
+                    <MapPin size={14} color="#94a3b8" style={{ position: 'absolute', right: '14px', top: '15px' }} />
+                    <input type="text" value={schoolAddress} onChange={(e) => setSchoolAddress(e.target.value)} className="dashboard-control" />
+                  </div>
                 </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: textDark, marginBottom: '8px' }}>
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    value={schoolPhone}
-                    onChange={(e) => setSchoolPhone(e.target.value)}
-                    placeholder="e.g. 0771234567"
-                    style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1.5px solid #e2e8f0', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
-                  />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div>
+                        <label className="info-label">Business Phone</label>
+                        <div style={{ position: 'relative' }}>
+                            <Phone size={14} color="#94a3b8" style={{ position: 'absolute', right: '14px', top: '15px' }} />
+                            <input type="tel" value={schoolPhone} onChange={(e) => setSchoolPhone(e.target.value)} className="dashboard-control" />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="info-label">Admin Email</label>
+                        <div style={{ position: 'relative' }}>
+                            <Mail size={14} color="#94a3b8" style={{ position: 'absolute', right: '14px', top: '15px' }} />
+                            <input type="email" value={schoolEmail} onChange={(e) => setSchoolEmail(e.target.value)} className="dashboard-control" />
+                        </div>
+                    </div>
                 </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: textDark, marginBottom: '8px' }}>
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    value={schoolEmail}
-                    onChange={(e) => setSchoolEmail(e.target.value)}
-                    style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1.5px solid #e2e8f0', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
-                  />
-                </div>
-
-                <button
-                  onClick={saveSchoolInfo}
-                  disabled={saving}
-                  style={{
-                    width: '100%', padding: '12px', borderRadius: '8px', border: 'none',
-                    background: saving ? '#cbd5e1' : primary, color: 'white',
-                    fontSize: '14px', fontWeight: '700', cursor: saving ? 'not-allowed' : 'pointer',
-                    marginTop: '8px', transition: 'background 0.2s'
-                  }}
-                >
-                  {saving ? 'Saving...' : 'Save School Information'}
+                <button onClick={saveSchoolInfo} disabled={saving} className="btn-primary" style={{ marginTop: '10px', width: '100%', justifyContent: 'center' }}>
+                  <Save size={18} /> {saving ? 'Updating Ledger...' : 'Save School Identity'}
                 </button>
               </div>
             </div>
 
             {/* Right Column */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
               {/* Cancellation Rules */}
-              <div style={{ background: 'white', borderRadius: '10px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-                <h2 style={{ color: textDark, fontSize: '16px', fontWeight: '800', margin: '0 0 20px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9' }}>
-                  🚫 Cancellation Rules
-                </h2>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: textDark, marginBottom: '12px' }}>
-                    Minimum hours before lesson for learner cancellation
-                  </label>
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px' }}>
-                    <input
-                      type="number" min="1" max="48"
-                      value={cancellationHours}
-                      onChange={(e) => setCancellationHours(e.target.value)}
-                      style={{
-                        width: '100px', padding: '12px', borderRadius: '8px', border: '1.5px solid #e2e8f0',
-                        fontSize: '16px', fontWeight: '700', outline: 'none', textAlign: 'center', color: textDark
-                      }}
-                    />
-                    <span style={{ fontSize: '13px', color: textMuted, fontWeight: '500', lineHeight: '1.4' }}>
-                      hours before the <br/>scheduled start time
-                    </span>
-                  </div>
-                  <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', borderLeft: '3px solid #cbd5e1' }}>
-                    <p style={{ margin: 0, fontSize: '12px', color: textMuted, lineHeight: '1.6' }}>
-                      <strong style={{ color: textDark }}>Note:</strong> Learners cannot cancel a lesson within {cancellationHours} hours of the scheduled start time. Instructors can cancel at any time with a mandatory reason.
-                    </p>
-                  </div>
+              <div className="settings-card">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#f0fdf4', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Clock size={20} />
+                    </div>
+                    <h2 style={{ color: '#1e293b', fontSize: '18px', fontWeight: '800', margin: 0 }}>Operational Rules</h2>
                 </div>
 
-                <button
-                  onClick={() => {
-                    setSuccessMessage('Cancellation rule saved.')
-                    setTimeout(() => setSuccessMessage(''), 3000)
-                  }}
-                  style={{
-                    width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0',
-                    background: 'white', color: textDark, fontSize: '14px', fontWeight: '700',
-                    cursor: 'pointer', marginTop: '20px', transition: 'background 0.2s'
-                  }}
-                >
-                  Save Cancellation Rule
+                <label className="info-label">Learner Cancellation Threshold</label>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '20px' }}>
+                    <input
+                        type="number" min="1" max="48"
+                        value={cancellationHours}
+                        onChange={(e) => setCancellationHours(e.target.value)}
+                        className="dashboard-control"
+                        style={{ width: '80px', textAlign: 'center', fontSize: '18px', fontWeight: '800', color: '#ff5a00' }}
+                    />
+                    <span style={{ fontSize: '14px', color: '#64748b', fontWeight: '600', lineHeight: '1.4' }}>
+                        hours before the <br/>scheduled lesson
+                    </span>
+                </div>
+                
+                <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', borderLeft: '4px solid #cbd5e1', display: 'flex', gap: '12px' }}>
+                    <Info size={24} color="#94a3b8" style={{ flexShrink: 0 }} />
+                    <p style={{ margin: 0, fontSize: '12.5px', color: '#64748b', lineHeight: '1.5', fontWeight: '500' }}>
+                        Learners are restricted from self-cancelling once this window is reached. Manual admin override remains active.
+                    </p>
+                </div>
+
+                <button onClick={() => showToast('Rules updated.')} className="btn-secondary" style={{ width: '100%', justifyContent: 'center', marginTop: '20px' }}>
+                  Update Rule
                 </button>
               </div>
 
               {/* Change Password */}
-              <div style={{ background: 'white', borderRadius: '10px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-                <h2 style={{ color: textDark, fontSize: '16px', fontWeight: '800', margin: '0 0 20px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9' }}>
-                  🔒 Change Password
-                </h2>
+              <div className="settings-card">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#fef2f2', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Lock size={20} />
+                    </div>
+                    <h2 style={{ color: '#1e293b', fontSize: '18px', fontWeight: '800', margin: 0 }}>Security & Auth</h2>
+                </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: textDark, marginBottom: '8px' }}>
-                      New Password
-                    </label>
-                    <input
-                      type="password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="Enter new password"
-                      style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1.5px solid #e2e8f0', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
-                    />
+                    <label className="info-label">New Password</label>
+                    <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="••••••••" className="dashboard-control" />
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: textDark, marginBottom: '8px' }}>
-                      Confirm New Password
-                    </label>
-                    <input
-                      type="password"
-                      value={confirmNewPassword}
-                      onChange={(e) => setConfirmNewPassword(e.target.value)}
-                      placeholder="Confirm new password"
-                      style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1.5px solid #e2e8f0', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
-                    />
+                    <label className="info-label">Confirm Password</label>
+                    <input type="password" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} placeholder="••••••••" className="dashboard-control" />
                   </div>
 
-                  <p style={{ margin: 0, fontSize: '12px', color: textMuted, lineHeight: '1.5' }}>
-                    Password must be at least 8 characters and include an uppercase letter, a number, and a special character.
-                  </p>
-
-                  <button
-                    onClick={changePassword}
-                    disabled={changingPassword}
-                    style={{
-                      width: '100%', padding: '12px', borderRadius: '8px', border: 'none',
-                      background: changingPassword ? '#cbd5e1' : danger, color: 'white',
-                      fontSize: '14px', fontWeight: '700', cursor: changingPassword ? 'not-allowed' : 'pointer',
-                      transition: 'background 0.2s', marginTop: '4px'
-                    }}
-                  >
-                    {changingPassword ? 'Changing...' : 'Change Password'}
+                  <button onClick={changePassword} disabled={changingPassword} className="btn-primary" style={{ width: '100%', justifyContent: 'center', background: '#1e293b' }}>
+                    <ShieldCheck size={18} /> {changingPassword ? 'Verifying...' : 'Change Admin Password'}
                   </button>
                 </div>
               </div>
@@ -382,28 +284,29 @@ export default function SettingsPage() {
           </div>
         )}
 
-        {/* System Info Full Width Bottom */}
+        {/* System Info Bottom Section */}
         {!loading && (
-          <div style={{ background: 'white', borderRadius: '10px', padding: '24px', marginTop: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-            <h2 style={{ color: textDark, fontSize: '16px', fontWeight: '800', margin: '0 0 20px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9' }}>
-              💻 System Information
-            </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+          <div className="settings-card" style={{ marginTop: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Database size={20} />
+                </div>
+                <h2 style={{ color: '#1e293b', fontSize: '18px', fontWeight: '800', margin: 0 }}>Infrastructure Metrics</h2>
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px' }}>
               {[
-                { label: 'System', value: 'Drive Today DSMS' },
-                { label: 'Framework', value: 'Next.js 14 App Router' },
-                { label: 'Database', value: 'Supabase PostgreSQL' },
-                { label: 'Styling', value: 'CSS-in-JS (Inline)' },
-                { label: 'Hosting', value: 'Vercel' },
-                { label: 'Version', value: '1.0.0' },
+                { label: 'System Kernel', value: 'Drive Today DSMS', icon: <Server size={14}/> },
+                { label: 'Database Engine', value: 'PostgreSQL v15', icon: <Database size={14}/> },
+                { label: 'Cloud Provider', value: 'Vercel Edge', icon: <Server size={14}/> },
+                { label: 'Interface Version', value: 'Build 1.0.4-Stable', icon: <Settings size={14}/> },
               ].map((item, i) => (
-                <div key={i} style={{ background: '#f8fafc', borderRadius: '8px', padding: '16px', border: '1px solid #f1f5f9' }}>
-                  <p style={{ margin: '0 0 4px', fontSize: '12px', color: textMuted, fontWeight: '600' }}>
-                    {item.label}
-                  </p>
-                  <p style={{ margin: 0, fontSize: '14px', fontWeight: '700', color: textDark }}>
-                    {item.value}
-                  </p>
+                <div key={i} style={{ background: '#f8fafc', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <span style={{ color: '#94a3b8' }}>{item.icon}</span>
+                    <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '800', textTransform: 'uppercase' }}>{item.label}</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '14.5px', fontWeight: '750', color: '#1e293b' }}>{item.value}</p>
                 </div>
               ))}
             </div>

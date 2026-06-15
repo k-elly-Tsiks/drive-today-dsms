@@ -102,8 +102,21 @@ export default function SignupPage() {
       phone_number: phone,
       role: role,
       status: 'pending',
+      address : address,
+      dob:dob || null,
+      gender : gender,
+      id_number : idNumber,
+      provisional_expiry : provisionalExpiry || null,
+      driving_class : drivingClass,
+      licence_number : licenceNumber,
+      licence_code : licenceCode,
+      licence_validity : licenceValidity || null,
+      instructor_licence_number : instructorLicenceNumber,
+      instructor_licence_code : instructorLicenceCode,
+      instructor_licence_validity : instructorLicenceValidity || null,
+      instructor_driving_classes : drivingClasses,
     })
-
+console.log("DB ERROR:", dbError)
     if (dbError) {
       setError('Failed to save your details. Please try again.')
       setLoading(false)
@@ -303,7 +316,7 @@ export default function SignupPage() {
                     }}
                   >
                     <div style={{ fontWeight: '700', marginBottom: '4px', textTransform: 'capitalize' }}>
-                      {r === 'learner' ? '🎓 Learner' : '🚗 Instructor'}
+                      {r === 'learner' ? 'Learner' : ' Instructor'}
                     </div>
                     <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>
                       {r === 'learner'
