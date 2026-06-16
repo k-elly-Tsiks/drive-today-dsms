@@ -22,6 +22,8 @@ type ProgressRecord = {
 const supabase = createClient()
 
 export default function LearnerDashboard() {
+  // NOTE: Learner layout already provides the shared sidebar/topbar and dark-mode toggle.
+  // This page focuses only on inner content; styling here can be updated later for perfect visual parity.
   const [learnerName, setLearnerName] = useState('')
   const [slotsAllocated, setSlotsAllocated] = useState(0)
   const [scheduledCount, setScheduledCount] = useState(0)
