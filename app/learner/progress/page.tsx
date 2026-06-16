@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
 type ProgressRecord = {
+
   progress_id: string
   recorded_at: string
   steering_rating: number

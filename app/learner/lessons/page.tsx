@@ -11,6 +11,7 @@ type Slot = {
   status: string
 }
 
+
 type Booking = {
   booking_id: string
   status: string

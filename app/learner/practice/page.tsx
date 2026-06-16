@@ -21,6 +21,7 @@ type Question = {
 const supabase = createClient()
 
 export default function LearnerPracticePage() {
+
   const [questions, setQuestions] = useState<Question[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('start')

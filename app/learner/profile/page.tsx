@@ -153,7 +153,8 @@ export default function LearnerProfilePage() {
   // ─── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f0f4ff', padding: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>

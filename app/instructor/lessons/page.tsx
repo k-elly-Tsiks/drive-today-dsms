@@ -40,7 +40,16 @@ export default function InstructorLessonsPage() {
     setLoading(false)
   }, [router])
 
-  useEffect(() => { loadBookings() }, [loadBookings])
+  useEffect(() => {
+    let cancelled = false
+    async function init() {
+      if (!cancelled) await loadBookings()
+    }
+    init()
+    return () => {
+      cancelled = true
+    }
+  }, [loadBookings])
 
   // Logic for filtered lists
   const today = new Date().toISOString().split('T')[0]

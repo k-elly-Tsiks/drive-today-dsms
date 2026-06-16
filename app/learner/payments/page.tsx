@@ -25,6 +25,7 @@ const supabase = createClient()
 
 export default function LearnerPaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([])
+
   const [quotations, setQuotations] = useState<Quotation[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('statement')
