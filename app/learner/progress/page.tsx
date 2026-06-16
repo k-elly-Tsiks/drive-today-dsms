@@ -22,13 +22,33 @@ export default function LearnerProgressPage() {
   const [progressRecords, setProgressRecords] = useState<ProgressRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedRecord, setExpandedRecord] = useState<string | null>(null)
+  const [isDarkMode, setIsDarkMode] = useState(false)
 
   const router = useRouter()
   const routerRef = useRef(router)
 
+  // Sync theme state with layout
+  useEffect(() => {
+    const checkTheme = () => {
+      setIsDarkMode(document.documentElement.classList.contains('dark'))
+    }
+    checkTheme()
+    const observer = new MutationObserver(checkTheme)
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+    return () => observer.disconnect()
+  }, [])
+
   const blue = '#1e3a8a'
   const orange = '#f97316'
   const lightBlue = '#e8f0fe'
+
+  const theme = {
+    cardBg: isDarkMode ? '#222836' : '#ffffff',
+    textMain: isDarkMode ? '#f1f5f9' : '#1e293b',
+    textMuted: isDarkMode ? '#94a3b8' : '#64748b',
+    border: isDarkMode ? '#2d3545' : '#e2e8f0',
+    hoverBg: isDarkMode ? '#1e2433' : '#f8fafc',
+  }
 
   // ─── Data fetching ────────────────────────────────────────────────────────────
 
@@ -106,8 +126,8 @@ export default function LearnerProgressPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: lightBlue }}>
-        <p style={{ color: blue, fontWeight: '600' }}>Loading Progress...</p>
+      <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: theme.textMain, fontWeight: '600' }}>Loading Progress...</p>
       </div>
     )
   }
@@ -115,24 +135,15 @@ export default function LearnerProgressPage() {
   // ─── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f0f4ff', padding: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', color: theme.textMain }}>
 
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-        <div>
-          <h1 style={{ color: blue, fontSize: '22px', fontWeight: '800', margin: 0 }}>📈 My Progress</h1>
-          <p style={{ color: '#6b7280', fontSize: '13px', margin: '4px 0 0' }}>Track your skill ratings across all lessons</p>
-        </div>
-        <button
-          onClick={() => router.push('/learner/dashboard')}
-          style={{ padding: '10px 18px', borderRadius: '10px', border: 'none', background: blue, color: 'white', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
-        >
-          ← Dashboard
-        </button>
+      {/* Subpage description */}
+      <div style={{ marginBottom: '4px' }}>
+        <p style={{ color: theme.textMuted, fontSize: '14px', margin: 0 }}>Track your skill ratings across all lessons</p>
       </div>
 
       {progressRecords.length === 0 ? (
-        <div style={{ background: 'white', borderRadius: '14px', padding: '60px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+        <div style={{ background: theme.cardBg, borderRadius: '14px', padding: '60px', textAlign: 'center', border: `1px solid ${theme.border}` }}>
           <p style={{ fontSize: '48px', marginBottom: '12px' }}>📈</p>
           <p style={{ color: '#374151', fontSize: '16px', fontWeight: '600', margin: '0 0 8px' }}>No progress records yet</p>
           <p style={{ color: '#9ca3af', fontSize: '13px', margin: 0 }}>
@@ -175,20 +186,20 @@ export default function LearnerProgressPage() {
               const isExpanded = expandedRecord === record.progress_id
 
               return (
-                <div key={record.progress_id} style={{ background: 'white', borderRadius: '14px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', overflow: 'hidden', borderLeft: `4px solid ${ratingColour(recordAvg)}` }}>
+                <div key={record.progress_id} style={{ background: theme.cardBg, borderRadius: '14px', border: `1px solid ${theme.border}`, overflow: 'hidden', borderLeft: `4px solid ${ratingColour(recordAvg)}` }}>
 
                   {/* Header */}
                   <div onClick={() => setExpandedRecord(isExpanded ? null : record.progress_id)}
                     style={{ padding: '16px 20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: lightBlue, display: 'flex', alignItems: 'center', justifyContent: 'center', color: blue, fontWeight: '800', fontSize: '14px', flexShrink: 0 }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: isDarkMode ? '#1e2433' : lightBlue, border: isDarkMode ? `1px solid ${theme.border}` : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isDarkMode ? orange : blue, fontWeight: '800', fontSize: '14px', flexShrink: 0 }}>
                         {progressRecords.length - index}
                       </div>
                       <div>
-                        <p style={{ margin: 0, fontSize: '14px', fontWeight: '700', color: '#111827' }}>
+                        <p style={{ margin: 0, fontSize: '14px', fontWeight: '700', color: theme.textMain }}>
                           Lesson {progressRecords.length - index}
                         </p>
-                        <p style={{ margin: 0, fontSize: '11px', color: '#6b7280' }}>
+                        <p style={{ margin: 0, fontSize: '11px', color: theme.textMuted }}>
                           {record.instructor?.first_name} {record.instructor?.surname} •{' '}
                           {new Date(record.recorded_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                         </p>
@@ -202,13 +213,13 @@ export default function LearnerProgressPage() {
                         </p>
                         <div>{stars(Math.round(recordAvg))}</div>
                       </div>
-                      <span style={{ color: '#9ca3af', fontSize: '16px', transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }}>▼</span>
+                      <span style={{ color: theme.textMuted, fontSize: '16px', transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }}>▼</span>
                     </div>
                   </div>
 
                   {/* Expanded */}
                   {isExpanded && (
-                    <div style={{ padding: '0 20px 20px', borderTop: '1px solid #f3f4f6' }}>
+                    <div style={{ padding: '0 20px 20px', borderTop: `1px solid ${theme.border}` }}>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', margin: '16px 0' }}>
                         {[
                           { label: 'Steering',       icon: '🎯', value: record.steering_rating },
@@ -216,9 +227,9 @@ export default function LearnerProgressPage() {
                           { label: 'Reversing',      icon: '🔄', value: record.reversing_rating },
                           { label: 'Road Awareness', icon: '👁', value: record.road_awareness_rating },
                         ].map((skill, i) => (
-                          <div key={i} style={{ background: lightBlue, borderRadius: '10px', padding: '14px', textAlign: 'center' }}>
+                          <div key={i} style={{ background: isDarkMode ? '#1e2433' : lightBlue, border: isDarkMode ? `1px solid ${theme.border}` : 'none', borderRadius: '10px', padding: '14px', textAlign: 'center' }}>
                             <p style={{ margin: '0 0 4px', fontSize: '22px' }}>{skill.icon}</p>
-                            <p style={{ margin: '0 0 4px', fontSize: '11px', color: '#6b7280' }}>{skill.label}</p>
+                            <p style={{ margin: '0 0 4px', fontSize: '11px', color: theme.textMuted }}>{skill.label}</p>
                             <p style={{ margin: 0, fontSize: '24px', fontWeight: '800', color: ratingColour(skill.value) }}>{skill.value}</p>
                             <div style={{ marginTop: '4px' }}>{stars(skill.value)}</div>
                           </div>
@@ -226,9 +237,9 @@ export default function LearnerProgressPage() {
                       </div>
 
                       {record.comments && (
-                        <div style={{ background: '#fffbeb', borderRadius: '10px', padding: '14px 16px', border: '1px solid #fde68a' }}>
-                          <p style={{ margin: '0 0 6px', fontSize: '12px', fontWeight: '700', color: '#92400e' }}>💬 Instructor Comments</p>
-                          <p style={{ margin: 0, fontSize: '13px', color: '#374151', lineHeight: '1.6' }}>{record.comments}</p>
+                        <div style={{ background: isDarkMode ? 'rgba(253,230,138,0.1)' : '#fffbeb', borderRadius: '10px', padding: '14px 16px', border: `1px solid ${isDarkMode ? 'rgba(253,230,138,0.2)' : '#fde68a'}` }}>
+                          <p style={{ margin: '0 0 6px', fontSize: '12px', fontWeight: '700', color: isDarkMode ? '#fde68a' : '#92400e' }}>💬 Instructor Comments</p>
+                          <p style={{ margin: 0, fontSize: '13px', color: theme.textMain, lineHeight: '1.6' }}>{record.comments}</p>
                         </div>
                       )}
                     </div>
