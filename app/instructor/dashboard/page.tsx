@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Calendar, CheckCircle, Clock, Users, TrendingUp } from 'lucide-react'
@@ -136,7 +137,7 @@ export default function InstructorDashboard() {
     setStats({
       totalLessons: bookings.length,
       completedLessons: bookings.filter(b => b.status === 'completed').length,
-      upcomingCount: (upcomingData as any[] | null)?.length ?? 0,
+      upcomingCount: Array.isArray(upcomingData) ? upcomingData.length : 0,
       totalLearners,
     })
 
@@ -155,7 +156,37 @@ export default function InstructorDashboard() {
   }, [loadDashboard])
 
   if (loading) {
-    return <div style={{ padding: '40px', textAlign: 'center' }}>Loading Dashboard...</div>
+    return (
+      <div style={{ padding: '24px' }}>
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ height: 28 }}>
+            <div className="skeleton" style={{ width: 260, height: 28, borderRadius: 8, background: '#f1f5f9' }} />
+          </div>
+          <div style={{ marginTop: 10 }}>
+            <div style={{ width: 420, height: 16, borderRadius: 6, background: '#f1f5f9' }} className="skeleton" />
+          </div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20 }}>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} style={{ height: 128, background: 'white', borderRadius: 16, border: '1px solid #e2e8f0', padding: 24 }}>
+              <div style={{ width: `${60 + i * 5}%`, height: 14, borderRadius: 8, background: '#f1f5f9' }} className="skeleton" />
+              <div style={{ marginTop: 10, width: '55%', height: 24, borderRadius: 8, background: '#f1f5f9' }} className="skeleton" />
+              <div style={{ marginTop: 10, width: '70%', height: 12, borderRadius: 8, background: '#f1f5f9' }} className="skeleton" />
+            </div>
+          ))}
+        </div>
+        <div style={{ height: 24 }} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} style={{ background: 'white', borderRadius: 16, padding: 24, border: '1px solid #e2e8f0' }}>
+              <div style={{ width: '55%', height: 16, borderRadius: 8, background: '#f1f5f9' }} className="skeleton" />
+              <div style={{ marginTop: 16, width: '85%', height: 12, borderRadius: 8, background: '#f1f5f9' }} className="skeleton" />
+              <div style={{ marginTop: 10, width: '70%', height: 12, borderRadius: 8, background: '#f1f5f9' }} className="skeleton" />
+            </div>
+          ))}
+        </div>
+      </div>
+    )
   }
 
   return (
