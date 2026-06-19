@@ -133,20 +133,53 @@ export default function InstructorProgressPage() {
     return '#dc2626'
   }
 
-  function StarRating({ value, onChange, label }: { value: number; onChange: (v: number) => void; label: string }) {
+  function renderStarRating({
+    value,
+    onChange,
+    label,
+  }: {
+    value: number
+    onChange: (v: number) => void
+    label: string
+  }) {
     return (
       <div>
         <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>{label}</label>
         <div style={{ display: 'flex', gap: '8px' }}>
           {[1, 2, 3, 4, 5].map(star => (
-            <button key={star} type="button" onClick={() => onChange(star)}
-              style={{ width: '40px', height: '40px', borderRadius: '8px', border: 'none', background: star <= value ? `linear-gradient(135deg, ${blue}, ${orange})` : '#f3f4f6', color: star <= value ? 'white' : '#9ca3af', fontSize: '16px', cursor: 'pointer', fontWeight: '700', transition: 'all 0.15s ease' }}>
+            <button
+              key={star}
+              type="button"
+              onClick={() => onChange(star)}
+              style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '8px',
+                border: 'none',
+                background: star <= value ? `linear-gradient(135deg, ${blue}, ${orange})` : '#f3f4f6',
+                color: star <= value ? 'white' : '#9ca3af',
+                fontSize: '16px',
+                cursor: 'pointer',
+                fontWeight: '700',
+                transition: 'all 0.15s ease',
+              }}
+            >
               {star}
             </button>
           ))}
         </div>
         <p style={{ margin: '4px 0 0', fontSize: '11px', color: '#9ca3af' }}>
-          {value === 0 ? 'Not rated' : value === 1 ? 'Poor' : value === 2 ? 'Below Average' : value === 3 ? 'Average' : value === 4 ? 'Good' : 'Excellent'}
+          {value === 0
+            ? 'Not rated'
+            : value === 1
+              ? 'Poor'
+              : value === 2
+                ? 'Below Average'
+                : value === 3
+                  ? 'Average'
+                  : value === 4
+                    ? 'Good'
+                    : 'Excellent'}
         </p>
       </div>
     )
@@ -260,10 +293,10 @@ export default function InstructorProgressPage() {
             <p style={{ color: '#6b7280', fontSize: '13px', margin: '0 0 20px' }}>{selectedBooking.learner?.first_name} {selectedBooking.learner?.surname} • {selectedBooking.lesson_slots?.slot_date}</p>
             {error && <div style={{ background: '#fee2e2', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px', color: '#991b1b', fontSize: '13px' }}>{error}</div>}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <StarRating value={steeringRating}      onChange={setSteeringRating}      label="🎯 Steering" />
-              <StarRating value={parkingRating}       onChange={setParkingRating}       label="🅿 Parking" />
-              <StarRating value={reversingRating}     onChange={setReversingRating}     label="🔄 Reversing" />
-              <StarRating value={roadAwarenessRating} onChange={setRoadAwarenessRating} label="👁 Road Awareness" />
+              {renderStarRating({ value: steeringRating, onChange: setSteeringRating, label: '🎯 Steering' })}
+              {renderStarRating({ value: parkingRating, onChange: setParkingRating, label: '🅿 Parking' })}
+              {renderStarRating({ value: reversingRating, onChange: setReversingRating, label: '🔄 Reversing' })}
+              {renderStarRating({ value: roadAwarenessRating, onChange: setRoadAwarenessRating, label: '👁 Road Awareness' })}
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>Feedback Comments *</label>
                 <textarea value={comments} onChange={e => setComments(e.target.value)} placeholder="Describe the learner's performance, areas of improvement and strengths..." rows={4}
