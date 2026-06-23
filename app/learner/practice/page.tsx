@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { ArrowLeft, BookOpen, CheckCircle, CircleHelp, FileQuestion, ListChecks, ParkingCircle, Rocket, ShieldCheck, ThumbsUp, TrafficCone, XCircle } from 'lucide-react'
 
 type Question = {
   question_id: string
@@ -16,6 +17,20 @@ type Question = {
   correct_answer: string
   explanation?: string
   created_at: string
+}
+
+// 1. Shimmer Skeleton Component
+function Skeleton({ w = '100%', h = '14px', r = '6px' }: { w?: string; h?: string; r?: string }) {
+  return (
+    <div style={{
+      width: w,
+      height: h,
+      borderRadius: r,
+      background: 'linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%)',
+      backgroundSize: '200% 100%',
+      animation: 'skeleton-shimmer 1.5s infinite linear',
+    }} />
+  )
 }
 
 const supabase = createClient()
@@ -34,18 +49,37 @@ export default function LearnerPracticePage() {
   const router = useRouter()
   const routerRef = useRef(router)
 
-  const blue = '#1e3a8a'
-  const orange = '#f97316'
-  const lightBlue = '#e8f0fe'
+  const blue = '#1e293b'
+  const orange = '#ff5a00'
+  const lightBlue = '#fff2eb'
+
+  // Insert keyframes dynamically for shimmer animation
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const styleId = 'skeleton-shimmer-styles'
+      if (!document.getElementById(styleId)) {
+        const style = document.createElement('style')
+        style.id = styleId
+        style.innerHTML = `
+          @keyframes skeleton-shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+          }
+        `
+        document.head.appendChild(style)
+      }
+    }
+  }, [])
+
 
   const categories = [
-    { id: 'all',              label: 'All Categories', icon: '📝' },
-    { id: 'road_signs',       label: 'Road Signs',     icon: '🚦' },
-    { id: 'highway_code',     label: 'Highway Code',   icon: '📖' },
-    { id: 'road_rules',       label: 'Road Rules',     icon: '🛣' },
-    { id: 'safety',           label: 'Safety',         icon: '⛑' },
-    { id: 'parking',          label: 'Parking',        icon: '🅿' },
-    { id: 'other',            label: 'Other',          icon: '❓' },
+    { id: 'all',              label: 'All Categories', icon: <ListChecks size={18} /> },
+    { id: 'road_signs',       label: 'Road Signs',     icon: <TrafficCone size={18} /> },
+    { id: 'highway_code',     label: 'Highway Code',   icon: <BookOpen size={18} /> },
+    { id: 'road_rules',       label: 'Road Rules',     icon: <FileQuestion size={18} /> },
+    { id: 'safety',           label: 'Safety',         icon: <ShieldCheck size={18} /> },
+    { id: 'parking',          label: 'Parking',        icon: <ParkingCircle size={18} /> },
+    { id: 'other',            label: 'Other',          icon: <CircleHelp size={18} /> },
   ]
 
   // ─── Auth + data ─────────────────────────────────────────────────────────────
@@ -128,10 +162,10 @@ export default function LearnerPracticePage() {
 
   function getScoreMessage(s: number, total: number) {
     const pct = (s / total) * 100
-    if (pct >= 80) return '🎉 Excellent! You are well prepared.'
-    if (pct >= 60) return '👍 Good effort! Keep practising.'
-    if (pct >= 40) return '📚 Keep studying. You can do better.'
-    return '💪 Do not give up! Review your materials and try again.'
+    if (pct >= 80) return 'Excellent! You are well prepared.'
+    if (pct >= 60) return 'Good effort! Keep practising.'
+    if (pct >= 40) return 'Keep studying. You can do better.'
+    return 'Do not give up! Review your materials and try again.'
   }
 
   function getOptionText(q: Question, key: string): string {
@@ -144,20 +178,10 @@ export default function LearnerPracticePage() {
   const answeredCount = Object.keys(answers).length
   const totalQuestions = testQuestions.length
 
-  // ─── Loading state ────────────────────────────────────────────────────────────
-
-  if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: lightBlue }}>
-        <p style={{ color: blue, fontWeight: '600' }}>Loading Practice Tests...</p>
-      </div>
-    )
-  }
-
   // ─── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f0f4ff', padding: '24px' }}>
+    <div>
 
       {/* ── START TAB ── */}
       {activeTab === 'start' && (
@@ -166,19 +190,19 @@ export default function LearnerPracticePage() {
           {/* Header with dashboard button */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
             <div>
-              <h1 style={{ color: blue, fontSize: '22px', fontWeight: '800', margin: 0 }}>❓ Practice Tests</h1>
+              <h1 style={{ color: blue, fontSize: '22px', fontWeight: '800', margin: 0 }}>Practice Tests</h1>
               <p style={{ color: '#6b7280', fontSize: '13px', margin: '4px 0 0' }}>Test your knowledge before your driving test</p>
             </div>
             <button
               onClick={() => router.push('/learner/dashboard')}
-              style={{ padding: '10px 18px', borderRadius: '10px', border: 'none', background: blue, color: 'white', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+              style={{ padding: '10px 18px', borderRadius: '10px', border: 'none', background: orange, color: 'white', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
             >
-              ← Dashboard
+              <ArrowLeft size={16} /> Dashboard
             </button>
           </div>
 
-          <div style={{ background: `linear-gradient(135deg, ${blue}, #2d4fa3)`, borderRadius: '16px', padding: '28px', marginBottom: '24px', textAlign: 'center' }}>
-            <p style={{ fontSize: '48px', margin: '0 0 12px' }}>❓</p>
+          <div style={{ background: blue, borderRadius: '16px', padding: '28px', marginBottom: '24px', textAlign: 'center' }}>
+            <CircleHelp size={48} color="#ffffff" style={{ marginBottom: '12px' }} />
             <h2 style={{ color: 'white', fontSize: '22px', fontWeight: '800', margin: '0 0 8px' }}>Ready to practise?</h2>
             <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '14px', margin: 0 }}>
               Test your knowledge with up to 10 questions. All questions are automatically marked upon submission.
@@ -187,22 +211,41 @@ export default function LearnerPracticePage() {
 
           {/* Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '24px' }}>
-            {[
-              { label: 'Total Questions', value: questions.length,                                                    icon: '📝', colour: blue },
-              { label: 'Multiple Choice', value: questions.filter(q => q.question_type === 'multiple_choice').length, icon: '🔘', colour: orange },
-              { label: 'True / False',    value: questions.filter(q => q.question_type === 'true_false').length,      icon: '✅', colour: '#059669' },
-            ].map((stat, i) => (
-              <div key={i} style={{ background: 'white', borderRadius: '12px', padding: '16px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', borderTop: `3px solid ${stat.colour}` }}>
-                <p style={{ margin: '0 0 4px', fontSize: '22px' }}>{stat.icon}</p>
-                <p style={{ margin: '0 0 4px', fontSize: '22px', fontWeight: '800', color: stat.colour }}>{stat.value}</p>
-                <p style={{ margin: 0, fontSize: '11px', color: '#6b7280' }}>{stat.label}</p>
-              </div>
-            ))}
+            {loading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} style={{ background: 'white', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+                  <Skeleton w="24px" h="24px" r="50%" />
+                  <Skeleton w="40px" h="20px" r="4px" />
+                  <Skeleton w="60px" h="10px" r="4px" />
+                </div>
+              ))
+            ) : (
+              [
+                { label: 'Total Questions', value: questions.length,                                                    icon: <ListChecks size={18} color="#2563eb" />, colour: '#2563eb', badgeBg: '#eff6ff' },
+                { label: 'Multiple Choice', value: questions.filter(q => q.question_type === 'multiple_choice').length, icon: <CircleHelp size={18} color={orange} />, colour: orange, badgeBg: '#fff2eb' },
+                { label: 'True / False',    value: questions.filter(q => q.question_type === 'true_false').length,      icon: <CheckCircle size={18} color="#059669" />, colour: '#059669', badgeBg: '#f0fdf4' },
+              ].map((stat, i) => (
+                <div key={i} style={{ background: 'white', borderRadius: '16px', padding: '16px', textAlign: 'center', boxShadow: '0 4px 18px rgba(0,0,0,0.02)', border: '1px solid #e2e8f0' }}>
+                  <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: stat.badgeBg, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '6px' }}>{stat.icon}</div>
+                  <p style={{ margin: '0 0 4px', fontSize: '22px', fontWeight: '800', color: stat.colour }}>{stat.value}</p>
+                  <p style={{ margin: 0, fontSize: '11px', color: '#6b7280' }}>{stat.label}</p>
+                </div>
+              ))
+            )}
           </div>
 
-          {questions.length === 0 ? (
+          {loading ? (
+            <div style={{ background: 'white', borderRadius: '14px', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+              <Skeleton w="120px" h="14px" r="4px" />
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '8px', marginTop: '12px' }}>
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} w="100%" h="42px" r="10px" />
+                ))}
+              </div>
+            </div>
+          ) : questions.length === 0 ? (
             <div style={{ background: 'white', borderRadius: '14px', padding: '40px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-              <p style={{ fontSize: '32px', marginBottom: '8px' }}>📝</p>
+              <ListChecks size={32} color="#94a3b8" style={{ marginBottom: '8px' }} />
               <p style={{ color: '#9ca3af', fontSize: '14px' }}>No practice questions available yet. Please check back later.</p>
             </div>
           ) : (
@@ -218,7 +261,7 @@ export default function LearnerPracticePage() {
                     return (
                       <button key={cat.id} onClick={() => setFilterCategory(cat.id)}
                         style={{ padding: '12px', borderRadius: '10px', border: isActive ? 'none' : '1px solid #e5e7eb', background: isActive ? `linear-gradient(135deg, ${blue}, ${orange})` : 'white', color: isActive ? 'white' : '#374151', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '18px' }}>{cat.icon}</span>
+                        <span style={{ display: 'inline-flex' }}>{cat.icon}</span>
                         <span>{cat.label}</span>
                         <span style={{ marginLeft: 'auto', background: isActive ? 'rgba(255,255,255,0.2)' : lightBlue, color: isActive ? 'white' : blue, padding: '1px 6px', borderRadius: '8px', fontSize: '11px', fontWeight: '700' }}>{count}</span>
                       </button>
@@ -227,8 +270,8 @@ export default function LearnerPracticePage() {
                 </div>
               </div>
 
-              <button onClick={startTest} style={{ width: '100%', padding: '16px', borderRadius: '12px', border: 'none', background: `linear-gradient(135deg, ${blue}, ${orange})`, color: 'white', fontSize: '16px', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 20px rgba(249,115,22,0.3)' }}>
-                🚀 Start Practice Test
+              <button onClick={startTest} style={{ width: '100%', padding: '16px', borderRadius: '12px', border: 'none', background: orange, color: 'white', fontSize: '16px', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 20px rgba(249,115,22,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <Rocket size={18} /> Start Practice Test
               </button>
             </>
           )}
@@ -270,7 +313,7 @@ export default function LearnerPracticePage() {
             return (
               <div style={{ background: 'white', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', marginBottom: '16px' }}>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', marginBottom: '20px' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: `linear-gradient(135deg, ${blue}, ${orange})`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '800', fontSize: '14px', flexShrink: 0 }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: orange, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '800', fontSize: '14px', flexShrink: 0 }}>
                     {currentQuestion + 1}
                   </div>
                   <p style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#111827', lineHeight: '1.5', flex: 1 }}>{q.question_text}</p>
@@ -303,7 +346,7 @@ export default function LearnerPracticePage() {
                       return (
                         <button key={opt} onClick={() => selectAnswer(q.question_id, opt)}
                           style={{ flex: 1, padding: '16px', borderRadius: '10px', border: isSelected ? `2px solid ${borderColour}` : '1px solid #e5e7eb', background: isSelected ? (opt === 'True' ? '#f0fdf4' : '#fff1f2') : 'white', color: isSelected ? borderColour : '#6b7280', fontSize: '16px', fontWeight: '700', cursor: 'pointer' }}>
-                          {opt === 'True' ? '✅' : '❌'} {opt}
+                          <span style={{ display: 'inline-flex', verticalAlign: 'middle', marginRight: '6px' }}>{opt === 'True' ? <CheckCircle size={18} /> : <XCircle size={18} />}</span>{opt}
                         </button>
                       )
                     })}
@@ -317,17 +360,17 @@ export default function LearnerPracticePage() {
           <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
             <button onClick={() => setCurrentQuestion(prev => Math.max(0, prev - 1))} disabled={currentQuestion === 0}
               style={{ flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid #e5e7eb', background: currentQuestion === 0 ? '#f9fafb' : 'white', color: currentQuestion === 0 ? '#9ca3af' : '#374151', fontSize: '14px', fontWeight: '600', cursor: currentQuestion === 0 ? 'not-allowed' : 'pointer' }}>
-              ← Previous
+              Previous
             </button>
             {currentQuestion < totalQuestions - 1 ? (
               <button onClick={() => setCurrentQuestion(prev => Math.min(totalQuestions - 1, prev + 1))}
-                style={{ flex: 2, padding: '12px', borderRadius: '10px', border: 'none', background: `linear-gradient(135deg, ${blue}, ${orange})`, color: 'white', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}>
-                Next →
+                style={{ flex: 2, padding: '12px', borderRadius: '10px', border: 'none', background: orange, color: 'white', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}>
+                Next
               </button>
             ) : (
               <button onClick={submitTest} disabled={answeredCount < totalQuestions}
                 style={{ flex: 2, padding: '12px', borderRadius: '10px', border: 'none', background: answeredCount < totalQuestions ? '#e5e7eb' : '#059669', color: answeredCount < totalQuestions ? '#9ca3af' : 'white', fontSize: '14px', fontWeight: '700', cursor: answeredCount < totalQuestions ? 'not-allowed' : 'pointer' }}>
-                {answeredCount < totalQuestions ? `Answer ${totalQuestions - answeredCount} more to submit` : '✓ Submit Test'}
+                {answeredCount < totalQuestions ? `Answer ${totalQuestions - answeredCount} more to submit` : 'Submit Test'}
               </button>
             )}
           </div>
@@ -343,7 +386,7 @@ export default function LearnerPracticePage() {
         <div>
           <div style={{ background: 'white', borderRadius: '16px', padding: '32px', textAlign: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.08)', marginBottom: '24px', border: `3px solid ${getScoreColour(score, totalQuestions)}` }}>
             <p style={{ fontSize: '56px', margin: '0 0 8px' }}>
-              {score / totalQuestions >= 0.8 ? '🎉' : score / totalQuestions >= 0.6 ? '👍' : '📚'}
+              {score / totalQuestions >= 0.8 ? <CheckCircle size={56} color="#059669" /> : score / totalQuestions >= 0.6 ? <ThumbsUp size={56} color={orange} /> : <BookOpen size={56} color="#dc2626" />}
             </p>
             <p style={{ margin: '0 0 8px', fontSize: '48px', fontWeight: '800', color: getScoreColour(score, totalQuestions) }}>{score}/{totalQuestions}</p>
             <p style={{ margin: '0 0 4px', fontSize: '20px', fontWeight: '700', color: getScoreColour(score, totalQuestions) }}>{Math.round((score / totalQuestions) * 100)}%</p>
@@ -362,7 +405,7 @@ export default function LearnerPracticePage() {
 
             <div style={{ display: 'flex', gap: '10px' }}>
               <button onClick={resetTest} style={{ flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid #e5e7eb', background: 'white', color: '#374151', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>Try Again</button>
-              <button onClick={() => setActiveTab('review')} style={{ flex: 2, padding: '12px', borderRadius: '10px', border: 'none', background: `linear-gradient(135deg, ${blue}, ${orange})`, color: 'white', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}>Review Answers</button>
+              <button onClick={() => setActiveTab('review')} style={{ flex: 2, padding: '12px', borderRadius: '10px', border: 'none', background: orange, color: 'white', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}>Review Answers</button>
             </div>
           </div>
         </div>
@@ -373,7 +416,7 @@ export default function LearnerPracticePage() {
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <h2 style={{ color: blue, fontSize: '18px', fontWeight: '800', margin: 0 }}>Answer Review</h2>
-            <button onClick={resetTest} style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: `linear-gradient(135deg, ${blue}, ${orange})`, color: 'white', fontSize: '13px', fontWeight: '700', cursor: 'pointer' }}>New Test</button>
+            <button onClick={resetTest} style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: orange, color: 'white', fontSize: '13px', fontWeight: '700', cursor: 'pointer' }}>New Test</button>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -391,7 +434,7 @@ export default function LearnerPracticePage() {
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <div style={{ padding: '10px 14px', borderRadius: '8px', background: isCorrect ? '#f0fdf4' : '#fff1f2', border: `1px solid ${isCorrect ? '#6ee7b7' : '#fca5a5'}`, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '16px' }}>{isCorrect ? '✅' : '❌'}</span>
+                      <span style={{ display: 'inline-flex' }}>{isCorrect ? <CheckCircle size={16} /> : <XCircle size={16} />}</span>
                       <div>
                         <p style={{ margin: 0, fontSize: '11px', color: isCorrect ? '#065f46' : '#991b1b', fontWeight: '600' }}>Your answer</p>
                         <p style={{ margin: 0, fontSize: '13px', color: isCorrect ? '#065f46' : '#dc2626', fontWeight: '700' }}>
@@ -405,7 +448,7 @@ export default function LearnerPracticePage() {
 
                     {!isCorrect && (
                       <div style={{ padding: '10px 14px', borderRadius: '8px', background: '#f0fdf4', border: '1px solid #6ee7b7', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '16px' }}>💡</span>
+                        <span style={{ display: 'inline-flex' }}><CheckCircle size={16} /></span>
                         <div>
                           <p style={{ margin: 0, fontSize: '11px', color: '#065f46', fontWeight: '600' }}>Correct answer</p>
                           <p style={{ margin: 0, fontSize: '13px', color: '#059669', fontWeight: '700' }}>
@@ -421,7 +464,7 @@ export default function LearnerPracticePage() {
                     {q.explanation && (
                       <div style={{ padding: '10px 14px', borderRadius: '8px', background: '#fffbeb', border: '1px solid #fde68a' }}>
                         <p style={{ margin: 0, fontSize: '12px', color: '#92400e', lineHeight: '1.5' }}>
-                          💡 <strong>Explanation:</strong> {q.explanation}
+                          <strong>Explanation:</strong> {q.explanation}
                         </p>
                       </div>
                     )}
@@ -431,8 +474,8 @@ export default function LearnerPracticePage() {
             })}
           </div>
 
-          <button onClick={resetTest} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', background: `linear-gradient(135deg, ${blue}, ${orange})`, color: 'white', fontSize: '15px', fontWeight: '700', cursor: 'pointer', marginTop: '20px' }}>
-            🚀 Start New Test
+          <button onClick={resetTest} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', background: orange, color: 'white', fontSize: '15px', fontWeight: '700', cursor: 'pointer', marginTop: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+            <Rocket size={16} /> Start New Test
           </button>
         </div>
       )}

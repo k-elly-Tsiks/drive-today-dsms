@@ -18,6 +18,19 @@ type Booking = {
 
 const supabase = createClient()
 
+function Skeleton({ w = '100%', h = '14px', r = '6px' }: { w?: string; h?: string; r?: string }) {
+  return (
+    <div style={{
+      width: w,
+      height: h,
+      borderRadius: r,
+      background: 'linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%)',
+      backgroundSize: '200% 100%',
+      animation: 'skeleton-shimmer 1.5s infinite linear',
+    }} />
+  )
+}
+
 export default function InstructorLessonsPage() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
@@ -40,7 +53,17 @@ export default function InstructorLessonsPage() {
     setLoading(false)
   }, [router])
 
-  useEffect(() => { loadBookings() }, [loadBookings])
+  useEffect(() => {
+    let cancelled = false
+    async function run() {
+      if (!cancelled) await loadBookings()
+    }
+    run()
+    return () => {
+      cancelled = true
+    }
+  }, [loadBookings])
+
 
   // Logic for filtered lists
   const today = new Date().toISOString().split('T')[0]
@@ -63,6 +86,7 @@ export default function InstructorLessonsPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px', fontFamily: 'sans-serif' }}>
+      <style>{`@keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
       <div style={{ marginBottom: '24px' }}>
         <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#111827', margin: '0 0 8px' }}>Lessons Management</h1>
         <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>Configure scheduling availability and manage active bookings</p>
@@ -70,7 +94,15 @@ export default function InstructorLessonsPage() {
 
       {/* Stats Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '24px' }}>
-        {[
+        {loading ? Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} style={{ background: 'white', borderRadius: '16px', padding: '20px', border: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <div>
+              <Skeleton w="70px" h="13px" r="4px" />
+              <div style={{ marginTop: '10px' }}><Skeleton w="42px" h="26px" r="5px" /></div>
+            </div>
+            <Skeleton w="40px" h="40px" r="10px" />
+          </div>
+        )) : [
           { label: "Today's", value: todayBookings.length, icon: CalendarCheck, color: '#1e3a8a' },
           { label: 'Upcoming', value: upcomingBookings.length, icon: Layers, color: '#f97316' },
           { label: 'Completed', value: pastBookings.filter(b => b.status === 'completed').length, icon: CheckCircle2, color: '#059669' },
@@ -111,7 +143,21 @@ export default function InstructorLessonsPage() {
       {/* List Display Area */}
       <div style={{ background: 'white', borderRadius: '16px', padding: '24px', border: '1px solid #e5e7eb' }}>
         {loading ? (
-          <p style={{ textAlign: 'center', color: '#6b7280' }}>Loading lessons...</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', border: '1px solid #e5e7eb', borderRadius: '12px', background: '#fafafa' }}>
+                <div>
+                  <Skeleton w="160px" h="16px" r="4px" />
+                  <div style={{ marginTop: '8px' }}><Skeleton w="210px" h="13px" r="4px" /></div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '7px' }}>
+                  <Skeleton w="96px" h="14px" r="4px" />
+                  <Skeleton w="48px" h="12px" r="4px" />
+                  <Skeleton w="78px" h="22px" r="20px" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : displayBookings.length === 0 ? (
           <p style={{ textAlign: 'center', color: '#6b7280' }}>No lessons found for {activeTab}.</p>
         ) : (

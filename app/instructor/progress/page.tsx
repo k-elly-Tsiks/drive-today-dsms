@@ -26,7 +26,79 @@ type ProgressRecord = {
 
 const supabase = createClient()
 
+function Skeleton({ w = '100%', h = '14px', r = '6px' }: { w?: string; h?: string; r?: string }) {
+  return (
+    <div style={{
+      width: w,
+      height: h,
+      borderRadius: r,
+      background: 'linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%)',
+      backgroundSize: '200% 100%',
+      animation: 'skeleton-shimmer 1.5s infinite linear',
+    }} />
+  )
+}
+
+function StarRating({
+  value,
+  onChange,
+  label,
+  blue,
+  orange,
+}: {
+  value: number
+  onChange: (v: number) => void
+  label: string
+  blue: string
+  orange: string
+}) {
+  return (
+    <div>
+      <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
+        {label}
+      </label>
+      <div style={{ display: 'flex', gap: '8px' }}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            type="button"
+            onClick={() => onChange(star)}
+            style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '8px',
+              border: 'none',
+              background: star <= value ? `linear-gradient(135deg, ${blue}, ${orange})` : '#f3f4f6',
+              color: star <= value ? 'white' : '#9ca3af',
+              fontSize: '16px',
+              cursor: 'pointer',
+              fontWeight: '700',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            {star}
+          </button>
+        ))}
+      </div>
+      <p style={{ margin: '4px 0 0', fontSize: '11px', color: '#9ca3af' }}>
+        {value === 0
+          ? 'Not rated'
+          : value === 1
+            ? 'Poor'
+            : value === 2
+              ? 'Below Average'
+              : value === 3
+                ? 'Average'
+                : value === 4
+                  ? 'Good'
+                  : 'Excellent'}
+      </p>
+    </div>
+  )
+}
+
 export default function InstructorProgressPage() {
+
   const [completedBookings, setCompletedBookings] = useState<Booking[]>([])
   const [progressRecords, setProgressRecords] = useState<ProgressRecord[]>([])
   const [loading, setLoading] = useState(true)
@@ -46,9 +118,9 @@ export default function InstructorProgressPage() {
   const router = useRouter()
   const routerRef = useRef(router)
 
-  const blue = '#1e3a8a'
-  const orange = '#f97316'
-  const lightBlue = '#e8f0fe'
+  const blue = '#1e293b'
+  const orange = '#ff5a00'
+  const lightBlue = '#fff2eb'
 
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -133,35 +205,38 @@ export default function InstructorProgressPage() {
     return '#dc2626'
   }
 
-  function StarRating({ value, onChange, label }: { value: number; onChange: (v: number) => void; label: string }) {
-    return (
-      <div>
-        <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>{label}</label>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          {[1, 2, 3, 4, 5].map(star => (
-            <button key={star} type="button" onClick={() => onChange(star)}
-              style={{ width: '40px', height: '40px', borderRadius: '8px', border: 'none', background: star <= value ? `linear-gradient(135deg, ${blue}, ${orange})` : '#f3f4f6', color: star <= value ? 'white' : '#9ca3af', fontSize: '16px', cursor: 'pointer', fontWeight: '700', transition: 'all 0.15s ease' }}>
-              {star}
-            </button>
-          ))}
-        </div>
-        <p style={{ margin: '4px 0 0', fontSize: '11px', color: '#9ca3af' }}>
-          {value === 0 ? 'Not rated' : value === 1 ? 'Poor' : value === 2 ? 'Below Average' : value === 3 ? 'Average' : value === 4 ? 'Good' : 'Excellent'}
-        </p>
-      </div>
-    )
-  }
+
 
   if (loading) {
+
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: lightBlue }}>
-        <p style={{ color: blue, fontWeight: '600' }}>Loading Progress...</p>
+      <div style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px' }}>
+        <style>{`@keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
+        <div style={{ display: 'flex', gap: '4px', background: 'white', borderRadius: '12px', padding: '4px', marginBottom: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', width: 'fit-content' }}>
+          <Skeleton w="148px" h="40px" r="10px" />
+          <Skeleton w="152px" h="40px" r="10px" />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} style={{ background: 'white', borderRadius: '14px', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', borderLeft: `4px solid ${orange}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: 1 }}>
+                <Skeleton w="48px" h="48px" r="50%" />
+                <div style={{ flex: 1 }}>
+                  <Skeleton w="180px" h="15px" r="4px" />
+                  <div style={{ marginTop: '8px' }}><Skeleton w="260px" h="12px" r="4px" /></div>
+                  <div style={{ marginTop: '8px' }}><Skeleton w="90px" h="12px" r="4px" /></div>
+                </div>
+              </div>
+              <Skeleton w="140px" h="40px" r="10px" />
+            </div>
+          ))}
+        </div>
       </div>
     )
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f0f4ff', padding: '24px' }}>
+    <div style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px' }}>
       {successMessage && <div style={{ background: '#d1fae5', border: '1px solid #6ee7b7', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px', color: '#065f46', fontSize: '13px', fontWeight: '600' }}>✅ {successMessage}</div>}
 
       <div style={{ display: 'flex', gap: '4px', background: 'white', borderRadius: '12px', padding: '4px', marginBottom: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', width: 'fit-content' }}>
@@ -198,7 +273,7 @@ export default function InstructorProgressPage() {
                   </div>
                 </div>
                 <button onClick={() => { setSelectedBooking(booking); setSteeringRating(0); setParkingRating(0); setReversingRating(0); setRoadAwarenessRating(0); setComments(''); setError(''); setShowModal(true) }}
-                  style={{ padding: '10px 20px', borderRadius: '10px', border: 'none', background: `linear-gradient(135deg, ${blue}, ${orange})`, color: 'white', fontSize: '13px', fontWeight: '700', cursor: 'pointer' }}>
+                  style={{ padding: '10px 20px', borderRadius: '10px', border: 'none', background: orange, color: 'white', fontSize: '13px', fontWeight: '700', cursor: 'pointer' }}>
                   📝 Record Progress
                 </button>
               </div>
@@ -260,10 +335,10 @@ export default function InstructorProgressPage() {
             <p style={{ color: '#6b7280', fontSize: '13px', margin: '0 0 20px' }}>{selectedBooking.learner?.first_name} {selectedBooking.learner?.surname} • {selectedBooking.lesson_slots?.slot_date}</p>
             {error && <div style={{ background: '#fee2e2', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px', color: '#991b1b', fontSize: '13px' }}>{error}</div>}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <StarRating value={steeringRating}      onChange={setSteeringRating}      label="🎯 Steering" />
-              <StarRating value={parkingRating}       onChange={setParkingRating}       label="🅿 Parking" />
-              <StarRating value={reversingRating}     onChange={setReversingRating}     label="🔄 Reversing" />
-              <StarRating value={roadAwarenessRating} onChange={setRoadAwarenessRating} label="👁 Road Awareness" />
+              <StarRating value={steeringRating}      onChange={setSteeringRating}      label="🎯 Steering" blue={blue} orange={orange} />
+              <StarRating value={parkingRating}       onChange={setParkingRating}       label="🅿 Parking" blue={blue} orange={orange} />
+              <StarRating value={reversingRating}     onChange={setReversingRating}     label="🔄 Reversing" blue={blue} orange={orange} />
+              <StarRating value={roadAwarenessRating} onChange={setRoadAwarenessRating} label="👁 Road Awareness" blue={blue} orange={orange} />
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>Feedback Comments *</label>
                 <textarea value={comments} onChange={e => setComments(e.target.value)} placeholder="Describe the learner's performance, areas of improvement and strengths..." rows={4}

@@ -15,6 +15,19 @@ type Notification = {
 
 const supabase = createClient()
 
+function Skeleton({ w = '100%', h = '14px', r = '6px' }: { w?: string; h?: string; r?: string }) {
+  return (
+    <div style={{
+      width: w,
+      height: h,
+      borderRadius: r,
+      background: 'linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%)',
+      backgroundSize: '200% 100%',
+      animation: 'skeleton-shimmer 1.5s infinite linear',
+    }} />
+  )
+}
+
 export default function InstructorNotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
@@ -24,9 +37,9 @@ export default function InstructorNotificationsPage() {
   const router = useRouter()
   const routerRef = useRef(router)
 
-  const blue = '#1e3a8a'
-  const orange = '#f97316'
-  const lightBlue = '#e8f0fe'
+  const blue = '#1e293b'
+  const orange = '#ff5a00'
+  const lightBlue = '#fff2eb'
 
   const loadNotifications = useCallback(async () => {
     setLoading(true)
@@ -101,14 +114,49 @@ export default function InstructorNotificationsPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: lightBlue }}>
-        <p style={{ color: blue, fontWeight: '600' }}>Loading Notifications...</p>
+      <div style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px' }}>
+        <style>{`@keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+          <div>
+            <Skeleton w="190px" h="26px" r="6px" />
+            <div style={{ marginTop: '8px' }}><Skeleton w="160px" h="13px" r="4px" /></div>
+          </div>
+          <Skeleton w="116px" h="38px" r="10px" />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', marginBottom: '24px' }}>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} style={{ background: 'white', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', borderTop: `3px solid ${i === 1 ? '#dc2626' : i === 2 ? '#059669' : i === 3 ? orange : blue}` }}>
+              <Skeleton w="42px" h="26px" r="5px" />
+              <Skeleton w="58px" h="11px" r="4px" />
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: '4px', background: 'white', borderRadius: '12px', padding: '4px', marginBottom: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', width: 'fit-content' }}>
+          <Skeleton w="82px" h="40px" r="10px" />
+          <Skeleton w="106px" h="40px" r="10px" />
+          <Skeleton w="88px" h="40px" r="10px" />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} style={{ background: 'white', borderRadius: '12px', padding: '16px 20px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', border: '1px solid #f3f4f6', display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+              <Skeleton w="42px" h="42px" r="50%" />
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', marginBottom: '10px' }}>
+                  <Skeleton w="86px" h="18px" r="10px" />
+                  <Skeleton w="70px" h="11px" r="4px" />
+                </div>
+                <Skeleton w="100%" h="13px" r="4px" />
+                <div style={{ marginTop: '8px' }}><Skeleton w="72%" h="13px" r="4px" /></div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     )
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f0f4ff', padding: '24px' }}>
+    <div style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px' }}>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
         <div>

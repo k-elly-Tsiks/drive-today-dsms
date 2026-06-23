@@ -13,6 +13,20 @@ type Notification = {
   recipient_id: string
 }
 
+// 1. Shimmer Skeleton Component
+function Skeleton({ w = '100%', h = '14px', r = '6px' }: { w?: string; h?: string; r?: string }) {
+  return (
+    <div style={{
+      width: w,
+      height: h,
+      borderRadius: r,
+      background: 'linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%)',
+      backgroundSize: '200% 100%',
+      animation: 'skeleton-shimmer 1.5s infinite linear',
+    }} />
+  )
+}
+
 const supabase = createClient()
 
 export default function LearnerNotificationsPage() {
@@ -24,9 +38,28 @@ export default function LearnerNotificationsPage() {
   const router = useRouter()
   const routerRef = useRef(router)
 
-  const blue = '#1e3a8a'
-  const orange = '#f97316'
-  const lightBlue = '#e8f0fe'
+  const blue = '#1e293b'
+  const orange = '#ff5a00'
+  const lightBlue = '#fff2eb'
+
+  // Insert keyframes dynamically for shimmer animation
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const styleId = 'skeleton-shimmer-styles'
+      if (!document.getElementById(styleId)) {
+        const style = document.createElement('style')
+        style.id = styleId
+        style.innerHTML = `
+          @keyframes skeleton-shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+          }
+        `
+        document.head.appendChild(style)
+      }
+    }
+  }, [])
+
 
   // ─── Auth + data ─────────────────────────────────────────────────────────────
 
@@ -128,27 +161,17 @@ export default function LearnerNotificationsPage() {
     return new Date(dateString).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
   }
 
-  // ─── Loading state ────────────────────────────────────────────────────────────
-
-  if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: lightBlue }}>
-        <p style={{ color: blue, fontWeight: '600' }}>Loading Notifications...</p>
-      </div>
-    )
-  }
-
   // ─── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f0f4ff', padding: '24px' }}>
+    <div style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px' }}>
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <h1 style={{ color: blue, fontSize: '22px', fontWeight: '800', margin: 0 }}>
             🔔 Notifications
-            {unreadCount > 0 && (
+            {!loading && unreadCount > 0 && (
               <span style={{ background: '#dc2626', color: 'white', borderRadius: '20px', padding: '2px 8px', fontSize: '13px', fontWeight: '700', marginLeft: '10px' }}>
                 {unreadCount} new
               </span>
@@ -157,7 +180,7 @@ export default function LearnerNotificationsPage() {
           <p style={{ color: '#6b7280', fontSize: '13px', margin: '4px 0 0' }}>All your system notifications</p>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
-          {unreadCount > 0 && (
+          {!loading && unreadCount > 0 && (
             <button onClick={markAllAsRead} disabled={markingAll}
               style={{ padding: '10px 18px', borderRadius: '10px', border: `2px solid ${blue}`, background: 'white', color: blue, fontSize: '13px', fontWeight: '600', cursor: markingAll ? 'not-allowed' : 'pointer' }}>
               {markingAll ? 'Marking...' : '✓ Mark all as read'}
@@ -172,18 +195,28 @@ export default function LearnerNotificationsPage() {
 
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', marginBottom: '24px' }}>
-        {[
-          { label: 'Total',  value: notifications.length,                colour: blue },
-          { label: 'Unread', value: unreadCount,                         colour: '#dc2626' },
-          { label: 'Read',   value: notifications.length - unreadCount,  colour: '#059669' },
-          { label: 'Today',  colour: orange, value: notifications.filter(n => n.created_at?.startsWith(new Date().toISOString().split('T')[0])).length },
-        ].map((stat, i) => (
-          <div key={i} style={{ background: 'white', borderRadius: '12px', padding: '16px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', borderTop: `3px solid ${stat.colour}` }}>
-            <p style={{ margin: '0 0 4px', fontSize: '24px', fontWeight: '800', color: stat.colour }}>{stat.value}</p>
-            <p style={{ margin: 0, fontSize: '11px', color: '#6b7280' }}>{stat.label}</p>
-          </div>
-        ))}
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} style={{ background: 'white', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+              <Skeleton w="40px" h="24px" r="4px" />
+              <Skeleton w="60px" h="10px" r="4px" />
+            </div>
+          ))
+        ) : (
+          [
+            { label: 'Total',  value: notifications.length,                colour: blue },
+            { label: 'Unread', value: unreadCount,                         colour: '#dc2626' },
+            { label: 'Read',   value: notifications.length - unreadCount,  colour: '#059669' },
+            { label: 'Today',  colour: orange, value: notifications.filter(n => n.created_at?.startsWith(new Date().toISOString().split('T')[0])).length },
+          ].map((stat, i) => (
+            <div key={i} style={{ background: 'white', borderRadius: '12px', padding: '16px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', borderTop: `3px solid ${stat.colour}` }}>
+              <p style={{ margin: '0 0 4px', fontSize: '24px', fontWeight: '800', color: stat.colour }}>{stat.value}</p>
+              <p style={{ margin: 0, fontSize: '11px', color: '#6b7280' }}>{stat.label}</p>
+            </div>
+          ))
+        )}
       </div>
+
 
       {/* Filter tabs */}
       <div style={{ display: 'flex', gap: '4px', background: 'white', borderRadius: '12px', padding: '4px', marginBottom: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', width: 'fit-content' }}>
@@ -201,7 +234,25 @@ export default function LearnerNotificationsPage() {
 
       {/* Notifications list */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {filteredNotifications.length === 0 ? (
+        {loading ? (
+          Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} style={{ background: 'white', borderRadius: '12px', padding: '16px 20px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', border: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: '#f1f5f9', padding: '4px' }}>
+                <Skeleton w="100%" h="100%" r="50%" />
+              </div>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Skeleton w="100px" h="14px" r="4px" />
+                  <Skeleton w="50px" h="10px" r="4px" />
+                </div>
+                <Skeleton w="80%" h="12px" r="4px" />
+              </div>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <Skeleton w="50px" h="24px" r="6px" />
+              </div>
+            </div>
+          ))
+        ) : filteredNotifications.length === 0 ? (
           <div style={{ background: 'white', borderRadius: '14px', padding: '60px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
             <p style={{ fontSize: '48px', marginBottom: '12px' }}>🔔</p>
             <p style={{ color: '#374151', fontSize: '16px', fontWeight: '600', margin: '0 0 4px' }}>No notifications</p>

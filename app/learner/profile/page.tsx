@@ -30,7 +30,22 @@ type Instructor = {
   driving_classes_taught?: string
 }
 
+// 1. Shimmer Skeleton Component
+function Skeleton({ w = '100%', h = '14px', r = '6px' }: { w?: string; h?: string; r?: string }) {
+  return (
+    <div style={{
+      width: w,
+      height: h,
+      borderRadius: r,
+      background: 'linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%)',
+      backgroundSize: '200% 100%',
+      animation: 'skeleton-shimmer 1.5s infinite linear',
+    }} />
+  )
+}
+
 const supabase = createClient()
+
 
 export default function LearnerProfilePage() {
   const [learner, setLearner] = useState<LearnerProfile | null>(null)
@@ -52,9 +67,9 @@ export default function LearnerProfilePage() {
   const router = useRouter()
   const routerRef = useRef(router)
 
-  const blue = '#1e3a8a'
-  const orange = '#f97316'
-  const lightBlue = '#e8f0fe'
+  const blue = '#1e293b'
+  const orange = '#ff5a00'
+  const lightBlue = '#fff2eb'
 
   // ─── Auth + data ─────────────────────────────────────────────────────────────
 
@@ -100,6 +115,24 @@ export default function LearnerProfilePage() {
     setLoading(false)
   }, [])
 
+  // Insert keyframes dynamically for shimmer animation
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const styleId = 'skeleton-shimmer-styles'
+      if (!document.getElementById(styleId)) {
+        const style = document.createElement('style')
+        style.id = styleId
+        style.innerHTML = `
+          @keyframes skeleton-shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+          }
+        `
+        document.head.appendChild(style)
+      }
+    }
+  }, [])
+
   useEffect(() => {
     let cancelled = false
     async function init() {
@@ -140,12 +173,59 @@ export default function LearnerProfilePage() {
     loadProfile()
   }
 
-  // ─── Loading state ────────────────────────────────────────────────────────────
-
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: lightBlue }}>
-        <p style={{ color: blue, fontWeight: '600' }}>Loading Profile...</p>
+      <div style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+          <div>
+            <Skeleton w="160px" h="26px" r="6px" />
+            <div style={{ marginTop: '8px' }}><Skeleton w="260px" h="13px" r="4px" /></div>
+          </div>
+          <Skeleton w="116px" h="38px" r="10px" />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div style={{ background: 'white', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
+              <Skeleton w="80px" h="80px" r="50%" />
+              <Skeleton w="190px" h="18px" r="5px" />
+              <Skeleton w="118px" h="22px" r="20px" />
+            </div>
+            <Skeleton w="150px" h="14px" r="4px" />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '18px' }}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                  <Skeleton w="18px" h="18px" r="5px" />
+                  <div style={{ flex: 1 }}>
+                    <Skeleton w="90px" h="11px" r="4px" />
+                    <div style={{ marginTop: '6px' }}><Skeleton w={i % 2 === 0 ? '70%' : '52%'} h="13px" r="4px" /></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: '18px' }}><Skeleton w="100%" h="42px" r="8px" /></div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} style={{ background: 'white', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+                <Skeleton w={i === 0 ? '160px' : '170px'} h="14px" r="4px" />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '18px' }}>
+                  {Array.from({ length: i === 0 ? 5 : 3 }).map((__, j) => (
+                    <div key={j} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: j < 4 ? '1px solid #f3f4f6' : 'none' }}>
+                      <Skeleton w="110px" h="12px" r="4px" />
+                      <Skeleton w="90px" h="13px" r="4px" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <div style={{ background: blue, borderRadius: '14px', padding: '20px' }}>
+              <Skeleton w="150px" h="14px" r="4px" />
+              <div style={{ marginTop: '16px' }}><Skeleton w="48px" h="30px" r="6px" /></div>
+              <div style={{ marginTop: '8px' }}><Skeleton w="120px" h="12px" r="4px" /></div>
+              <div style={{ marginTop: '14px' }}><Skeleton w="80%" h="12px" r="4px" /></div>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
@@ -153,7 +233,7 @@ export default function LearnerProfilePage() {
   // ─── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f0f4ff', padding: '24px' }}>
+    <div style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px' }}>
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
@@ -187,7 +267,7 @@ export default function LearnerProfilePage() {
         <div style={{ background: 'white', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
           {/* Avatar */}
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: `linear-gradient(135deg, ${blue}, ${orange})`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontSize: '28px', fontWeight: '800', color: 'white' }}>
+            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: orange, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontSize: '28px', fontWeight: '800', color: 'white' }}>
               {learner?.first_name?.charAt(0)}{learner?.surname?.charAt(0)}
             </div>
             <h2 style={{ color: blue, fontSize: '18px', fontWeight: '800', margin: '0 0 4px' }}>
@@ -314,7 +394,7 @@ export default function LearnerProfilePage() {
             </h3>
             {instructor ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: `linear-gradient(135deg, ${blue}, ${orange})`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '800', fontSize: '18px', flexShrink: 0 }}>
+                <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: orange, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '800', fontSize: '18px', flexShrink: 0 }}>
                   {instructor.first_name?.charAt(0)}{instructor.surname?.charAt(0)}
                 </div>
                 <div>
@@ -332,7 +412,7 @@ export default function LearnerProfilePage() {
           </div>
 
           {/* Lesson allocation */}
-          <div style={{ background: `linear-gradient(135deg, ${blue}, #2d4fa3)`, borderRadius: '14px', padding: '20px' }}>
+          <div style={{ background: blue, borderRadius: '14px', padding: '20px' }}>
             <h3 style={{ color: 'white', fontSize: '14px', fontWeight: '700', margin: '0 0 16px' }}>📅 Lesson Allocation</h3>
             <p style={{ margin: 0, fontSize: '28px', fontWeight: '800', color: 'white' }}>{learner?.slots_allocated || 0}</p>
             <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>Slots Allocated</p>
