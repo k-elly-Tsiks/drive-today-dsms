@@ -28,7 +28,22 @@ type LearnerProfile = {
   slots_allocated?: number
 }
 
+// 1. Shimmer Skeleton Component
+function Skeleton({ w = '100%', h = '14px', r = '6px' }: { w?: string; h?: string; r?: string }) {
+  return (
+    <div style={{
+      width: w,
+      height: h,
+      borderRadius: r,
+      background: 'linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%)',
+      backgroundSize: '200% 100%',
+      animation: 'skeleton-shimmer 1.5s infinite linear',
+    }} />
+  )
+}
+
 const supabase = createClient()
+
 
 export default function LearnerLessonsPage() {
   const [activeTab, setActiveTab] = useState('upcoming')
@@ -48,9 +63,28 @@ export default function LearnerLessonsPage() {
   const router = useRouter()
   const routerRef = useRef(router)
 
-  const blue = '#1e3a8a'
-  const orange = '#f97316'
-  const lightBlue = '#e8f0fe'
+  const blue = '#1e293b'
+  const orange = '#ff5a00'
+  const lightBlue = '#fff2eb'
+
+  // Insert keyframes dynamically for shimmer animation
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const styleId = 'skeleton-shimmer-styles'
+      if (!document.getElementById(styleId)) {
+        const style = document.createElement('style')
+        style.id = styleId
+        style.innerHTML = `
+          @keyframes skeleton-shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+          }
+        `
+        document.head.appendChild(style)
+      }
+    }
+  }, [])
+
 
   // ─── Auth + data ─────────────────────────────────────────────────────────────
 
@@ -266,20 +300,11 @@ export default function LearnerLessonsPage() {
     )
   }
 
-  // ─── Loading state ────────────────────────────────────────────────────────────
-
-  if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: lightBlue }}>
-        <p style={{ color: blue, fontWeight: '600' }}>Loading Lessons...</p>
-      </div>
-    )
-  }
-
   // ─── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f0f4ff', padding: '24px' }}>
+    <div style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px' }}>
+
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
@@ -309,15 +334,19 @@ export default function LearnerLessonsPage() {
 
       {/* Slot allocation summary */}
       <div style={{
-        background: `linear-gradient(135deg, ${blue}, #2d4fa3)`,
+        background: blue,
         borderRadius: '14px', padding: '20px 24px', marginBottom: '24px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px',
       }}>
         <div>
           <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '13px', margin: '0 0 4px' }}>Lesson Slot Allocation</p>
-          <p style={{ color: 'white', fontSize: '20px', fontWeight: '800', margin: 0 }}>
-            {scheduledCount} of {slotsAllocated} slots used
-          </p>
+          {loading ? (
+            <div style={{ marginTop: '6px' }}><Skeleton w="120px" h="20px" r="4px" /></div>
+          ) : (
+            <p style={{ color: 'white', fontSize: '20px', fontWeight: '800', margin: 0 }}>
+              {scheduledCount} of {slotsAllocated} slots used
+            </p>
+          )}
         </div>
         <div style={{ display: 'flex', gap: '16px' }}>
           {[
@@ -326,7 +355,11 @@ export default function LearnerLessonsPage() {
             { label: 'Remaining', value: remainingSlots, colour: '#6ee7b7' },
           ].map((item, i) => (
             <div key={i} style={{ textAlign: 'center' }}>
-              <p style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: item.colour }}>{item.value}</p>
+              {loading ? (
+                <div style={{ marginBottom: '4px' }}><Skeleton w="30px" h="22px" r="4px" /></div>
+              ) : (
+                <p style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: item.colour }}>{item.value}</p>
+              )}
               <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.65)' }}>{item.label}</p>
             </div>
           ))}
@@ -347,149 +380,100 @@ export default function LearnerLessonsPage() {
         ))}
       </div>
 
-      {/* ── UPCOMING TAB ── */}
-      {activeTab === 'upcoming' && (
-        <div>
-          {upcomingBookings.length === 0 ? (
-            <div style={{ background: 'white', borderRadius: '14px', padding: '60px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-              <p style={{ fontSize: '48px', marginBottom: '12px' }}>📅</p>
-              <p style={{ color: '#374151', fontSize: '16px', fontWeight: '600', margin: '0 0 8px' }}>No upcoming lessons</p>
-              <p style={{ color: '#9ca3af', fontSize: '13px', margin: '0 0 20px' }}>
-                {remainingSlots > 0 ? `You have ${remainingSlots} slot(s) remaining to book` : 'All your allocated slots have been used'}
-              </p>
-              {remainingSlots > 0 && (
-                <button onClick={() => setActiveTab('book')} style={{ padding: '10px 20px', borderRadius: '10px', border: 'none', background: `linear-gradient(135deg, ${blue}, ${orange})`, color: 'white', fontSize: '13px', fontWeight: '700', cursor: 'pointer' }}>
-                  Book Lessons Now
-                </button>
-              )}
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {upcomingBookings.map(booking => (
-                <div key={booking.booking_id} style={{ background: 'white', borderRadius: '14px', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', borderLeft: `4px solid ${blue}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{ background: lightBlue, borderRadius: '12px', padding: '12px 16px', textAlign: 'center', minWidth: '70px' }}>
-                      <p style={{ margin: 0, fontSize: '20px', fontWeight: '800', color: blue }}>
-                        {booking.lesson_slots?.slot_date ? new Date(booking.lesson_slots.slot_date).getDate() : '--'}
-                      </p>
-                      <p style={{ margin: 0, fontSize: '11px', color: '#6b7280' }}>
-                        {booking.lesson_slots?.slot_date ? new Date(booking.lesson_slots.slot_date).toLocaleDateString('en-GB', { month: 'short' }) : '--'}
-                      </p>
-                    </div>
-                    <div>
-                      <p style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: '700', color: '#111827' }}>
-                        {booking.lesson_slots?.slot_date ? new Date(booking.lesson_slots.slot_date).toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}
-                      </p>
-                      <p style={{ margin: '0 0 4px', fontSize: '13px', color: '#6b7280' }}>🕐 {booking.lesson_slots?.slot_time?.slice(0, 5)}</p>
-                      <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>👤 Instructor: {booking.instructor?.first_name} {booking.instructor?.surname}</p>
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    {statusBadge(booking.status)}
-                    <button onClick={() => { setSelectedBooking(booking); setShowCancelModal(true); setError('') }}
-                      style={{ padding: '8px 14px', borderRadius: '8px', border: 'none', background: '#fee2e2', color: '#991b1b', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
-                      Cancel
-                    </button>
-                  </div>
+      {loading ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} style={{ background: 'white', borderRadius: '14px', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
+                <div style={{ width: '70px', height: '54px', borderRadius: '12px', background: '#f1f5f9', padding: '6px' }}>
+                  <Skeleton w="100%" h="100%" r="8px" />
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── BOOK SLOTS TAB ── */}
-      {activeTab === 'book' && (
-        <div>
-          {remainingSlots === 0 ? (
-            <div style={{ background: 'white', borderRadius: '14px', padding: '40px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-              <p style={{ fontSize: '48px', marginBottom: '12px' }}>✅</p>
-              <p style={{ color: '#374151', fontSize: '16px', fontWeight: '600', margin: '0 0 8px' }}>All slots used</p>
-              <p style={{ color: '#9ca3af', fontSize: '13px', margin: 0 }}>You have used all your allocated lesson slots. Please contact the administrator to request more.</p>
-            </div>
-          ) : (
-            <>
-              <div style={{ background: '#fffbeb', borderRadius: '12px', padding: '14px 18px', marginBottom: '16px', border: '1px solid #fde68a' }}>
-                <p style={{ margin: 0, fontSize: '13px', color: '#92400e', lineHeight: '1.5' }}>
-                  💡 You can select up to <strong>{remainingSlots}</strong> slot(s). Click a slot to select it. Click again to deselect.
-                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
+                  <Skeleton w="40%" h="16px" r="4px" />
+                  <Skeleton w="25%" h="12px" r="4px" />
+                </div>
               </div>
-
-              {selectedSlots.length > 0 && (
-                <div style={{ background: '#d1fae5', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <p style={{ margin: 0, fontSize: '13px', color: '#065f46', fontWeight: '600' }}>
-                    {selectedSlots.length} of {remainingSlots} slot(s) selected
+              <Skeleton w="80px" h="36px" r="8px" />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <>
+          {/* ── UPCOMING TAB ── */}
+          {activeTab === 'upcoming' && (
+            <div>
+              {upcomingBookings.length === 0 ? (
+                <div style={{ background: 'white', borderRadius: '14px', padding: '60px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+                  <p style={{ fontSize: '48px', marginBottom: '12px' }}>📅</p>
+                  <p style={{ color: '#374151', fontSize: '16px', fontWeight: '600', margin: '0 0 8px' }}>No upcoming lessons</p>
+                  <p style={{ color: '#9ca3af', fontSize: '13px', margin: '0 0 20px' }}>
+                    {remainingSlots > 0 ? `You have ${remainingSlots} slot(s) remaining to book` : 'All your allocated slots have been used'}
                   </p>
-                  <button onClick={confirmBooking} disabled={confirming}
-                    style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', background: confirming ? '#e5e7eb' : `linear-gradient(135deg, ${blue}, ${orange})`, color: confirming ? '#9ca3af' : 'white', fontSize: '13px', fontWeight: '700', cursor: confirming ? 'not-allowed' : 'pointer' }}>
-                    {confirming ? 'Booking...' : 'Confirm Booking'}
-                  </button>
-                </div>
-              )}
-
-              {availableSlots.length === 0 ? (
-                <div style={{ background: 'white', borderRadius: '14px', padding: '40px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                  <p style={{ fontSize: '32px', marginBottom: '8px' }}>📅</p>
-                  <p style={{ color: '#9ca3af', fontSize: '14px' }}>No available slots at the moment. Please check back later or contact the administrator.</p>
+                  {remainingSlots > 0 && (
+                    <button onClick={() => setActiveTab('book')} style={{ padding: '10px 20px', borderRadius: '10px', border: 'none', background: orange, color: 'white', fontSize: '13px', fontWeight: '700', cursor: 'pointer' }}>
+                      Book Lessons Now
+                    </button>
+                  )}
                 </div>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px' }}>
-                  {availableSlots.map(slot => {
-                    const isSelected = selectedSlots.includes(slot.slot_id)
-                    const isDisabled = !isSelected && selectedSlots.length >= remainingSlots
-                    return (
-                      <div key={slot.slot_id} onClick={() => !isDisabled && toggleSlot(slot.slot_id)}
-                        style={{ background: isDisabled ? '#f9fafb' : isSelected ? '#f0fdf4' : 'white', borderRadius: '12px', padding: '16px', border: isSelected ? '2px solid #059669' : isDisabled ? '1px solid #f3f4f6' : '1px solid #e5e7eb', cursor: isDisabled ? 'not-allowed' : 'pointer', opacity: isDisabled ? 0.5 : 1, transition: 'all 0.2s ease', boxShadow: isSelected ? '0 4px 12px rgba(5,150,105,0.2)' : '0 2px 8px rgba(0,0,0,0.04)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                          <div>
-                            <p style={{ margin: 0, fontSize: '14px', fontWeight: '700', color: isDisabled ? '#9ca3af' : '#111827' }}>
-                              {new Date(slot.slot_date).toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' })}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {upcomingBookings.map(booking => (
+                    <div key={booking.booking_id} style={{ background: 'white', borderRadius: '14px', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', borderLeft: `4px solid ${blue}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ background: lightBlue, borderRadius: '12px', padding: '12px 16px', textAlign: 'center', minWidth: '70px' }}>
+                          <p style={{ margin: 0, fontSize: '20px', fontWeight: '800', color: blue }}>
+                            {booking.lesson_slots?.slot_date ? new Date(booking.lesson_slots.slot_date).getDate() : '--'}
+                          </p>
+                          <p style={{ margin: 0, fontSize: '11px', color: '#6b7280' }}>
+                            {booking.lesson_slots?.slot_date ? new Date(booking.lesson_slots.slot_date).toLocaleDateString('en-GB', { month: 'short' }) : '--'}
+                          </p>
+                        </div>
+                        <div>
+                          <p style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: '700', color: '#111827' }}>
+                            👤 {booking.instructor ? `${booking.instructor.first_name} ${booking.instructor.surname}` : 'Unassigned Instructor'}
+                          </p>
+                          <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>
+                            🕐 {booking.lesson_slots?.slot_time ? booking.lesson_slots.slot_time.slice(0, 5) : '--:--'}
+                          </p>
+                          {booking.instructor?.phone_number && (
+                            <p style={{ margin: '4px 0 0', fontSize: '11px', color: '#9ca3af' }}>
+                              📞 {booking.instructor.phone_number}
                             </p>
-                            <p style={{ margin: '4px 0 0', fontSize: '20px', fontWeight: '800', color: isDisabled ? '#9ca3af' : blue }}>
-                              {slot.slot_time?.slice(0, 5)}
-                            </p>
-                          </div>
-                          {isSelected && (
-                            <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={3}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                              </svg>
-                            </div>
                           )}
                         </div>
-                        <span style={{ background: isSelected ? '#d1fae5' : '#f3f4f6', color: isSelected ? '#065f46' : '#6b7280', padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: '600' }}>
-                          {isSelected ? '✓ Selected' : 'Available'}
-                        </span>
                       </div>
-                    )
-                  })}
+                      <button
+                        onClick={() => { setSelectedBooking(booking); setShowCancelModal(true) }}
+                        style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #fee2e2', background: '#fff5f5', color: '#dc2626', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+                      >
+                        Cancel Booking
+                      </button>
+                    </div>
+                  ))}
                 </div>
               )}
-            </>
-          )}
-        </div>
-      )}
-
-      {/* ── HISTORY TAB ── */}
-      {activeTab === 'history' && (
-        <div>
-          {pastBookings.length === 0 ? (
-            <div style={{ background: 'white', borderRadius: '14px', padding: '60px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-              <p style={{ fontSize: '48px', marginBottom: '12px' }}>📋</p>
-              <p style={{ color: '#374151', fontSize: '16px', fontWeight: '600', margin: 0 }}>No lesson history yet</p>
             </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {pastBookings.map(booking => (
-                <div key={booking.booking_id} style={{ background: 'white', borderRadius: '12px', padding: '16px 20px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', borderLeft: `4px solid ${booking.status === 'completed' ? '#059669' : '#dc2626'}` }}>
-                  <div>
-                    <p style={{ margin: '0 0 4px', fontSize: '14px', fontWeight: '700', color: '#111827' }}>
-                      {booking.lesson_slots?.slot_date ? new Date(booking.lesson_slots.slot_date).toLocaleDateString('en-GB', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : 'N/A'}
+          )}
+
+          {/* ── BOOK TAB ── */}
+          {activeTab === 'book' && (
+            <div>
+              {remainingSlots <= 0 ? (
+                <div style={{ background: 'white', borderRadius: '14px', padding: '40px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+                  <p style={{ fontSize: '40px', marginBottom: '8px' }}>⚠️</p>
+                  <p style={{ color: '#374151', fontSize: '15px', fontWeight: '600', margin: 0 }}>No slot allocations remaining. Please contact administration.</p>
+                </div>
+              ) : (
+                <>
+                  <div style={{ background: 'white', borderRadius: '14px', padding: '16px 20px', marginBottom: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                    <p style={{ margin: 0, fontSize: '13px', color: '#4b5563', fontWeight: '600' }}>
+                      Selected slots: <span style={{ color: orange, fontWeight: '800' }}>{selectedSlots.length}</span> of {remainingSlots} allowed slots
                     </p>
-                    <p style={{ margin: '0 0 2px', fontSize: '12px', color: '#6b7280' }}>🕐 {booking.lesson_slots?.slot_time?.slice(0, 5)}</p>
-                    <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>👤 {booking.instructor?.first_name} {booking.instructor?.surname}</p>
-                    {booking.cancellation_reason && (
-                      <p style={{ margin: '6px 0 0', fontSize: '11px', color: '#dc2626' }}>Reason: {booking.cancellation_reason}</p>
+                    {selectedSlots.length > 0 && (
+                      <button onClick={confirmBooking} disabled={confirming}
+                        style={{ padding: '10px 20px', borderRadius: '10px', border: 'none', background: orange, color: 'white', fontSize: '13px', fontWeight: '700', cursor: confirming ? 'not-allowed' : 'pointer' }}>
+                        {confirming ? 'Booking...' : 'Confirm Bookings'}
+                      </button>
                     )}
                   </div>
                   {statusBadge(booking.status)}

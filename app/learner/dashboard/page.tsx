@@ -1,257 +1,265 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
+import { BookOpen, Calendar, CheckCircle, CreditCard, FileQuestion, TrendingUp } from 'lucide-react'
+import { DTSkeleton } from '@/app/_components/ui/dt-skeleton'
+import { DTStatCard } from '@/app/_components/ui/dt-stat-card'
+
+
+type LearnerProfile = {
+  first_name: string
+  surname: string
+  allowed_slots?: number | null
+  slots_allocated?: number | null
+}
+
+type Booking = {
+  booking_id: string
+  status: string
+  lesson_slots?: { slot_date: string; slot_time: string } | null
+  instructor?: { first_name: string; surname: string } | null
+}
+
+type Payment = { amount: number }
+type ProgressRecord = { progress_id: string }
 
 const supabase = createClient()
 
-export default function LearnerLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const [learnerName, setLearnerName] = useState('')
-  const [learnerInitials, setLearnerInitials] = useState('')
-  const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [unreadCount, setUnreadCount] = useState(0)
+const theme = {
+  cardBg: '#ffffff',
+  textMain: '#1e293b',
+  textMuted: '#64748b',
+  border: '#e2e8f0',
+  tableHeaderBg: '#f8fafc',
+  shimmerBg: 'linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%)',
+  primaryOrange: '#ff5a00',
+}
+
+// (Skeleton moved to shared UI component)
+
+
+function first<T>(val: T | T[] | null | undefined): T | null {
+  if (!val) return null
+  return Array.isArray(val) ? val[0] || null : val
+}
+
+export default function LearnerDashboard() {
+  const [learner, setLearner] = useState<LearnerProfile | null>(null)
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [stats, setStats] = useState({
+    scheduledLessons: 0,
+    completedLessons: 0,
+    remainingSlots: 0,
+    totalPaid: 0,
+    progressRecords: 0,
+  })
+  const [loading, setLoading] = useState(true)
 
   const router = useRouter()
   const routerRef = useRef(router)
-  const pathname = usePathname()
 
-  const blue = '#1e3a8a'
-  const orange = '#f97316'
-
-  // ─── Auth + data ─────────────────────────────────────────────────────────────
-
-  const loadLearner = useCallback(async () => {
+  const loadDashboard = useCallback(async () => {
+    setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { routerRef.current.push('/login'); return }
-
-    const { data } = await supabase
-      .from('users')
-      .select('first_name, surname, role, status')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!data || data.role !== 'learner') {
+    if (!user) {
       routerRef.current.push('/login')
       return
     }
 
-    if (data.status !== 'approved') {
-      routerRef.current.push('/login')
-      return
-    }
 
-    setLearnerName(`${data.first_name} ${data.surname}`)
-    setLearnerInitials(`${data.first_name.charAt(0)}${data.surname.charAt(0)}`)
+    const [
+      { data: profile },
+      { data: lessonData },
+      { data: paymentData },
+      { data: progressData },
+    ] = await Promise.all([
+      supabase.from('users').select('first_name, surname, allowed_slots, slots_allocated').eq('user_id', user.id).single(),
+      supabase.from('lesson_bookings').select(`
+        booking_id, status,
+        lesson_slots (slot_date, slot_time),
+        instructor:users!lesson_bookings_instructor_id_fkey (first_name, surname)
+      `).eq('learner_id', user.id).order('created_at', { ascending: false }).limit(6),
+      supabase.from('payments').select('amount').eq('learner_id', user.id),
+      supabase.from('progress_tracking').select('progress_id').eq('learner_id', user.id),
+    ])
 
-    const { count } = await supabase
-      .from('notifications')
-      .select('*', { count: 'exact', head: true })
-      .eq('recipient_id', user.id)
-      .eq('is_read', false)
+    const lessons = (lessonData || []) as unknown as Booking[]
 
-    setUnreadCount(count || 0)
+    const payments = (paymentData || []) as Payment[]
+    const progress = (progressData || []) as ProgressRecord[]
+    const allocated = Number(profile?.allowed_slots ?? profile?.slots_allocated ?? 0)
+    const used = lessons.filter(lesson => lesson.status !== 'cancelled').length
+
+    setLearner(profile)
+    setBookings(lessons)
+    setStats({
+      scheduledLessons: lessons.filter(lesson => lesson.status === 'scheduled').length,
+      completedLessons: lessons.filter(lesson => lesson.status === 'completed').length,
+      remainingSlots: Math.max(allocated - used, 0),
+      totalPaid: payments.reduce((sum, payment) => sum + Number(payment.amount), 0),
+      progressRecords: progress.length,
+    })
+    setLoading(false)
   }, [])
 
   useEffect(() => {
     let cancelled = false
     async function init() {
-      if (!cancelled) await loadLearner()
+      if (!cancelled) await loadDashboard()
     }
     init()
     return () => { cancelled = true }
-  }, [loadLearner])
+  }, [loadDashboard])
 
-  // ─── Actions ─────────────────────────────────────────────────────────────────
-
-  async function handleLogout() {
-    await supabase.auth.signOut()
-    router.push('/login')
-  }
-
-  // ─── Menu ─────────────────────────────────────────────────────────────────────
-
-  const menuItems = [
-    { id: 'dashboard',     label: 'Dashboard',          icon: '🏠', path: '/learner/dashboard' },
-    { id: 'lessons',       label: 'My Lessons',          icon: '📅', path: '/learner/lessons' },
-    { id: 'progress',      label: 'My Progress',         icon: '📈', path: '/learner/progress' },
-    { id: 'payments',      label: 'Payments',            icon: '💰', path: '/learner/payments' },
-    { id: 'materials',     label: 'Learning Materials',  icon: '📚', path: '/learner/materials' },
-    { id: 'practice',      label: 'Practice Tests',      icon: '❓', path: '/learner/practice' },
-    { id: 'notifications', label: 'Notifications',       icon: '🔔', path: '/learner/notification' },
-    { id: 'profile',       label: 'My Profile',          icon: '👤', path: '/learner/profile' },
+  const statCards = [
+    {
+      label: 'Scheduled Lessons',
+      value: stats.scheduledLessons.toLocaleString(),
+      sub: 'Upcoming practical sessions',
+      path: '/learner/lessons',
+      icon: <Calendar size={18} color="#2563eb" />,
+      badgeBg: '#eff6ff',
+    },
+    {
+      label: 'Completed Lessons',
+      value: stats.completedLessons.toLocaleString(),
+      sub: 'Finished training slots',
+      path: '/learner/progress',
+      icon: <CheckCircle size={18} color="#059669" />,
+      badgeBg: '#f0fdf4',
+    },
+    {
+      label: 'Remaining Slots',
+      value: stats.remainingSlots.toLocaleString(),
+      sub: 'Available to book',
+      path: '/learner/lessons',
+      icon: <BookOpen size={18} color="#7c3aed" />,
+      badgeBg: '#f5f3ff',
+    },
+    {
+      label: 'Total Paid',
+      value: `$${stats.totalPaid.toLocaleString()}`,
+      sub: `${stats.progressRecords} progress update${stats.progressRecords === 1 ? '' : 's'}`,
+      path: '/learner/payments',
+      icon: <CreditCard size={18} color="#ff5a00" />,
+      badgeBg: '#fff2eb',
+    },
   ]
 
-  const currentItem = menuItems.find(m => pathname.startsWith(m.path))
-  const pageTitle = currentItem?.label || 'Dashboard'
-
-  // ─── Render ───────────────────────────────────────────────────────────────────
-
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f0f4ff' }}>
+    <>
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: 200% 0 }
+          100% { background-position: -200% 0 }
+        }
+      `}</style>
 
-      {/* ── SIDEBAR ── */}
-      <div style={{
-        width: sidebarOpen ? '240px' : '70px',
-        background: blue,
-        display: 'flex',
-        flexDirection: 'column',
-        transition: 'width 0.3s ease',
-        flexShrink: 0,
-        position: 'fixed',
-        top: 0, left: 0, bottom: 0,
-        zIndex: 100,
-        overflowY: 'auto',
-        overflowX: 'hidden',
-      }}>
-
-        {/* Sidebar Header */}
-        <div style={{
-          padding: '20px 16px',
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
-          display: 'flex', alignItems: 'center', gap: '12px',
-        }}>
-          <div style={{
-            width: '40px', height: '40px', borderRadius: '50%',
-            background: `linear-gradient(135deg, ${blue}, ${orange})`,
-            border: '2px solid rgba(255,255,255,0.3)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'white', fontWeight: '800', fontSize: '14px', flexShrink: 0,
-          }}>DT</div>
-          {sidebarOpen && (
-            <div>
-              <p style={{ color: 'white', fontWeight: '700', fontSize: '14px', margin: 0 }}>
-                Drive Today
-              </p>
-              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '11px', margin: 0 }}>
-                Learner Portal
-              </p>
-            </div>
-          )}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+        <div>
+          <h2 style={{ margin: '0 0 4px', fontSize: '24px', fontWeight: '700', color: theme.textMain, letterSpacing: '-0.4px' }}>
+            Welcome back, {learner?.first_name || 'Learner'}!
+          </h2>
+          <p style={{ margin: 0, fontSize: '14px', color: theme.textMuted }}>
+            Here is a summary review of your driving academy progress today.
+          </p>
         </div>
+      </div>
 
-        {/* Menu Items */}
-        <nav style={{ flex: 1, padding: '12px 8px' }}>
-          {menuItems.map((item) => {
-            const isActive = pathname.startsWith(item.path)
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '20px', marginBottom: '32px' }}>
+        {loading
+          ? Array(4).fill(0).map((_, i) => (
+              <div key={i} style={{ background: theme.cardBg, borderRadius: '16px', padding: '24px', border: `1px solid ${theme.border}` }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+                  <div>
+                    <DTSkeleton h="11px" w="80px" r="4px" />
+                    <div style={{ marginTop: '8px' }}>
+                      <DTSkeleton h="28px" w="60px" r="5px" />
+                    </div>
+                  </div>
+                  <DTSkeleton w="40px" h="40px" r="10px" />
+                </div>
+                <DTSkeleton h="10px" w="50%" r="4px" />
+              </div>
+            ))
+          : statCards.map((card, i) => (
+              <DTStatCard
+                key={i}
+                label={card.label}
+                value={card.value}
+                sub={card.sub}
+                badgeBg={card.badgeBg}
+                icon={card.icon}
+                onClick={() => router.push(card.path)}
+              />
+            ))}
+      </div>
+
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '20px' }}>
+        <div style={{ background: theme.cardBg, borderRadius: '16px', padding: '24px', boxShadow: '0 4px 18px rgba(0,0,0,0.02)', border: `1px solid ${theme.border}` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+            <Calendar size={18} color="#2563eb" />
+            <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: theme.textMain }}>Recent Lesson Activity</h3>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '150px 1fr 160px 110px', gap: '12px', padding: '10px 14px', borderRadius: '10px', background: theme.tableHeaderBg, marginBottom: '6px', border: `1px solid ${theme.border}` }}>
+            {['Date', 'Instructor', 'Time', 'Status'].map(header => (
+              <span key={header} style={{ fontSize: '11px', fontWeight: '700', color: theme.textMuted, textTransform: 'uppercase', letterSpacing: '0.3px' }}>{header}</span>
+            ))}
+          </div>
+
+          {loading ? (
+            Array(3).fill(0).map((_, i) => (
+              <div key={i} style={{ display: 'grid', gridTemplateColumns: '150px 1fr 160px 110px', gap: '12px', padding: '14px', borderBottom: `1px solid ${theme.border}` }}>
+                {Array(4).fill(0).map((__, j) => <DTSkeleton key={j} h="13px" r="4px" />)}
+
+              </div>
+            ))
+          ) : bookings.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px 0' }}>
+              <p style={{ margin: 0, color: theme.textMuted, fontSize: '13.5px' }}>No lesson activity is available yet.</p>
+            </div>
+          ) : bookings.map((booking, idx) => {
+            const slot = first(booking.lesson_slots)
+            const instructor = first(booking.instructor)
             return (
-              <button
-                key={item.id}
-                onClick={() => router.push(item.path)}
-                style={{
-                  width: '100%', display: 'flex', alignItems: 'center',
-                  gap: '12px', padding: '10px 12px', borderRadius: '10px',
-                  border: 'none',
-                  background: isActive ? 'rgba(255,255,255,0.15)' : 'transparent',
-                  color: isActive ? 'white' : 'rgba(255,255,255,0.65)',
-                  cursor: 'pointer', marginBottom: '4px',
-                  textAlign: 'left', transition: 'all 0.2s ease',
-                  borderLeft: isActive ? `3px solid ${orange}` : '3px solid transparent',
-                  position: 'relative',
-                }}
-              >
-                <span style={{ fontSize: '18px', flexShrink: 0 }}>{item.icon}</span>
-                {sidebarOpen && (
-                  <span style={{
-                    fontSize: '13px',
-                    fontWeight: isActive ? '700' : '400',
-                    flex: 1,
-                  }}>
-                    {item.label}
-                  </span>
-                )}
-                {item.id === 'notifications' && unreadCount > 0 && (
-                  <span style={{
-                    background: '#dc2626', color: 'white',
-                    borderRadius: '10px', padding: '1px 6px',
-                    fontSize: '10px', fontWeight: '700', flexShrink: 0,
-                  }}>
-                    {unreadCount}
-                  </span>
-                )}
-              </button>
+              <div key={booking.booking_id} style={{ display: 'grid', gridTemplateColumns: '150px 1fr 160px 110px', gap: '12px', padding: '14px', borderBottom: idx !== bookings.length - 1 ? `1px solid ${theme.border}` : 'none', alignItems: 'center' }}>
+                <span style={{ fontSize: '13.5px', fontWeight: '600', color: theme.textMain }}>{slot?.slot_date || 'Pending'}</span>
+                <span style={{ fontSize: '13.5px', color: theme.textMain }}>{instructor ? `${instructor.first_name} ${instructor.surname}` : 'Unassigned'}</span>
+                <span style={{ fontSize: '13.5px', color: theme.textMain }}>{slot?.slot_time?.slice(0, 5) || '--:--'}</span>
+                <span style={{ display: 'inline-flex', padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', background: booking.status === 'completed' ? '#f0fdf4' : '#fff7ed', color: booking.status === 'completed' ? '#22c55e' : '#f97316', width: 'fit-content' }}>
+                  {booking.status}
+                </span>
+              </div>
             )
           })}
-        </nav>
-
-        {/* Logout */}
-        <div style={{ padding: '12px 8px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-          <button
-            onClick={handleLogout}
-            style={{
-              width: '100%', display: 'flex', alignItems: 'center',
-              gap: '12px', padding: '10px 12px', borderRadius: '10px',
-              border: 'none', background: 'rgba(239,68,68,0.2)',
-              color: '#fca5a5', cursor: 'pointer',
-            }}
-          >
-            <span style={{ fontSize: '18px' }}>🚪</span>
-            {sidebarOpen && (
-              <span style={{ fontSize: '13px', fontWeight: '600' }}>Logout</span>
-            )}
-          </button>
         </div>
-      </div>
 
-      {/* ── MAIN CONTENT ── */}
-      <div style={{
-        flex: 1,
-        marginLeft: sidebarOpen ? '240px' : '70px',
-        transition: 'margin-left 0.3s ease',
-        display: 'flex', flexDirection: 'column',
-      }}>
-
-        {/* Top Bar */}
-        <div style={{
-          background: 'white', padding: '16px 24px',
-          display: 'flex', alignItems: 'center',
-          justifyContent: 'space-between',
-          borderBottom: '1px solid #e5e7eb',
-          position: 'sticky', top: 0, zIndex: 50,
-        }}>
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            style={{
-              background: '#e8f0fe', border: 'none',
-              borderRadius: '8px', padding: '8px 10px',
-              cursor: 'pointer', fontSize: '16px',
-            }}
-          >
-            {sidebarOpen ? '◀' : '▶'}
-          </button>
-
-          <h1 style={{ color: blue, fontSize: '18px', fontWeight: '700', margin: 0 }}>
-            {pageTitle}
-          </h1>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ textAlign: 'right' }}>
-              <p style={{ margin: 0, fontSize: '13px', fontWeight: '700', color: blue }}>
-                {learnerName}
-              </p>
-              <p style={{ margin: 0, fontSize: '11px', color: '#6b7280' }}>Learner</p>
-            </div>
-            <div style={{
-              width: '38px', height: '38px', borderRadius: '50%',
-              background: `linear-gradient(135deg, ${blue}, ${orange})`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'white', fontWeight: '700', fontSize: '14px',
-            }}>
-              {learnerInitials}
-            </div>
+        <div style={{ background: theme.cardBg, borderRadius: '16px', padding: '24px', boxShadow: '0 4px 18px rgba(0,0,0,0.02)', border: `1px solid ${theme.border}` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+            <FileQuestion size={18} color={theme.primaryOrange} />
+            <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: theme.textMain }}>Quick Actions</h3>
           </div>
+          {[
+            { label: 'Book a lesson', path: '/learner/lessons', icon: <Calendar size={16} /> },
+            { label: 'Open materials', path: '/learner/materials', icon: <BookOpen size={16} /> },
+            { label: 'Practice test', path: '/learner/practice', icon: <FileQuestion size={16} /> },
+            { label: 'View progress', path: '/learner/progress', icon: <TrendingUp size={16} /> },
+          ].map(action => (
+            <button
+              key={action.path}
+              onClick={() => router.push(action.path)}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', borderRadius: '10px', border: `1px solid ${theme.border}`, background: 'transparent', color: theme.textMain, fontSize: '13px', fontWeight: '600', cursor: 'pointer', marginBottom: '10px', fontFamily: 'inherit', textAlign: 'left' }}
+            >
+              {action.icon}
+              {action.label}
+            </button>
+          ))}
         </div>
-
-        {/* Page Content */}
-        <div style={{ flex: 1 }}>
-          {children}
-        </div>
-
       </div>
-    </div>
+    </>
   )
 }
