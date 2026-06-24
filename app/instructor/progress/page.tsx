@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { CheckCircle2, Star } from 'lucide-react'
+
 
 type Booking = {
   booking_id: string
@@ -237,24 +239,48 @@ export default function InstructorProgressPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px' }}>
-      {successMessage && <div style={{ background: '#d1fae5', border: '1px solid #6ee7b7', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px', color: '#065f46', fontSize: '13px', fontWeight: '600' }}>✅ {successMessage}</div>}
+      {successMessage && (
 
-      <div style={{ display: 'flex', gap: '4px', background: 'white', borderRadius: '12px', padding: '4px', marginBottom: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', width: 'fit-content' }}>
-        {[
-          { id: 'record',  label: `📝 Pending (${completedBookings.length})` },
-          { id: 'history', label: `📋 Recorded (${progressRecords.length})` },
-        ].map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-            style={{ padding: '10px 20px', borderRadius: '10px', border: 'none', background: activeTab === tab.id ? `linear-gradient(135deg, ${blue}, ${orange})` : 'transparent', color: activeTab === tab.id ? 'white' : '#6b7280', fontSize: '13px', fontWeight: '700', cursor: 'pointer' }}>
-            {tab.label}
-          </button>
-        ))}
+        <div style={{ background: '#d1fae5', border: '1px solid #6ee7b7', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px', color: '#065f46', fontSize: '13px', fontWeight: '600' }}>
+          <CheckCircle2 size={16} color="#22c55e" style={{ marginRight: 6, verticalAlign: 'middle' }} />
+          {successMessage}
+        </div>
+      )}
+
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px', width: 'fit-content' }}>
+        <div style={{ display: 'flex', background: '#f3f4f6', padding: '4px', borderRadius: '12px', border: '1px solid #e5e7eb', width: 'fit-content' }}>
+          {[
+            { id: 'record', label: `Record (${completedBookings.length})` },
+            { id: 'history', label: `History (${progressRecords.length})` },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                padding: '10px 20px',
+                borderRadius: '8px',
+                border: 'none',
+                background: activeTab === tab.id ? 'white' : 'transparent',
+                color: activeTab === tab.id ? '#f97316' : '#4b5563',
+                fontWeight: '600',
+                fontSize: '14px',
+                cursor: 'pointer',
+                boxShadow: activeTab === tab.id ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {activeTab === 'record' && (
         completedBookings.length === 0 ? (
           <div style={{ background: 'white', borderRadius: '14px', padding: '60px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-            <p style={{ fontSize: '48px', marginBottom: '12px' }}>✅</p>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
+              <CheckCircle2 size={44} color={orange} />
+            </div>
             <p style={{ color: '#374151', fontSize: '16px', fontWeight: '600', margin: '0 0 8px' }}>All progress recorded</p>
             <p style={{ color: '#9ca3af', fontSize: '13px', margin: 0 }}>You have recorded progress for all completed lessons</p>
           </div>
@@ -304,19 +330,57 @@ export default function InstructorProgressPage() {
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
                       <p style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: ratingColour(avg) }}>{avg}/5</p>
-                      <div>{Array.from({ length: 5 }, (_, i) => <span key={i} style={{ color: i < Math.round(avg) ? orange : '#e5e7eb', fontSize: '14px' }}>★</span>)}</div>
+<div>{Array.from({ length: 5 }, (_, i) => (
+                        <Star
+                          key={i}
+                          size={14}
+                          fill={i < Math.round(avg) ? orange : 'transparent'}
+                          color={i < Math.round(avg) ? orange : '#e5e7eb'}
+                        />
+                      ))}</div>
                     </div>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '12px' }}>
-                    {[
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginTop: '12px' }}>
+                    {([
                       { label: 'Steering', value: record.steering_rating },
-                      { label: 'Parking',  value: record.parking_rating },
+                      { label: 'Parking', value: record.parking_rating },
                       { label: 'Reversing', value: record.reversing_rating },
-                      { label: 'Road',     value: record.road_awareness_rating },
-                    ].map((skill, i) => (
-                      <div key={i} style={{ background: lightBlue, borderRadius: '8px', padding: '8px', textAlign: 'center' }}>
-                        <p style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: ratingColour(skill.value) }}>{skill.value}</p>
-                        <p style={{ margin: 0, fontSize: '10px', color: '#6b7280' }}>{skill.label}</p>
+                      { label: 'Road', value: record.road_awareness_rating },
+                    ] as const).map((skill) => (
+                      <div
+                        key={skill.label}
+                        style={{
+                          background: '#ffffff',
+                          borderRadius: 12,
+                          padding: 12,
+                          border: `1px solid #e2e8f0`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 10,
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: 34,
+                            height: 34,
+                            borderRadius: 10,
+                            background: lightBlue,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                          }}
+                        >
+                          <span style={{ fontSize: 12, fontWeight: 900, color: ratingColour(skill.value) }}>{skill.value}</span>
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <p style={{ margin: 0, fontSize: 12, fontWeight: 800, color: '#111827', lineHeight: 1.2 }}>
+                            {skill.label}
+                          </p>
+                          <p style={{ margin: '4px 0 0', fontSize: 10, color: '#6b7280', fontWeight: 700, lineHeight: 1.2 }}>
+                            Rating
+                          </p>
+                        </div>
                       </div>
                     ))}
                   </div>

@@ -5,6 +5,10 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Calendar, CheckCircle, Clock, Users, TrendingUp } from 'lucide-react'
 import { DTSkeleton } from '@/app/_components/ui/dt-skeleton'
+import { DTCard } from '@/app/_components/ui/dt-card'
+import { DTStatCard } from '@/app/_components/ui/dt-stat-card'
+import { dtTheme } from '@/app/_components/ui/learner-instructor-theme'
+
 
 type Lesson = {
   booking_id: string

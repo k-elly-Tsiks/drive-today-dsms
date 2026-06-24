@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Layers, CalendarCheck, Users, History, CheckCircle, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { Layers, CalendarCheck, Users, History, CheckCircle, AlertCircle, CheckCircle2, Clock, Users2, Phone, Mail, CalendarDays, AlertTriangle, XCircle } from 'lucide-react'
+
 
 type Booking = {
   booking_id: string
