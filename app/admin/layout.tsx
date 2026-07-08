@@ -171,7 +171,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       items: [
         { id: 'materials', label: 'Materials', path: '/admin/materials', icon: <BookOpen size={18} /> },
         { id: 'questions', label: 'Questions', path: '/admin/questions', icon: <HelpCircle size={18} /> },
-        { id: 'questions', label: 'Settings', path: '/admin/settings', icon: <Settings size={18} /> },
+        { id: 'settings', label: 'Settings', path: '/admin/settings', icon: <Settings size={18} /> },
       ],
     },
   ]

@@ -1,0 +1,1069 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-08T08:37:42.524Z",
+  "generatedAtEpochMs": 1783499862524,
+  "generator": {
+    "name": "Code Janitor",
+    "feature": "workspace-memory"
+  },
+  "handoffGuidance": [
+    "Read graphify-out/GRAPH_REPORT.md first for architecture and dependency questions.",
+    "Use workspace.json for machine-readable repo context before scanning broad parts of the repository.",
+    "Use graphify-out/WORKSPACE_MEMORY.md and workspacememory.md for human-readable handoff notes, recent changes, and Git-aware status."
+  ],
+  "workspace": {
+    "name": "drive-today-dsms",
+    "root": "c:\\Users\\kelly\\Desktop\\drive-today-dsms",
+    "activeFile": "app/admin/lessons/page.tsx",
+    "refreshReason": "tracked-change",
+    "outputFiles": {
+      "markdown": "graphify-out/WORKSPACE_MEMORY.md",
+      "markdownMirror": "workspacememory.md",
+      "structuredManifest": "workspace.json"
+    },
+    "suggestedStartingPoints": [
+      "app/admin/lessons/page.tsx",
+      "app/admin/learner/page.tsx",
+      "app/admin/instructor/page.tsx",
+      ".github/modernize/code-migration/.gitignore",
+      ".gitignore",
+      "AGENTS.md",
+      "README.md",
+      "package-lock.json",
+      "package.json",
+      "pnpm-lock.yaml",
+      "tsconfig.json"
+    ],
+    "stats": {
+      "totalFiles": 70,
+      "topLevelAreas": [
+        {
+          "name": "app",
+          "count": 44
+        },
+        {
+          "name": "[root]",
+          "count": 17
+        },
+        {
+          "name": "public",
+          "count": 6
+        },
+        {
+          "name": "lib",
+          "count": 2
+        },
+        {
+          "name": ".github",
+          "count": 1
+        }
+      ],
+      "primaryFileTypes": [
+        {
+          "name": ".tsx",
+          "count": 40
+        },
+        {
+          "name": ".ts",
+          "count": 6
+        },
+        {
+          "name": ".md",
+          "count": 5
+        },
+        {
+          "name": ".svg",
+          "count": 5
+        },
+        {
+          "name": ".json",
+          "count": 4
+        },
+        {
+          "name": ".mjs",
+          "count": 2
+        },
+        {
+          "name": "[no extension]",
+          "count": 2
+        },
+        {
+          "name": ".css",
+          "count": 1
+        }
+      ],
+      "keyFiles": [
+        ".github/modernize/code-migration/.gitignore",
+        ".gitignore",
+        "AGENTS.md",
+        "README.md",
+        "package-lock.json",
+        "package.json",
+        "pnpm-lock.yaml",
+        "tsconfig.json"
+      ],
+      "fileInventory": [
+        {
+          "path": ".env.local",
+          "topLevelArea": "[root]",
+          "extension": ".local",
+          "isKeyFile": false
+        },
+        {
+          "path": ".github/modernize/code-migration/.gitignore",
+          "topLevelArea": ".github",
+          "extension": "[no extension]",
+          "isKeyFile": true
+        },
+        {
+          "path": ".gitignore",
+          "topLevelArea": "[root]",
+          "extension": "[no extension]",
+          "isKeyFile": true
+        },
+        {
+          "path": "AGENTS.md",
+          "topLevelArea": "[root]",
+          "extension": ".md",
+          "isKeyFile": true
+        },
+        {
+          "path": "app/_components/ui/dt-button.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/_components/ui/dt-card.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/_components/ui/dt-skeleton.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/_components/ui/dt-stat-card.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/_components/ui/learner-instructor-theme.ts",
+          "topLevelArea": "app",
+          "extension": ".ts",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/admin/_components/notifications/notification-drawer.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/admin/dashboard/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/admin/expenses/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/admin/instructor/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/admin/layout.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/admin/learner/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/admin/lessons/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/admin/materials/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/admin/notification/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/admin/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/admin/payments/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/admin/progress/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/admin/progress/types.ts",
+          "topLevelArea": "app",
+          "extension": ".ts",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/admin/questions/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/admin/reports/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/admin/settings/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/favicon.ico",
+          "topLevelArea": "app",
+          "extension": ".ico",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/globals.css",
+          "topLevelArea": "app",
+          "extension": ".css",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/instructor/dashboard/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/instructor/layout.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/instructor/lessons/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/instructor/notifications/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/instructor/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/instructor/profile/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/instructor/progress/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/layout.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/learner/dashboard/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/learner/layout.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/learner/lessons/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/learner/materials/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/learner/notification/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/learner/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/learner/payments/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/learner/practice/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/learner/profile/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/learner/progress/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/login/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/signup/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "CLAUDE.md",
+          "topLevelArea": "[root]",
+          "extension": ".md",
+          "isKeyFile": false
+        },
+        {
+          "path": "eslint.config.mjs",
+          "topLevelArea": "[root]",
+          "extension": ".mjs",
+          "isKeyFile": false
+        },
+        {
+          "path": "lib/supabase/client.ts",
+          "topLevelArea": "lib",
+          "extension": ".ts",
+          "isKeyFile": false
+        },
+        {
+          "path": "lib/supabase/server.ts",
+          "topLevelArea": "lib",
+          "extension": ".ts",
+          "isKeyFile": false
+        },
+        {
+          "path": "next-env.d.ts",
+          "topLevelArea": "[root]",
+          "extension": ".ts",
+          "isKeyFile": false
+        },
+        {
+          "path": "next.config.ts",
+          "topLevelArea": "[root]",
+          "extension": ".ts",
+          "isKeyFile": false
+        },
+        {
+          "path": "package-lock.json",
+          "topLevelArea": "[root]",
+          "extension": ".json",
+          "isKeyFile": true
+        },
+        {
+          "path": "package.json",
+          "topLevelArea": "[root]",
+          "extension": ".json",
+          "isKeyFile": true
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "topLevelArea": "[root]",
+          "extension": ".yaml",
+          "isKeyFile": true
+        },
+        {
+          "path": "postcss.config.mjs",
+          "topLevelArea": "[root]",
+          "extension": ".mjs",
+          "isKeyFile": false
+        },
+        {
+          "path": "public/file.svg",
+          "topLevelArea": "public",
+          "extension": ".svg",
+          "isKeyFile": false
+        },
+        {
+          "path": "public/globe.svg",
+          "topLevelArea": "public",
+          "extension": ".svg",
+          "isKeyFile": false
+        },
+        {
+          "path": "public/images/drivetodaylogo.PNG",
+          "topLevelArea": "public",
+          "extension": ".png",
+          "isKeyFile": false
+        },
+        {
+          "path": "public/next.svg",
+          "topLevelArea": "public",
+          "extension": ".svg",
+          "isKeyFile": false
+        },
+        {
+          "path": "public/vercel.svg",
+          "topLevelArea": "public",
+          "extension": ".svg",
+          "isKeyFile": false
+        },
+        {
+          "path": "public/window.svg",
+          "topLevelArea": "public",
+          "extension": ".svg",
+          "isKeyFile": false
+        },
+        {
+          "path": "README.md",
+          "topLevelArea": "[root]",
+          "extension": ".md",
+          "isKeyFile": true
+        },
+        {
+          "path": "TODO.md",
+          "topLevelArea": "[root]",
+          "extension": ".md",
+          "isKeyFile": false
+        },
+        {
+          "path": "tsconfig.json",
+          "topLevelArea": "[root]",
+          "extension": ".json",
+          "isKeyFile": true
+        },
+        {
+          "path": "tsconfig.tsbuildinfo",
+          "topLevelArea": "[root]",
+          "extension": ".tsbuildinfo",
+          "isKeyFile": false
+        },
+        {
+          "path": "workspace.json",
+          "topLevelArea": "[root]",
+          "extension": ".json",
+          "isKeyFile": false
+        },
+        {
+          "path": "workspacememory.md",
+          "topLevelArea": "[root]",
+          "extension": ".md",
+          "isKeyFile": false
+        }
+      ]
+    }
+  },
+  "package": {
+    "available": true,
+    "name": "drive-today-dsms",
+    "displayName": "",
+    "version": "0.1.0",
+    "description": "",
+    "license": "",
+    "homepage": "",
+    "packageManager": "",
+    "main": "",
+    "repository": {
+      "type": "",
+      "url": ""
+    },
+    "bugsUrl": "",
+    "engines": {},
+    "keywords": [],
+    "scripts": {
+      "dev": "next dev",
+      "build": "next build",
+      "start": "next start",
+      "lint": "eslint"
+    },
+    "dependencies": {
+      "@supabase/ssr": "^0.9.0",
+      "@supabase/supabase-js": "^2.100.0",
+      "lucide-react": "^1.17.0",
+      "next": "^16.2.6",
+      "react": "19.2.4",
+      "react-dom": "19.2.4"
+    },
+    "devDependencies": {
+      "@tailwindcss/postcss": "^4",
+      "@types/node": "^20",
+      "@types/react": "^19",
+      "@types/react-dom": "^19",
+      "eslint": "^9",
+      "eslint-config-next": "16.2.0",
+      "html2canvas": "^1.4.1",
+      "jspdf": "^4.2.1",
+      "tailwindcss": "^4",
+      "typescript": "^5"
+    }
+  },
+  "currentStack": {
+    "lastActivityAt": "2026-07-08T08:37:40.601Z",
+    "trackedChangeCount": 16,
+    "trackedFileSnapshotCount": 3,
+    "changeTypeCounts": {
+      "save": 16,
+      "create": 0,
+      "delete": 0,
+      "rename": 0
+    }
+  },
+  "trackedSnapshots": [
+    {
+      "filePath": "app/admin/lessons/page.tsx",
+      "updatedAt": 1783499860601,
+      "lineCount": 801,
+      "charCount": 42505,
+      "hash": "d03f97f24d2c",
+      "preview": "'use client' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' // / import React, { useState, useEffect, useCallback, useRef } from 'react' / const supabase = createC..."
+    },
+    {
+      "filePath": "app/admin/instructor/page.tsx",
+      "updatedAt": 1783499808314,
+      "lineCount": 887,
+      "charCount": 48450,
+      "hash": "46b3c1678639",
+      "preview": "'use client' / import React, { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter..."
+    },
+    {
+      "filePath": "app/admin/learner/page.tsx",
+      "updatedAt": 1783497480839,
+      "lineCount": 843,
+      "charCount": 49021,
+      "hash": "95bb77079edf",
+      "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use..."
+    }
+  ],
+  "recentChanges": [
+    {
+      "type": "save",
+      "path": "app/admin/lessons/page.tsx",
+      "toPath": "",
+      "summary": "Saved without a textual diff.",
+      "recordedAt": "2026-07-08T08:37:40.601Z",
+      "recordedAtEpochMs": 1783499860601,
+      "before": {
+        "kind": "text",
+        "lineCount": 801,
+        "charCount": 42505,
+        "hash": "d03f97f24d2c",
+        "preview": "'use client' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' // / import React, { useState, useEffect, useCallback, useRef } from 'react' / const supabase = createC...",
+        "updatedAt": 1783499860600
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 801,
+        "charCount": 42505,
+        "hash": "d03f97f24d2c",
+        "preview": "'use client' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' // / import React, { useState, useEffect, useCallback, useRef } from 'react' / const supabase = createC...",
+        "updatedAt": 1783499860601
+      },
+      "diff": null
+    },
+    {
+      "type": "save",
+      "path": "app/admin/lessons/page.tsx",
+      "toPath": "",
+      "summary": "Saved without a textual diff.",
+      "recordedAt": "2026-07-08T08:36:53.103Z",
+      "recordedAtEpochMs": 1783499813103,
+      "before": {
+        "kind": "text",
+        "lineCount": 800,
+        "charCount": 42503,
+        "hash": "605733d8d381",
+        "preview": "'use client' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' // / import React, { useState, useEffect, useCallback, useRef } from 'react' / const supabase = createC...",
+        "updatedAt": 1783499813102
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 800,
+        "charCount": 42503,
+        "hash": "605733d8d381",
+        "preview": "'use client' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' // / import React, { useState, useEffect, useCallback, useRef } from 'react' / const supabase = createC...",
+        "updatedAt": 1783499813103
+      },
+      "diff": null
+    },
+    {
+      "type": "save",
+      "path": "app/admin/instructor/page.tsx",
+      "toPath": "",
+      "summary": "Saved without a textual diff.",
+      "recordedAt": "2026-07-08T08:36:48.314Z",
+      "recordedAtEpochMs": 1783499808314,
+      "before": {
+        "kind": "text",
+        "lineCount": 887,
+        "charCount": 48450,
+        "hash": "46b3c1678639",
+        "preview": "'use client' / import React, { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter...",
+        "updatedAt": 1783499808312
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 887,
+        "charCount": 48450,
+        "hash": "46b3c1678639",
+        "preview": "'use client' / import React, { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter...",
+        "updatedAt": 1783499808314
+      },
+      "diff": null
+    },
+    {
+      "type": "save",
+      "path": "app/admin/lessons/page.tsx",
+      "toPath": "",
+      "summary": "",
+      "recordedAt": "2026-07-08T08:36:48.199Z",
+      "recordedAtEpochMs": 1783499808199,
+      "before": null,
+      "after": null,
+      "diff": null
+    },
+    {
+      "type": "save",
+      "path": "app/admin/learner/page.tsx",
+      "toPath": "",
+      "summary": "",
+      "recordedAt": "2026-07-08T08:36:44.524Z",
+      "recordedAtEpochMs": 1783499804524,
+      "before": null,
+      "after": null,
+      "diff": null
+    },
+    {
+      "type": "save",
+      "path": "app/admin/instructor/page.tsx",
+      "toPath": "",
+      "summary": "",
+      "recordedAt": "2026-07-08T08:34:45.674Z",
+      "recordedAtEpochMs": 1783499685674,
+      "before": null,
+      "after": null,
+      "diff": null
+    },
+    {
+      "type": "save",
+      "path": "app/admin/learner/page.tsx",
+      "toPath": "",
+      "summary": "Line 39: replaced 1 line with 4 lines.",
+      "recordedAt": "2026-07-08T07:58:00.839Z",
+      "recordedAtEpochMs": 1783497480839,
+      "before": {
+        "kind": "text",
+        "lineCount": 840,
+        "charCount": 48977,
+        "hash": "d122e3b94439",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
+        "updatedAt": 1783497480837
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 843,
+        "charCount": 49021,
+        "hash": "95bb77079edf",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
+        "updatedAt": 1783497480839
+      },
+      "diff": {
+        "lineStart": 39,
+        "removedLines": 1,
+        "addedLines": 4,
+        "summary": "Line 39: replaced 1 line with 4 lines.",
+        "beforeFragment": "legacy/debug: kept out to avoid schema errors",
+        "afterFragment": "optional debug field (only if column exists) / driving_classes_taken?: string | null"
+      }
+    },
+    {
+      "type": "save",
+      "path": "app/admin/learner/page.tsx",
+      "toPath": "",
+      "summary": "Line 39: inserted 3 lines.",
+      "recordedAt": "2026-07-08T07:57:30.205Z",
+      "recordedAtEpochMs": 1783497450205,
+      "before": {
+        "kind": "text",
+        "lineCount": 838,
+        "charCount": 48923,
+        "hash": "b9a8648e28d8",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
+        "updatedAt": 1783497450204
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 840,
+        "charCount": 48977,
+        "hash": "d122e3b94439",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
+        "updatedAt": 1783497450205
+      },
+      "diff": {
+        "lineStart": 39,
+        "removedLines": 0,
+        "addedLines": 3,
+        "summary": "Line 39: inserted 3 lines.",
+        "beforeFragment": "",
+        "afterFragment": "// legacy/debug: kept out to avoid schema errors"
+      }
+    },
+    {
+      "type": "save",
+      "path": "app/admin/learner/page.tsx",
+      "toPath": "",
+      "summary": "Line 339: replaced 4 lines with 6 lines.",
+      "recordedAt": "2026-07-08T07:57:08.720Z",
+      "recordedAtEpochMs": 1783497428720,
+      "before": {
+        "kind": "text",
+        "lineCount": 836,
+        "charCount": 48915,
+        "hash": "f4cd112cf2ec",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
+        "updatedAt": 1783497428717
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 838,
+        "charCount": 48923,
+        "hash": "b9a8648e28d8",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
+        "updatedAt": 1783497428720
+      },
+      "diff": {
+        "lineStart": 339,
+        "removedLines": 4,
+        "addedLines": 6,
+        "summary": "Line 339: replaced 4 lines with 6 lines.",
+        "beforeFragment": "!q || `${l.first_name} ${l.surname} ${l.email}`.toLowerCase().includes(q)) && / (statusFilter === 'all' || l.status === statusFilter) && / })",
+        "afterFragment": "(!q || `${l.first_name} ${l.surname} ${l.email}`.toLowerCase().includes(q)) && / (statusFilter === 'all' || l.status === statusFilter) / ) / })"
+      }
+    },
+    {
+      "type": "save",
+      "path": "app/admin/learner/page.tsx",
+      "toPath": "",
+      "summary": "Line 341: removed 1 line.",
+      "recordedAt": "2026-07-08T07:56:34.138Z",
+      "recordedAtEpochMs": 1783497394138,
+      "before": {
+        "kind": "text",
+        "lineCount": 836,
+        "charCount": 48992,
+        "hash": "f3d9f5d0e532",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
+        "updatedAt": 1783497394135
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 836,
+        "charCount": 48915,
+        "hash": "f4cd112cf2ec",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
+        "updatedAt": 1783497394138
+      },
+      "diff": {
+        "lineStart": 341,
+        "removedLines": 1,
+        "addedLines": 0,
+        "summary": "Line 341: removed 1 line.",
+        "beforeFragment": "(classFilter === 'all' || l.driving_classes_taken === classFilter)",
+        "afterFragment": ""
+      }
+    },
+    {
+      "type": "save",
+      "path": "app/admin/learner/page.tsx",
+      "toPath": "",
+      "summary": "Line 39: removed 1 line.",
+      "recordedAt": "2026-07-08T07:56:18.184Z",
+      "recordedAtEpochMs": 1783497378184,
+      "before": {
+        "kind": "text",
+        "lineCount": 836,
+        "charCount": 49031,
+        "hash": "75511bd06170",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
+        "updatedAt": 1783497378182
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 836,
+        "charCount": 48992,
+        "hash": "f3d9f5d0e532",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
+        "updatedAt": 1783497378184
+      },
+      "diff": {
+        "lineStart": 39,
+        "removedLines": 1,
+        "addedLines": 0,
+        "summary": "Line 39: removed 1 line.",
+        "beforeFragment": "driving_classes_taken?: string | null",
+        "afterFragment": ""
+      }
+    },
+    {
+      "type": "save",
+      "path": "app/admin/learner/page.tsx",
+      "toPath": "",
+      "summary": "Line 212: replaced 4 lines with 5 lines.",
+      "recordedAt": "2026-07-07T14:04:06.665Z",
+      "recordedAtEpochMs": 1783433046665,
+      "before": {
+        "kind": "text",
+        "lineCount": 677,
+        "charCount": 39326,
+        "hash": "5c3cfa3f9c8f",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
+        "updatedAt": 1783433046663
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 678,
+        "charCount": 39343,
+        "hash": "88942138d399",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
+        "updatedAt": 1783433046665
+      },
+      "diff": {
+        "lineStart": 212,
+        "removedLines": 4,
+        "addedLines": 5,
+        "summary": "Line 212: replaced 4 lines with 5 lines.",
+        "beforeFragment": "null, / address: (fd.get('addr') as string) || null, / driving_classes_taken: (fd.get('cls') as string) || null, / }",
+        "afterFragment": "undefined, / address: (fd.get('addr') as string) || undefined, / driving_classes_taken: (fd.get('cls') as string) || undefined, / }"
+      }
+    },
+    {
+      "type": "save",
+      "path": "app/admin/learner/page.tsx",
+      "toPath": "",
+      "summary": "Line 33: replaced 16 lines with 17 lines.",
+      "recordedAt": "2026-07-07T14:03:31.370Z",
+      "recordedAtEpochMs": 1783433011370,
+      "before": {
+        "kind": "text",
+        "lineCount": 676,
+        "charCount": 39296,
+        "hash": "88fab422b248",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
+        "updatedAt": 1783433011368
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 677,
+        "charCount": 39326,
+        "hash": "5c3cfa3f9c8f",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
+        "updatedAt": 1783433011370
+      },
+      "diff": {
+        "lineStart": 33,
+        "removedLines": 16,
+        "addedLines": 17,
+        "summary": "Line 33: replaced 16 lines with 17 lines.",
+        "beforeFragment": "address?: string / status: 'approved' | 'pending' | 'rejected' | 'suspended' / role: string / slots_allocated?: number / driving_class?: string / driving_classes_taken?: string...",
+        "afterFragment": "| null / address?: string | null / status: 'approved' | 'pending' | 'rejected' | 'suspended' / role: string / slots_allocated?: number / driving_class?: string | null / driving_..."
+      }
+    },
+    {
+      "type": "save",
+      "path": "app/admin/learner/page.tsx",
+      "toPath": "",
+      "summary": "Line 211: replaced 4 lines with 5 lines.",
+      "recordedAt": "2026-07-07T14:02:50.934Z",
+      "recordedAtEpochMs": 1783432970934,
+      "before": {
+        "kind": "text",
+        "lineCount": 675,
+        "charCount": 39264,
+        "hash": "034beacec4c1",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
+        "updatedAt": 1783432970932
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 676,
+        "charCount": 39296,
+        "hash": "88fab422b248",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
+        "updatedAt": 1783432970934
+      },
+      "diff": {
+        "lineStart": 211,
+        "removedLines": 4,
+        "addedLines": 5,
+        "summary": "Line 211: replaced 4 lines with 5 lines.",
+        "beforeFragment": "fd.get('ph') as string, / address: fd.get('addr') as string, / driving_classes_taken: fd.get('cls') as string, / }",
+        "afterFragment": "(fd.get('ph') as string) || null, / address: (fd.get('addr') as string) || null, / driving_classes_taken: (fd.get('cls') as string) || null, / }"
+      }
+    },
+    {
+      "type": "save",
+      "path": "app/admin/learner/page.tsx",
+      "toPath": "",
+      "summary": "Line 229: replaced 2 lines with 3 lines.",
+      "recordedAt": "2026-07-07T14:02:28.363Z",
+      "recordedAtEpochMs": 1783432948363,
+      "before": {
+        "kind": "text",
+        "lineCount": 674,
+        "charCount": 39247,
+        "hash": "21507edbe0f9",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
+        "updatedAt": 1783432948362
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 675,
+        "charCount": 39264,
+        "hash": "034beacec4c1",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
+        "updatedAt": 1783432948363
+      },
+      "diff": {
+        "lineStart": 229,
+        "removedLines": 2,
+        "addedLines": 3,
+        "summary": "Line 229: replaced 2 lines with 3 lines.",
+        "beforeFragment": "String(err || 'Failed to update learner') / showToast(message, 'error')",
+        "afterFragment": "(err ? JSON.stringify(err) : 'Failed to update learner') / showToast(message, 'error')"
+      }
+    }
+  ],
+  "hotFiles": [
+    {
+      "filePath": "app/admin/learner/page.tsx",
+      "count": 10
+    },
+    {
+      "filePath": "app/admin/instructor/page.tsx",
+      "count": 3
+    },
+    {
+      "filePath": "app/admin/lessons/page.tsx",
+      "count": 3
+    }
+  ],
+  "git": {
+    "available": true,
+    "branch": "blackboxai/learner-admin-consistency",
+    "headSummary": "2026-06-24 7ddaf38 notification layout",
+    "statusSummary": "16 modifieds, 4 untrackeds",
+    "changedFileCount": 20,
+    "statusLines": [
+      "M TODO.md",
+      "M app/admin/dashboard/page.tsx",
+      "M app/admin/instructor/page.tsx",
+      "M app/admin/layout.tsx",
+      "M app/admin/learner/page.tsx",
+      "M app/admin/lessons/page.tsx",
+      "M app/admin/reports/page.tsx",
+      "M app/instructor/layout.tsx",
+      "M app/instructor/lessons/page.tsx",
+      "M app/instructor/profile/page.tsx",
+      "M app/learner/layout.tsx",
+      "M app/learner/lessons/page.tsx",
+      "M app/learner/practice/page.tsx",
+      "M app/signup/page.tsx",
+      "M package-lock.json",
+      "M package.json",
+      "?? .vscode/",
+      "?? graphify-out/",
+      "?? workspace.json",
+      "?? workspacememory.md"
+    ],
+    "error": ""
+  },
+  "github": {
+    "available": false,
+    "summary": "fetch failed"
+  },
+  "graphify": {
+    "reportAvailable": false,
+    "graphAvailable": false,
+    "reportPath": "",
+    "graphPath": "",
+    "highlights": ""
+  },
+  "projectPlanner": null,
+  "agentNotes": [
+    "For recent repo changes, check recentChanges, trackedSnapshots, hotFiles, and git.",
+    "For architecture questions, combine graphify highlights with the Graphify report.",
+    "For machine-readable repo context, prefer this workspace.json manifest before broad repo scans."
+  ]
+}

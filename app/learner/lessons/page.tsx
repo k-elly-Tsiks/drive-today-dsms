@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { CalendarDays, Clock4, AlertTriangle, Phone, ListChecks, ArrowLeft } from 'lucide-react'
+
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
@@ -330,15 +332,17 @@ export default function LearnerLessonsPage() {
     <div style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
         <div>
-          <h1 style={{ color: blue, fontSize: '22px', fontWeight: '800', margin: 0 }}>📅 My Lessons</h1>
+          <h1 style={{ color: blue, fontSize: '22px', fontWeight: '800', margin: 0 }}>My Lessons</h1>
+
           <p style={{ color: '#6b7280', fontSize: '13px', margin: '4px 0 0' }}>View and manage your lesson bookings</p>
         </div>
-        <button
+              <button
           onClick={() => router.push('/learner/dashboard')}
-          style={{ padding: '10px 18px', borderRadius: '10px', border: 'none', background: blue, color: 'white', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+          style={{ padding: '10px 18px', borderRadius: '10px', border: 'none', background: blue, color: 'white', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
         >
-          ← Dashboard
+          <ArrowLeft size={16} /> Dashboard
         </button>
+
       </div>
 
       {successMessage && (
@@ -398,11 +402,12 @@ export default function LearnerLessonsPage() {
       </div>
 
       <div style={{ display: 'flex', gap: '4px', background: 'white', borderRadius: '12px', padding: '4px', marginBottom: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', width: 'fit-content' }}>
-        {([
-          { id: 'upcoming', label: '📅 Upcoming' },
-          { id: 'book', label: '➕ Book Slots' },
-          { id: 'history', label: '📋 History' },
+          {([
+          { id: 'upcoming', label: 'Upcoming' },
+          { id: 'book', label: 'Book Slots' },
+          { id: 'history', label: 'History' },
         ] as const).map(tab => (
+
           <button
             key={tab.id}
             onClick={() => {
@@ -461,7 +466,8 @@ export default function LearnerLessonsPage() {
             <div>
               {upcomingBookings.length === 0 ? (
                 <div style={{ background: 'white', borderRadius: '14px', padding: '60px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                  <p style={{ fontSize: '48px', marginBottom: '12px' }}>📅</p>
+                  <p style={{ fontSize: '48px', marginBottom: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CalendarDays size={32} /></p>
+
                   <p style={{ color: '#374151', fontSize: '16px', fontWeight: '600', margin: '0 0 8px' }}>No upcoming lessons</p>
                   <p style={{ color: '#9ca3af', fontSize: '13px', margin: '0 0 20px' }}>
                     {remainingSlots > 0 ? `You have ${remainingSlots} slot(s) remaining to book` : 'All your allocated slots have been used'}
@@ -512,7 +518,7 @@ export default function LearnerLessonsPage() {
             <div>
               {remainingSlots <= 0 ? (
                 <div style={{ background: 'white', borderRadius: '14px', padding: '40px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                  <p style={{ fontSize: '40px', marginBottom: '8px' }}>⚠️</p>
+                  <p style={{ fontSize: '40px', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><AlertTriangle size={30} color="#f97316" /></p>
                   <p style={{ color: '#374151', fontSize: '15px', fontWeight: '600', margin: 0 }}>No slot allocations remaining. Please contact administration.</p>
                 </div>
               ) : (
@@ -561,8 +567,8 @@ export default function LearnerLessonsPage() {
                               <p style={{ margin: 0, fontSize: '13px', fontWeight: '800', color: '#111827' }}>
                                 {new Date(slot.slot_date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}
                               </p>
-                              <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#6b7280' }}>
-                                🕐 {slot.slot_time.slice(0, 5)}
+                              <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <Clock4 size={14} /> {slot.slot_time.slice(0, 5)}
                               </p>
                               <div style={{ marginTop: '10px' }}>{isSelected ? statusBadge('scheduled') : <span />}</div>
                             </button>
@@ -580,7 +586,7 @@ export default function LearnerLessonsPage() {
             <div>
               {pastBookings.length === 0 ? (
                 <div style={{ background: 'white', borderRadius: '14px', padding: '60px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                  <p style={{ fontSize: '48px', marginBottom: '12px' }}>📋</p>
+                  <p style={{ fontSize: '48px', marginBottom: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ListChecks size={32} /></p>
                   <p style={{ color: '#374151', fontSize: '16px', fontWeight: '600', margin: 0 }}>No lesson history yet</p>
                 </div>
               ) : (
@@ -618,7 +624,7 @@ export default function LearnerLessonsPage() {
             </p>
 
             <div style={{ background: '#fffbeb', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px', border: '1px solid #fde68a' }}>
-              <p style={{ margin: 0, fontSize: '12px', color: '#92400e' }}>⚠️ Cancellations are only allowed more than 3 hours before the lesson start time.</p>
+              <p style={{ margin: 0, fontSize: '12px', color: '#92400e', display: 'flex', alignItems: 'center', gap: 6 }}><AlertTriangle size={14} /> Cancellations are only allowed more than 3 hours before the lesson start time.</p>
             </div>
 
             {error && (

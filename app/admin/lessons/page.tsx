@@ -16,7 +16,8 @@ import {
   MoreVertical,
   UserPlus,
   XCircle,
-  BookOpen
+  BookOpen,
+  UserCog,
 } from 'lucide-react' 
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -48,6 +49,13 @@ type Booking = {
     first_name: string
     surname: string
   }
+}
+
+type User = {
+  user_id: string
+  first_name: string
+  surname: string
+  phone_number?: string
 }
 
 
@@ -112,6 +120,7 @@ export default function LessonsPage() {
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showAssignModal, setShowAssignModal] = useState(false)
+  const [showUserEditModal, setShowUserEditModal] = useState(false)
   
   // Selection/Action Context
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
@@ -119,6 +128,7 @@ export default function LessonsPage() {
   const [cancelReason, setCancelReason] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
   const [openMenu, setOpenMenu] = useState<string | null>(null)
+  const [editingUser, setEditingUser] = useState<User | null>(null)
 
   // Form State Definitions
   const [slotDate, setSlotDate] = useState('')
@@ -128,6 +138,11 @@ export default function LessonsPage() {
   const [selectedDays, setSelectedDays] = useState<string[]>([])
   const [editDate, setEditDate] = useState('')
   const [editTime, setEditTime] = useState('')
+
+  // User Edit Form State
+  const [editFirstName, setEditFirstName] = useState('')
+  const [editSurname, setEditSurname] = useState('')
+  const [editPhone, setEditPhone] = useState('')
 
   const router = useRouter()
   const menuRef = useRef<HTMLDivElement | null>(null)
@@ -253,6 +268,27 @@ function first<T>(val: T | T[] | undefined | null): T | null {
     const { error } = await supabase.from('lesson_bookings').update({ instructor_id: instructorId }).eq('booking_id', selectedBooking.booking_id)
     if (!error) { showToast('Instructor assigned'); setShowAssignModal(false); loadData() }
     setActionLoading(false)
+  }
+
+  async function saveUserChanges() {
+    if (!editingUser || !editFirstName.trim() || !editSurname.trim()) {
+      return showToast('First name and surname are required.', 'error')
+    }
+    setActionLoading(true)
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          first_name: editFirstName,
+          surname: editSurname,
+          phone_number: editPhone,
+        })
+        .eq('user_id', editingUser.user_id)
+      if (error) throw error
+      showToast('User details updated successfully!')
+      setShowUserEditModal(false)
+      loadData()
+    } catch (err: unknown) { showToast((err as Error).message, 'error') } finally { setActionLoading(false) }
   }
 
   const computedSlots = slots.map(slot => ({
@@ -602,6 +638,11 @@ const filteredBookings = bookings.filter(b => {
                 <button className="menu-item" onClick={() => { setSelectedBooking(b); setShowAssignModal(true); setOpenMenu(null); }}>
                   <UserPlus size={14} color="#2563eb" /> Assign Instructor
                 </button>
+                <button className="menu-item" onClick={() => {
+                  if (learner) { setEditingUser({ ...learner, user_id: b.learner_id }); setEditFirstName(learner.first_name); setEditSurname(learner.surname); setEditPhone(learner.phone_number || ''); setShowUserEditModal(true); setOpenMenu(null); }
+                }}>
+                  <UserCog size={14} color="#f97316" /> Edit Learner
+                </button>
                 <button className="menu-item" style={{ color: '#dc2626' }} onClick={() => { setSelectedBooking(b); setShowCancelModal(true); setOpenMenu(null); }}>
                   <XCircle size={14} color="#dc2626" /> Cancel Booking
                 </button>
@@ -715,6 +756,41 @@ const filteredBookings = bookings.filter(b => {
               <button onClick={() => setShowCancelModal(false)} className="custom-btn-secondary" style={{ flex: 1, justifyContent: 'center' }}>Go Back</button>
               <button onClick={cancelBooking} disabled={actionLoading} className="custom-btn-primary" style={{ flex: 2, justifyContent: 'center', background: '#dc2626', boxShadow: '0 4px 12px rgba(220, 38, 38, 0.15)' }} onMouseEnter={e => e.currentTarget.style.background = '#b91c1c'} onMouseLeave={e => e.currentTarget.style.background = '#dc2626'}>
                 {actionLoading ? 'Cancelling...' : 'Confirm Cancellation'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT USER MODAL */}
+      {showUserEditModal && editingUser && (
+        <div className="modal-overlay">
+          <div className="modal-card" style={{ maxWidth: '450px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+              <UserCog size={20} color="#f97316" />
+              <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '800' }}>Edit User Details</h2>
+            </div>
+            <p style={{ margin: '0 0 20px', fontSize: '13px', color: '#64748b' }}>
+              Editing profile for: <strong style={{ color: '#1e293b' }}>{editingUser.first_name} {editingUser.surname}</strong>
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '25px' }}>
+              <div>
+                <label className="info-label">First Name</label>
+                <input type="text" value={editFirstName} onChange={e => setEditFirstName(e.target.value)} className="dashboard-control" style={{ width: '100%' }} />
+              </div>
+              <div>
+                <label className="info-label">Surname</label>
+                <input type="text" value={editSurname} onChange={e => setEditSurname(e.target.value)} className="dashboard-control" style={{ width: '100%' }} />
+              </div>
+              <div>
+                <label className="info-label">Phone Number</label>
+                <input type="text" value={editPhone} onChange={e => setEditPhone(e.target.value)} className="dashboard-control" style={{ width: '100%' }} />
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={() => setShowUserEditModal(false)} className="custom-btn-secondary" style={{ flex: 1, justifyContent: 'center' }}>Cancel</button>
+              <button onClick={saveUserChanges} disabled={actionLoading} className="custom-btn-primary" style={{ flex: 2, justifyContent: 'center' }}>
+                {actionLoading ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </div>

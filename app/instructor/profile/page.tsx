@@ -3,6 +3,19 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import {
+  User,
+  Phone,
+  Home,
+  Calendar,
+  Mail,
+  IdCard,
+  ShieldCheck,
+  ChevronLeft,
+  Edit3,
+  Car,
+  Clock,
+} from 'lucide-react'
 
 type LearnerProfile = {
   user_id: string
@@ -34,14 +47,38 @@ const supabase = createClient()
 
 function Skeleton({ w = '100%', h = '14px', r = '6px' }: { w?: string; h?: string; r?: string }) {
   return (
-    <div style={{
-      width: w,
-      height: h,
-      borderRadius: r,
-      background: 'linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%)',
-      backgroundSize: '200% 100%',
-      animation: 'skeleton-shimmer 1.5s infinite linear',
-    }} />
+    <div
+      style={{
+        width: w,
+        height: h,
+        borderRadius: r,
+        background: 'linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%)',
+        backgroundSize: '200% 100%',
+        animation: 'skeleton-shimmer 1.5s infinite linear',
+      }}
+    />
+  )
+}
+
+function InfoRow({
+  label,
+  value,
+  icon,
+}: {
+  label: string
+  value?: string | null
+  icon: React.ReactNode
+}) {
+  return (
+    <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+      <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, flexShrink: 0 }}>
+        {icon}
+      </span>
+      <div>
+        <p style={{ margin: 0, fontSize: '11px', color: '#9ca3af' }}>{label}</p>
+        <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#374151' }}>{value || '—'}</p>
+      </div>
+    </div>
   )
 }
 
@@ -67,15 +104,20 @@ export default function LearnerProfilePage() {
 
   const blue = '#1e293b'
   const orange = '#ff5a00'
-  const lightBlue = '#fff2eb'
 
   const loadProfile = useCallback(async () => {
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { routerRef.current.push('/login'); return }
+    if (!user) {
+      routerRef.current.push('/login')
+      return
+    }
 
     const { data: learnerData } = await supabase
-      .from('users').select('*').eq('user_id', user.id).single()
+      .from('users')
+      .select('*')
+      .eq('user_id', user.id)
+      .single()
 
     setLearner(learnerData)
     if (learnerData) {
@@ -90,8 +132,13 @@ export default function LearnerProfilePage() {
 
     const { data: bookingData } = await supabase
       .from('lesson_bookings')
-      .select(`instructor:users!lesson_bookings_instructor_id_fkey (first_name, surname, phone_number, driving_classes_taught)`)
-      .eq('learner_id', user.id).eq('status', 'scheduled').limit(1).single()
+      .select(
+        `instructor:users!lesson_bookings_instructor_id_fkey (first_name, surname, phone_number, driving_classes_taught)`
+      )
+      .eq('learner_id', user.id)
+      .eq('status', 'scheduled')
+      .limit(1)
+      .single()
 
     if (bookingData?.instructor) {
       setInstructor(bookingData.instructor?.[0] ?? null)
@@ -101,28 +148,48 @@ export default function LearnerProfilePage() {
 
   useEffect(() => {
     let cancelled = false
-    async function init() { if (!cancelled) await loadProfile() }
+    async function init() {
+      if (!cancelled) await loadProfile()
+    }
     init()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [loadProfile])
 
   async function saveProfile() {
-    if (!phone) { setError('Phone number is required.'); return }
-    setSaving(true); setError('')
+    if (!phone) {
+      setError('Phone number is required.')
+      return
+    }
+    setSaving(true)
+    setError('')
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-    const { error: updateError } = await supabase.from('users').update({
-      phone_number: phone, address,
-      provisional_expiry: provisionalExpiry || null,
-      licence_number: licenceNumber || null,
-      licence_code: licenceCode || null,
-      licence_validity: licenceValidity || null,
-      driving_class: drivingClass || null,
-    }).eq('user_id', user.id)
-    if (updateError) { setError('Failed to update profile.'); setSaving(false); return }
+
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({
+        phone_number: phone,
+        address,
+        provisional_expiry: provisionalExpiry || null,
+        licence_number: licenceNumber || null,
+        licence_code: licenceCode || null,
+        licence_validity: licenceValidity || null,
+        driving_class: drivingClass || null,
+      })
+      .eq('user_id', user.id)
+
+    if (updateError) {
+      setError('Failed to update profile.')
+      setSaving(false)
+      return
+    }
+
     setSuccessMessage('Profile updated successfully.')
     setTimeout(() => setSuccessMessage(''), 3000)
-    setEditing(false); setSaving(false)
+    setEditing(false)
+    setSaving(false)
     loadProfile()
   }
 
@@ -197,64 +264,110 @@ export default function LearnerProfilePage() {
     <div style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
         <div>
-          <h1 style={{ color: blue, fontSize: '22px', fontWeight: '800', margin: 0 }}>👤 My Profile</h1>
+          <h1 style={{ color: blue, fontSize: '22px', fontWeight: '800', margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <User size={20} color={blue} /> My Profile
+          </h1>
           <p style={{ color: '#6b7280', fontSize: '13px', margin: '4px 0 0' }}>View and update your personal information</p>
         </div>
-        <button onClick={() => router.push('/learner/dashboard')} style={{ padding: '10px 18px', borderRadius: '10px', border: 'none', background: blue, color: 'white', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
-          ← Dashboard
+        <button
+          onClick={() => router.push('/learner/dashboard')}
+          style={{ padding: '10px 18px', borderRadius: '10px', border: 'none', background: blue, color: 'white', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}
+        >
+          <ChevronLeft size={16} /> Dashboard
         </button>
       </div>
 
-      {successMessage && <div style={{ background: '#d1fae5', border: '1px solid #6ee7b7', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px', color: '#065f46', fontSize: '13px', fontWeight: '600' }}>✅ {successMessage}</div>}
-      {error && <div style={{ background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px', color: '#991b1b', fontSize: '13px', fontWeight: '600' }}>❌ {error}</div>}
+      {successMessage && (
+        <div style={{ background: '#d1fae5', border: '1px solid #6ee7b7', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px', color: '#065f46', fontSize: '13px', fontWeight: '600' }}>
+          {successMessage}
+        </div>
+      )}
+      {error && (
+        <div style={{ background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px', color: '#991b1b', fontSize: '13px', fontWeight: '600' }}>
+          {error}
+        </div>
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
         <div style={{ background: 'white', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: orange, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontSize: '28px', fontWeight: '800', color: 'white' }}>
+            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: orange, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', color: 'white', fontWeight: '800', fontSize: '28px' }}>
               {learner?.first_name?.charAt(0)}{learner?.surname?.charAt(0)}
             </div>
-            <h2 style={{ color: blue, fontSize: '18px', fontWeight: '800', margin: '0 0 4px' }}>{learner?.first_name} {learner?.second_name} {learner?.surname}</h2>
-            <span style={{ background: '#d1fae5', color: '#065f46', padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700' }}>✅ Approved Learner</span>
+            <h2 style={{ color: blue, fontSize: '18px', fontWeight: '800', margin: '0 0 4px' }}>
+              {learner?.first_name} {learner?.second_name} {learner?.surname}
+            </h2>
+            <span style={{ background: '#d1fae5', color: '#065f46', padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <ShieldCheck size={14} /> Approved Learner
+            </span>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <h3 style={{ color: blue, fontSize: '13px', fontWeight: '700', margin: 0, paddingBottom: '8px', borderBottom: '1px solid #f3f4f6' }}>Personal Information</h3>
-            {[
-              { label: 'ID Number', value: learner?.id_number, icon: '🪪' },
-              { label: 'Date of Birth', value: learner?.date_of_birth ? new Date(learner.date_of_birth).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : null, icon: '🎂' },
-              { label: 'Gender', value: learner?.gender, icon: '👤' },
-              { label: 'Email', value: learner?.email, icon: '📧' },
-            ].map((item, i) => (
-              <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                <span style={{ fontSize: '16px', flexShrink: 0 }}>{item.icon}</span>
-                <div>
-                  <p style={{ margin: 0, fontSize: '11px', color: '#9ca3af' }}>{item.label}</p>
-                  <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#374151' }}>{item.value || '—'}</p>
-                </div>
-              </div>
-            ))}
+            <h3 style={{ color: blue, fontSize: '13px', fontWeight: '700', margin: 0, paddingBottom: '8px', borderBottom: '1px solid #f3f4f6' }}>
+              Personal Information
+            </h3>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <InfoRow
+                label="ID Number"
+                value={learner?.id_number}
+                icon={<IdCard size={16} color={blue} />}
+              />
+              <InfoRow
+                label="Date of Birth"
+                value={
+                  learner?.date_of_birth
+                    ? new Date(learner.date_of_birth).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+                    : null
+                }
+                icon={<Calendar size={16} color={blue} />}
+              />
+              <InfoRow
+                label="Gender"
+                value={learner?.gender}
+                icon={<User size={16} color={blue} />}
+              />
+              <InfoRow
+                label="Email"
+                value={learner?.email}
+                icon={<Mail size={16} color={blue} />}
+              />
+            </div>
 
             {editing ? (
               <>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>Phone Number *</label>
-                  <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px', outline: 'none' }} />
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>
+                    Phone Number *
+                  </label>
+                  <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px', outline: 'none' }} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>Residential Address</label>
-                  <input type="text" value={address} onChange={e => setAddress(e.target.value)} style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px', outline: 'none' }} />
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>
+                    Residential Address
+                  </label>
+                  <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px', outline: 'none' }} />
                 </div>
               </>
             ) : (
               <>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                  <span style={{ fontSize: '16px' }}>📱</span>
-                  <div><p style={{ margin: 0, fontSize: '11px', color: '#9ca3af' }}>Phone Number</p><p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#374151' }}>{learner?.phone_number || '—'}</p></div>
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20 }}>
+                    <Phone size={16} color={blue} />
+                  </span>
+                  <div>
+                    <p style={{ margin: 0, fontSize: '11px', color: '#9ca3af' }}>Phone Number</p>
+                    <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#374151' }}>{learner?.phone_number || '—'}</p>
+                  </div>
                 </div>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                  <span style={{ fontSize: '16px' }}>🏠</span>
-                  <div><p style={{ margin: 0, fontSize: '11px', color: '#9ca3af' }}>Address</p><p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#374151' }}>{learner?.address || '—'}</p></div>
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20 }}>
+                    <Home size={16} color={blue} />
+                  </span>
+                  <div>
+                    <p style={{ margin: 0, fontSize: '11px', color: '#9ca3af' }}>Address</p>
+                    <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#374151' }}>{learner?.address || '—'}</p>
+                  </div>
                 </div>
               </>
             )}
@@ -267,8 +380,8 @@ export default function LearnerProfilePage() {
                 </button>
               </div>
             ) : (
-              <button onClick={() => setEditing(true)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: `2px solid ${blue}`, background: 'white', color: blue, fontSize: '13px', fontWeight: '700', cursor: 'pointer', marginTop: '8px' }}>
-                ✏️ Edit Profile
+              <button onClick={() => setEditing(true)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: `2px solid ${blue}`, background: 'white', color: blue, fontSize: '13px', fontWeight: '700', cursor: 'pointer', marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                <Edit3 size={16} /> Edit Profile
               </button>
             )}
           </div>
@@ -276,14 +389,17 @@ export default function LearnerProfilePage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div style={{ background: 'white', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-            <h3 style={{ color: blue, fontSize: '14px', fontWeight: '700', margin: '0 0 16px', paddingBottom: '8px', borderBottom: '1px solid #f3f4f6' }}>🚗 Licence Information</h3>
+            <h3 style={{ color: blue, fontSize: '14px', fontWeight: '700', margin: '0 0 16px', paddingBottom: '8px', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Car size={16} color={blue} /> Licence Information
+            </h3>
+
             {editing ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>Driving Class</label>
-                  <select value={drivingClass} onChange={e => setDrivingClass(e.target.value)} style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px', outline: 'none' }}>
+                  <select value={drivingClass} onChange={(e) => setDrivingClass(e.target.value)} style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px', outline: 'none' }}>
                     <option value="">Select...</option>
-                    {['Provisional', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5'].map(c => <option key={c} value={c}>{c}</option>)}
+                    {['Provisional', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5'].map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 {[
@@ -294,7 +410,7 @@ export default function LearnerProfilePage() {
                 ].map((f, i) => (
                   <div key={i}>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>{f.label}</label>
-                    <input type={f.type} value={f.val} onChange={e => f.set(e.target.value)} style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px', outline: 'none' }} />
+                    <input type={f.type} value={f.val} onChange={(e) => f.set(e.target.value)} style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px', outline: 'none' }} />
                   </div>
                 ))}
               </div>
@@ -317,7 +433,9 @@ export default function LearnerProfilePage() {
           </div>
 
           <div style={{ background: 'white', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-            <h3 style={{ color: blue, fontSize: '14px', fontWeight: '700', margin: '0 0 16px', paddingBottom: '8px', borderBottom: '1px solid #f3f4f6' }}>👨‍🏫 Assigned Instructor</h3>
+            <h3 style={{ color: blue, fontSize: '14px', fontWeight: '700', margin: '0 0 16px', paddingBottom: '8px', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <User size={16} color={blue} /> Assigned Instructor
+            </h3>
             {instructor ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                 <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: orange, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '800', fontSize: '18px', flexShrink: 0 }}>
@@ -325,20 +443,28 @@ export default function LearnerProfilePage() {
                 </div>
                 <div>
                   <p style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: '#111827' }}>{instructor.first_name} {instructor.surname}</p>
-                  <p style={{ margin: '2px 0', fontSize: '12px', color: '#6b7280' }}>📱 {instructor.phone_number}</p>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>🚗 {instructor.driving_classes_taught || 'All classes'}</p>
+                  <p style={{ margin: '2px 0', fontSize: '12px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Phone size={14} /> {instructor.phone_number}
+                  </p>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Car size={14} /> {instructor.driving_classes_taught || 'All classes'}
+                  </p>
                 </div>
               </div>
             ) : (
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                <p style={{ fontSize: '32px', margin: '0 0 8px' }}>👨‍🏫</p>
+                <p style={{ fontSize: '32px', margin: '0 0 8px' }}>
+                  <User size={34} color={blue} />
+                </p>
                 <p style={{ color: '#9ca3af', fontSize: '13px', margin: 0 }}>No instructor assigned yet. Book a lesson to get assigned an instructor.</p>
               </div>
             )}
           </div>
 
           <div style={{ background: blue, borderRadius: '14px', padding: '20px' }}>
-            <h3 style={{ color: 'white', fontSize: '14px', fontWeight: '700', margin: '0 0 16px' }}>📅 Lesson Allocation</h3>
+            <h3 style={{ color: 'white', fontSize: '14px', fontWeight: '700', margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Clock size={16} /> Lesson Allocation
+            </h3>
             <p style={{ margin: 0, fontSize: '28px', fontWeight: '800', color: 'white' }}>{learner?.slots_allocated || 0}</p>
             <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>Slots Allocated</p>
             <p style={{ margin: '12px 0 0', fontSize: '12px', color: 'rgba(255,255,255,0.65)' }}>Contact the administrator to request additional lesson slots.</p>
@@ -348,3 +474,4 @@ export default function LearnerProfilePage() {
     </div>
   )
 }
+

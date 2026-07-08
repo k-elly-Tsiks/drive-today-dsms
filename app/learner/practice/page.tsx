@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, BookOpen, CheckCircle, CircleHelp, FileQuestion, ListChecks, ParkingCircle, Rocket, ShieldCheck, ThumbsUp, TrafficCone, XCircle } from 'lucide-react'
+import { BookOpen, CheckCircle, CircleHelp, FileQuestion, ListChecks, ParkingCircle, Rocket, ShieldCheck, ThumbsUp, TrafficCone, XCircle } from 'lucide-react'
 
 type Question = {
   question_id: string
@@ -193,12 +193,7 @@ export default function LearnerPracticePage() {
               <h1 style={{ color: blue, fontSize: '22px', fontWeight: '800', margin: 0 }}>Practice Tests</h1>
               <p style={{ color: '#6b7280', fontSize: '13px', margin: '4px 0 0' }}>Test your knowledge before your driving test</p>
             </div>
-            <button
-              onClick={() => router.push('/learner/dashboard')}
-              style={{ padding: '10px 18px', borderRadius: '10px', border: 'none', background: orange, color: 'white', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
-            >
-              <ArrowLeft size={16} /> Dashboard
-            </button>
+           
           </div>
 
           <div style={{ background: blue, borderRadius: '16px', padding: '28px', marginBottom: '24px', textAlign: 'center' }}>

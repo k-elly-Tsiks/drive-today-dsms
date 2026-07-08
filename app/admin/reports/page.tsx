@@ -288,6 +288,99 @@ export default function ReportsPage() {
     downloadCSV(`DT_Combined_Financial_Report_${new Date().toISOString().split('T')[0]}.csv`, csvContent)
   }
 
+  const exportCombinedPDF = async () => {
+    try {
+      const [{ default: jsPDF }, html2canvas] = await Promise.all([
+        import('jspdf'),
+        import('html2canvas'),
+      ])
+
+      // Create a simple PDF (no DOM snapshot required) to avoid CORS/layout issues.
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
+      const marginX = 36
+      let y = 54
+
+      doc.setFontSize(16)
+      doc.setTextColor(15, 23, 42)
+      doc.text('DT Driving School - Combined Financial Report', marginX, y)
+      y += 26
+
+      doc.setFontSize(10)
+      doc.setTextColor(71, 85, 105)
+      doc.text(`Date range: ${startDate || 'All'} to ${endDate || 'All'}`, marginX, y)
+      y += 16
+
+      doc.setFontSize(11)
+      doc.setTextColor(15, 23, 42)
+      doc.text(`Total Revenue: $${totalRevenue.toFixed(2)}`, marginX, y)
+      y += 14
+      doc.text(`Total Expenses: $${totalExpenses.toFixed(2)}`, marginX, y)
+      y += 14
+      doc.text(`Net Profit: $${netProfit.toFixed(2)}`, marginX, y)
+      y += 20
+
+      // INCOME TABLE (top 20 rows)
+      doc.setFontSize(10)
+      doc.setTextColor(51, 65, 85)
+      doc.text('INCOME / REVENUE', marginX, y)
+      y += 14
+
+      const incomeLines = filteredPayments.slice(0, 20).map(p => {
+        const learnerObj = Array.isArray(p.learner) ? p.learner[0] : p.learner
+        const name = learnerObj ? `${learnerObj.first_name} ${learnerObj.surname}` : 'Unknown'
+        const date = new Date(p.payment_date).toLocaleDateString('en-GB')
+        return `${date} | ${name} | ${p.payment_method} | $${Number(p.amount).toFixed(2)}`
+      })
+
+      doc.setFontSize(9)
+      incomeLines.forEach(line => {
+        if (y > 780) {
+          doc.addPage()
+          y = 54
+        }
+        doc.text(line, marginX, y)
+        y += 12
+      })
+
+      if (filteredPayments.length > 20) {
+        y += 6
+        doc.text(`...and ${filteredPayments.length - 20} more payment(s)`, marginX, y)
+        y += 16
+      }
+
+      // EXPENSES TABLE (top 20 rows)
+      doc.setFontSize(10)
+      doc.setTextColor(51, 65, 85)
+      doc.text('EXPENSES', marginX, y)
+      y += 14
+
+      const expenseLines = filteredExpenses.slice(0, 20).map(e => {
+        const date = new Date(e.expense_date).toLocaleDateString('en-GB')
+        return `${date} | ${e.category} | $${Number(e.amount).toFixed(2)}`
+      })
+
+      doc.setFontSize(9)
+      expenseLines.forEach(line => {
+        if (y > 780) {
+          doc.addPage()
+          y = 54
+        }
+        doc.text(line, marginX, y)
+        y += 12
+      })
+
+      if (filteredExpenses.length > 20) {
+        y += 6
+        doc.text(`...and ${filteredExpenses.length - 20} more expense(s)`, marginX, y)
+      }
+
+      doc.save(`DT_Combined_Financial_Report_${new Date().toISOString().split('T')[0]}.pdf`)
+    } catch (e) {
+      console.error(e)
+      alert('PDF export failed. Please try again.')
+    }
+  }
+
   // ─── Render ───────────────────────────────────────────────────────────────────
 
   return (
@@ -310,22 +403,38 @@ export default function ReportsPage() {
             </p>
           </div>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            <button
-              onClick={exportCombined}
-              disabled={loading}
-              className="hover:bg-slate-800 transition-all active:scale-[0.98]"
-              style={{
-                padding: '10.5px 18px', borderRadius: '10px',
-                border: 'none', background: loading ? '#94a3b8' : '#0f172a',
-                color: 'white', fontSize: '13.5px',
-                fontWeight: '700', cursor: loading ? 'not-allowed' : 'pointer',
-                display: 'flex', alignItems: 'center', gap: '8px',
-                boxShadow: '0 4px 12px rgba(15,23,42,0.15)'
-              }}
-            >
-              <Download size={15} />
-              <span>Export Combined Statement</span>
-            </button>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <button
+                onClick={exportCombined}
+                disabled={loading}
+                className="hover:bg-slate-800 transition-all active:scale-[0.98]"
+                style={{
+                  padding: '10.5px 18px', borderRadius: '10px',
+                  border: 'none', background: loading ? '#94a3b8' : '#0f172a',
+                  color: 'white', fontSize: '13.5px',
+                  fontWeight: '700', cursor: loading ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  boxShadow: '0 4px 12px rgba(15,23,42,0.15)'
+                }}
+              >
+                <Download size={15} />
+                <span>Export Combined Statement (CSV)</span>
+              </button>
+              <button
+                onClick={exportCombinedPDF}
+                disabled={loading}
+                className="hover:bg-slate-200 transition-all active:scale-[0.98]"
+                style={{
+                  padding: '10.5px 18px', borderRadius: '10px',
+                  border: '1.5px solid #e2e8f0', background: 'white',
+                  color: '#0f172a', fontSize: '13.5px',
+                  fontWeight: '800', cursor: loading ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                }}
+              >
+                Export Combined Statement (PDF)
+              </button>
+            </div>
           </div>
         </div>
 

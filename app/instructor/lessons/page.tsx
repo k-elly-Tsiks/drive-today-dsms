@@ -3,12 +3,15 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Layers, CalendarCheck, Users, History, CheckCircle, AlertCircle, CheckCircle2, Clock, Users2, Phone, Mail, CalendarDays, AlertTriangle, XCircle } from 'lucide-react'
+import { 
+  Layers, CalendarCheck, CheckCircle2, AlertCircle, 
+  MoreVertical, Clock, Star, Save, X, Phone, Mail 
+} from 'lucide-react'
 
-
+// --- TypeScript Definitions ---
 type Booking = {
   booking_id: string
-  status: string
+  status: 'scheduled' | 'completed' | 'cancelled'
   learner_id: string
   slot_id: string
   instructor_id?: string
@@ -19,24 +22,76 @@ type Booking = {
 
 const supabase = createClient()
 
-function Skeleton({ w = '100%', h = '14px', r = '6px' }: { w?: string; h?: string; r?: string }) {
-  return (
-    <div style={{
-      width: w,
-      height: h,
-      borderRadius: r,
-      background: 'linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%)',
-      backgroundSize: '200% 100%',
-      animation: 'skeleton-shimmer 1.5s infinite linear',
-    }} />
-  )
-}
+// --- Skeleton Components ---
+const SkeletonPulse = () => (
+  <style>{`
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.4; }
+      100% { opacity: 1; }
+    }
+    .skeleton-item {
+      animation: pulse 1.5s ease-in-out infinite;
+      background-color: #e5e7eb;
+    }
+  `}</style>
+)
+
+const SkeletonStat = () => (
+  <div style={{ background: 'white', borderRadius: '16px', padding: '20px', border: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div style={{ flex: 1 }}>
+      <div className="skeleton-item" style={{ height: '13px', width: '60px', borderRadius: '4px', marginBottom: '8px' }} />
+      <div className="skeleton-item" style={{ height: '24px', width: '40px', borderRadius: '4px' }} />
+    </div>
+    <div className="skeleton-item" style={{ height: '40px', width: '40px', borderRadius: '10px' }} />
+  </div>
+)
+
+const SkeletonLesson = () => (
+  <div style={{ background: 'white', padding: '20px', borderRadius: '16px', border: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
+      <div style={{ display: 'flex', gap: '20px' }}>
+        <div className="skeleton-item" style={{ height: '16px', width: '100px', borderRadius: '4px' }} />
+        <div className="skeleton-item" style={{ height: '16px', width: '80px', borderRadius: '4px' }} />
+      </div>
+      <div>
+        <div className="skeleton-item" style={{ height: '20px', width: '200px', borderRadius: '4px', marginBottom: '8px' }} />
+        <div style={{ display: 'flex', gap: '15px' }}>
+          <div className="skeleton-item" style={{ height: '14px', width: '120px', borderRadius: '4px' }} />
+          <div className="skeleton-item" style={{ height: '14px', width: '150px', borderRadius: '4px' }} />
+        </div>
+      </div>
+    </div>
+    <div className="skeleton-item" style={{ height: '24px', width: '80px', borderRadius: '20px' }} />
+  </div>
+)
 
 export default function InstructorLessonsPage() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('Today') // Default tab
+  const [activeTab, setActiveTab] = useState('Today')
   const [search, setSearch] = useState('')
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
+  
+  const [hoveredStat, setHoveredStat] = useState<number | null>(null)
+  
+  const [confirmingComplete, setConfirmingComplete] = useState(false)
+  const [showCancelDialog, setShowCancelDialog] = useState(false)
+  const [showProgressSheet, setShowProgressSheet] = useState(false)
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
+
+  const [steeringRating, setSteeringRating] = useState<number>(5)
+  const [parkingRating, setParkingRating] = useState<number>(5)
+  const [reversingRating, setReversingRating] = useState<number>(5)
+  const [roadAwarenessRating, setRoadAwarenessRating] = useState<number>(5)
+  const [performanceNotes, setPerformanceNotes] = useState<string>('')
+
+  const [savingProgress, setSavingProgress] = useState(false)
+
+  const [cancelReasonOption, setCancelReasonOption] = useState<string>('')
+  const [cancelOtherDetails, setCancelOtherDetails] = useState('')
+  
+  const [message, setMessage] = useState<string | null>(null)
   const router = useRouter()
 
   const loadBookings = useCallback(async () => {
@@ -44,175 +99,347 @@ export default function InstructorLessonsPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/login'); return }
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('lesson_bookings')
       .select(`*, lesson_slots (slot_date, slot_time), learner:users!lesson_bookings_learner_id_fkey (first_name, surname, phone_number, email)`)
       .eq('instructor_id', user.id)
       .order('created_at', { ascending: false })
 
-    setBookings(data || [])
+    if (!error && data) {
+      setBookings(data as Booking[])
+    }
     setLoading(false)
   }, [router])
 
   useEffect(() => {
-    let cancelled = false
-    async function run() {
-      if (!cancelled) await loadBookings()
+    // load bookings on mount
+    const run = async () => {
+      await loadBookings()
     }
-    run()
-    return () => {
-      cancelled = true
-    }
+    void run()
   }, [loadBookings])
 
 
-  // Logic for filtered lists
-  const today = new Date().toISOString().split('T')[0]
-  const todayBookings = bookings.filter(b => b.status === 'scheduled' && b.lesson_slots?.slot_date === today)
-  const upcomingBookings = bookings.filter(b => b.status === 'scheduled' && b.lesson_slots?.slot_date && b.lesson_slots.slot_date > today)
-  const pastBookings = bookings.filter(b => b.status !== 'scheduled' || (b.lesson_slots?.slot_date && b.lesson_slots.slot_date < today))
 
-  // Determine which list to use based on the active tab
-  const getTabBookings = () => {
-    if (activeTab === 'Today') return todayBookings
-    if (activeTab === 'Upcoming') return upcomingBookings
-    return pastBookings
+  // --- ACTIONS ---
+  async function markLessonComplete() {
+    if (!selectedBooking) return
+    const { error } = await supabase
+      .from('lesson_bookings')
+      .update({ status: 'completed' })
+      .eq('booking_id', selectedBooking.booking_id)
+
+    if (!error) {
+      setBookings(prev => prev.map(b => b.booking_id === selectedBooking.booking_id ? { ...b, status: 'completed' } : b))
+      setConfirmingComplete(false)
+      setShowProgressSheet(true)
+    }
   }
 
-  // Apply search filtering on top of tab filtering
-  const displayBookings = getTabBookings().filter(b => {
-    const fullName = `${b.learner?.first_name || ''} ${b.learner?.surname || ''}`.toLowerCase()
-    return fullName.includes(search.toLowerCase())
-  })
+  async function savePerformanceRecord() {
+    if (!selectedBooking) return
+    setSavingProgress(true)
+
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      setSavingProgress(false)
+      return
+    }
+
+    // Persist into the same table/shape used by the instructor progress page.
+    const { error } = await supabase
+      .from('progress_tracking')
+      .insert({
+        booking_id: selectedBooking.booking_id,
+        learner_id: selectedBooking.learner_id,
+        instructor_id: user.id,
+        steering_rating: steeringRating,
+        parking_rating: parkingRating,
+        reversing_rating: reversingRating,
+        road_awareness_rating: roadAwarenessRating,
+        comments: performanceNotes,
+      })
+
+    if (!error) {
+
+      setMessage(`Performance saved for ${selectedBooking.learner?.first_name}`)
+      setShowProgressSheet(false)
+      setPerformanceNotes('')
+      setSteeringRating(5)
+      setParkingRating(5)
+      setReversingRating(5)
+      setRoadAwarenessRating(5)
+
+
+      // Ensure completed/cancelled lessons stay visible after reload.
+      setActiveTab('History')
+      setSelectedBooking(null)
+      setTimeout(() => setMessage(null), 3500)
+
+      await loadBookings()
+    }
+
+    setSavingProgress(false)
+  }
+
+  async function cancelLesson() {
+    if (!selectedBooking) return
+    const reason = cancelReasonOption === 'Other' ? cancelOtherDetails : cancelReasonOption
+    const { error } = await supabase
+      .from('lesson_bookings')
+      .update({ status: 'cancelled', cancellation_reason: reason })
+      .eq('booking_id', selectedBooking.booking_id)
+
+    if (!error) {
+      setBookings(prev => prev.map(b => b.booking_id === selectedBooking.booking_id ? { ...b, status: 'cancelled' } : b))
+      setShowCancelDialog(false)
+      setMessage('Lesson marked as cancelled.')
+      setTimeout(() => setMessage(null), 3500)
+    }
+  }
+
+  // --- FILTERING ---
+
+  // NOTE: ESLint react/no-unescaped-entities flags apostrophes in JSX text.
+  // We keep user-facing text free of raw apostrophes.
+  const todayStr = new Date().toISOString().split('T')[0]
+
+
+  const todayBookings = bookings.filter(b => b.lesson_slots?.slot_date === todayStr)
+  const upcomingBookings = bookings.filter(b => b.lesson_slots?.slot_date && b.lesson_slots.slot_date > todayStr)
+  const historyBookings = bookings.filter(b => b.status !== 'scheduled' || (b.lesson_slots?.slot_date && b.lesson_slots.slot_date < todayStr))
+
+  const getActiveList = () => {
+    if (activeTab === 'Today') return todayBookings
+    if (activeTab === 'Upcoming') return upcomingBookings
+    return historyBookings
+  }
+
+  const displayList = getActiveList().filter(b => 
+    `${b.learner?.first_name} ${b.learner?.surname}`.toLowerCase().includes(search.toLowerCase())
+  )
 
   return (
     <div style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px', fontFamily: 'sans-serif' }}>
-      <style>{`@keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
+      <SkeletonPulse />
+      
       <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#111827', margin: '0 0 8px' }}>Lessons Management</h1>
-        <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>Configure scheduling availability and manage active bookings</p>
+        <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#111827', margin: '0 0 5px' }}>Lessons Management</h1>
+        <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>Configure scheduling and manage active bookings</p>
       </div>
 
-      {/* Stats Cards */}
+      {/* STAT CARDS */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '24px' }}>
-        {loading ? Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} style={{ background: 'white', borderRadius: '16px', padding: '20px', border: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-            <div>
-              <Skeleton w="70px" h="13px" r="4px" />
-              <div style={{ marginTop: '10px' }}><Skeleton w="42px" h="26px" r="5px" /></div>
-            </div>
-            <Skeleton w="40px" h="40px" r="10px" />
-          </div>
-        )) : [
-          { label: "Today's", value: todayBookings.length, icon: CalendarCheck, color: '#1e3a8a' },
-          { label: 'Upcoming', value: upcomingBookings.length, icon: Layers, color: '#f97316' },
-          { label: 'Completed', value: pastBookings.filter(b => b.status === 'completed').length, icon: CheckCircle2, color: '#059669' },
-          { label: 'Cancelled', value: pastBookings.filter(b => b.status === 'cancelled').length, icon: AlertCircle, color: '#dc2626' },
-        ].map((stat, i) => (
-          <div key={i} style={{ background: 'white', borderRadius: '16px', padding: '20px', border: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-            <div>
-              <p style={{ margin: '0 0 4px', fontSize: '13px', color: '#6b7280' }}>{stat.label}</p>
-              <p style={{ margin: 0, fontSize: '24px', fontWeight: '800' }}>{stat.value}</p>
-            </div>
-            <div style={{ background: '#f9fafb', padding: '10px', borderRadius: '10px' }}><stat.icon size={20} color={stat.color} /></div>
-          </div>
-        ))}
-      </div>
-
-      {/* Tab Navigation */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px' }}>
-        <div style={{ display: 'flex', background: '#f3f4f6', padding: '4px', borderRadius: '12px', border: '1px solid #e5e7eb', width: 'fit-content' }}>
-          {['Today', 'Upcoming', 'History'].map((tab) => (
-            <button 
-              key={tab} 
-              onClick={() => setActiveTab(tab)}
-              style={{ 
-                padding: '10px 20px', borderRadius: '8px', border: 'none', 
-                background: activeTab === tab ? 'white' : 'transparent', 
-                color: activeTab === tab ? '#f97316' : '#4b5563', 
-                fontWeight: '600', fontSize: '14px', cursor: 'pointer',
-                boxShadow: activeTab === tab ? '0 1px 2px rgba(0,0,0,0.1)' : 'none'
-              }}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-        <input type="text" placeholder="Search learner..." value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 1, padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb' }} />
-      </div>
-
-      {/* List Display Area */}
-      <div style={{ background: 'white', borderRadius: '16px', padding: '24px', border: '1px solid #e5e7eb' }}>
         {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', border: '1px solid #e5e7eb', borderRadius: '12px', background: '#fafafa' }}>
-                <div>
-                  <Skeleton w="160px" h="16px" r="4px" />
-                  <div style={{ marginTop: '8px' }}><Skeleton w="210px" h="13px" r="4px" /></div>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '7px' }}>
-                  <Skeleton w="96px" h="14px" r="4px" />
-                  <Skeleton w="48px" h="12px" r="4px" />
-                  <Skeleton w="78px" h="22px" r="20px" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : displayBookings.length === 0 ? (
-          <p style={{ textAlign: 'center', color: '#6b7280' }}>No lessons found for {activeTab}.</p>
+          <>
+            <SkeletonStat /><SkeletonStat /><SkeletonStat /><SkeletonStat />
+          </>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {displayBookings.map((b) => (
-              <div 
-                key={b.booking_id} 
-                style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center', 
-                  padding: '16px', 
-                  border: '1px solid #e5e7eb', 
-                  borderRadius: '12px',
-                  background: '#fafafa'
+          [
+            { label: 'Todays', value: todayBookings.length, icon: CalendarCheck, tab: 'Today' },
+            { label: 'Upcoming', value: upcomingBookings.length, icon: Layers, tab: 'Upcoming' },
+            { label: 'Completed', value: bookings.filter(b => b.status === 'completed').length, icon: CheckCircle2, tab: 'History' },
+            { label: 'Cancelled', value: bookings.filter(b => b.status === 'cancelled').length, icon: AlertCircle, tab: 'History' },
+          ].map((stat, i) => {
+            return (
+              <div
+                key={i}
+                onClick={() => setActiveTab(stat.tab)}
+                style={{
+                  background: 'white', borderRadius: '16px', padding: '20px',
+                  border: '1px solid #e5e7eb',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer',
+                  transition: 'transform 0.1s ease'
                 }}
               >
-                {/* Learner Info Column */}
                 <div>
-                  <h3 style={{ margin: '0 0 4px', fontSize: '16px', fontWeight: '700', color: '#111827' }}>
-                    {b.learner?.first_name || 'N/A'} {b.learner?.surname || ''}
-                  </h3>
-                  <p style={{ margin: '0', fontSize: '13px', color: '#6b7280' }}>
-                    {b.learner?.phone_number || b.learner?.email || 'No contact info'}
-                  </p>
+                  <p style={{ margin: '0 0 4px', fontSize: '13px', color: '#6b7280' }}>{stat.label}</p>
+                  <p style={{ margin: 0, fontSize: '24px', fontWeight: '800', color: '#111827' }}>{stat.value}</p>
                 </div>
-
-                {/* Date & Status Info Column */}
-                <div style={{ textAlign: 'right' }}>
-                  <p style={{ margin: '0 0 4px', fontSize: '14px', fontWeight: '600', color: '#111827' }}>
-                    {b.lesson_slots?.slot_date ? new Date(b.lesson_slots.slot_date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : 'No Date'}
-                  </p>
-                  <p style={{ margin: '0 0 6px', fontSize: '12px', color: '#4b5563' }}>
-                    {b.lesson_slots?.slot_time ? b.lesson_slots.slot_time.slice(0, 5) : 'No Time'}
-                  </p>
-                  <span 
-                    style={{ 
-                      fontSize: '11px', 
-                      fontWeight: '700', 
-                      padding: '4px 8px', 
-                      borderRadius: '20px',
-                      textTransform: 'uppercase',
-                      background: b.status === 'scheduled' ? '#e0f2fe' : b.status === 'completed' ? '#dcfce7' : '#fee2e2',
-                      color: b.status === 'scheduled' ? '#0369a1' : b.status === 'completed' ? '#15803d' : '#b91c1c'
-                    }}
-                  >
-                    {b.status}
-                  </span>
+                <div style={{ background: '#f9fafb', padding: '10px', borderRadius: '10px' }}>
+                  <stat.icon size={20} color="#f97316" />
                 </div>
               </div>
-            ))}
-          </div>
+            )
+          })
         )}
       </div>
+
+      {/* Navigation and Search */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '24px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', background: '#f3f4f6', padding: '4px', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+          {['Today', 'Upcoming', 'History'].map(tab => (
+            <button key={tab} onClick={() => setActiveTab(tab)} style={{
+              padding: '10px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '14px',
+              background: activeTab === tab ? 'white' : 'transparent', color: activeTab === tab ? '#f97316' : '#4b5563',
+              boxShadow: activeTab === tab ? '0 1px 2px rgba(0,0,0,0.1)' : 'none'
+            }}>{tab}</button>
+          ))}
+        </div>
+        <input type="text" placeholder="Search learner..." value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 1, padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none' }} />
+      </div>
+
+      {message && <div style={{ background: '#fffbeb', border: '1px solid #fb923c', color: '#9a3412', padding: '12px 16px', borderRadius: '12px', marginBottom: '20px', fontWeight: '700' }}>{message}</div>}
+
+      {/* LESSON LIST */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {loading ? (
+          <>
+            <SkeletonLesson />
+            <SkeletonLesson />
+            <SkeletonLesson />
+          </>
+        ) : displayList.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px', background: 'white', borderRadius: '16px', color: '#6b7280' }}>No lessons found.</div>
+        ) : (
+          displayList.map((b) => (
+            <div key={b.booking_id} style={{ background: 'white', padding: '20px', borderRadius: '16px', border: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: '700', color: '#111827' }}>
+                    <CalendarCheck size={16} color="#f97316" /> {b.lesson_slots?.slot_date}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: '700', color: '#4b5563' }}>
+                    <Clock size={16} color="#6b7280" /> {b.lesson_slots?.slot_time?.slice(0, 5)}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 style={{ margin: '0 0 4px', fontSize: '17px', fontWeight: '800' }}>{b.learner?.first_name} {b.learner?.surname}</h3>
+                  <div style={{ display: 'flex', gap: '15px', color: '#6b7280', fontSize: '13px' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Phone size={14}/> {b.learner?.phone_number}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Mail size={14}/> {b.learner?.email}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <span style={{ 
+                  fontSize: '11px', fontWeight: '800', padding: '5px 12px', borderRadius: '20px', textTransform: 'uppercase',
+                  background: b.status === 'scheduled' ? '#e0f2fe' : b.status === 'completed' ? '#dcfce7' : '#fee2e2',
+                  color: b.status === 'scheduled' ? '#0369a1' : b.status === 'completed' ? '#15803d' : '#b91c1c'
+                }}>{b.status}</span>
+
+                {b.status === 'scheduled' && (
+                  <div style={{ position: 'relative' }}>
+                    <button onClick={() => setOpenMenuId(openMenuId === b.booking_id ? null : b.booking_id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '5px' }}>
+                      <MoreVertical size={20} color="#9ca3af" />
+                    </button>
+                    {openMenuId === b.booking_id && (
+                      <div style={{ position: 'absolute', right: 0, top: '30px', background: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 10px 15px rgba(0,0,0,0.1)', zIndex: 10, width: '180px', overflow: 'hidden' }}>
+                        <button onClick={() => { setSelectedBooking(b); setConfirmingComplete(true); setOpenMenuId(null); }} style={{ width: '100%', padding: '12px', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '700', color: '#059669', fontSize: '13px' }}>
+                          <CheckCircle2 size={16}/> Complete
+                        </button>
+                        <button onClick={() => { setSelectedBooking(b); setShowCancelDialog(true); setOpenMenuId(null); }} style={{ width: '100%', padding: '12px', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '700', color: '#dc2626', fontSize: '13px' }}>
+                          <AlertCircle size={16}/> Cancel
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* PERFORMANCE RECORDING SHEET */}
+      {showProgressSheet && selectedBooking && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(3px)', display: 'flex', justifyContent: 'flex-end', zIndex: 2000 }}>
+          <div style={{ width: '100%', maxWidth: '450px', background: 'white', height: '100%', padding: '30px', boxShadow: '-5px 0 25px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ fontSize: '20px', fontWeight: '900' }}>Record Performance</h2>
+              <button onClick={() => setShowProgressSheet(false)} style={{ border: 'none', background: '#f3f4f6', borderRadius: '50%', padding: '8px', cursor: 'pointer' }}><X size={20}/></button>
+            </div>
+      <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '30px' }}>Recording learner performance for <b>{selectedBooking.learner?.first_name}</b> on {selectedBooking.lesson_slots?.slot_date}.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '30px' }}>
+              <div>
+                <label style={{ fontWeight: '800', fontSize: '13px', marginBottom: '10px', display: 'block', textTransform: 'uppercase' }}>🎯 Steering</label>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  {[1, 2, 3, 4, 5].map(s => (
+                    <Star key={s} size={30} onClick={() => setSteeringRating(s)} fill={steeringRating >= s ? "#f97316" : "none"} color={steeringRating >= s ? "#f97316" : "#d1d5db"} style={{ cursor: 'pointer' }} />
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontWeight: '800', fontSize: '13px', marginBottom: '10px', display: 'block', textTransform: 'uppercase' }}>🅿 Parking</label>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  {[1, 2, 3, 4, 5].map(s => (
+                    <Star key={s} size={30} onClick={() => setParkingRating(s)} fill={parkingRating >= s ? "#f97316" : "none"} color={parkingRating >= s ? "#f97316" : "#d1d5db"} style={{ cursor: 'pointer' }} />
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontWeight: '800', fontSize: '13px', marginBottom: '10px', display: 'block', textTransform: 'uppercase' }}>🔄 Reversing</label>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  {[1, 2, 3, 4, 5].map(s => (
+                    <Star key={s} size={30} onClick={() => setReversingRating(s)} fill={reversingRating >= s ? "#f97316" : "none"} color={reversingRating >= s ? "#f97316" : "#d1d5db"} style={{ cursor: 'pointer' }} />
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontWeight: '800', fontSize: '13px', marginBottom: '10px', display: 'block', textTransform: 'uppercase' }}>👁 Road</label>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  {[1, 2, 3, 4, 5].map(s => (
+                    <Star key={s} size={30} onClick={() => setRoadAwarenessRating(s)} fill={roadAwarenessRating >= s ? "#f97316" : "none"} color={roadAwarenessRating >= s ? "#f97316" : "#d1d5db"} style={{ cursor: 'pointer' }} />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <label style={{ fontWeight: '800', fontSize: '13px', marginBottom: '10px', display: 'block', textTransform: 'uppercase' }}>Lesson Notes</label>
+            <textarea 
+              value={performanceNotes} onChange={e => setPerformanceNotes(e.target.value)}
+              placeholder="Enter details about what was covered, learner strengths, and areas for improvement..."
+              style={{ flex: 1, width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid #e5e7eb', fontSize: '15px', outline: 'none', resize: 'none', marginBottom: '20px' }}
+            />
+            <button onClick={savePerformanceRecord} disabled={savingProgress} style={{
+              background: '#f97316', color: 'white', border: 'none', padding: '16px', borderRadius: '14px', fontWeight: '900',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
+            }}>
+              <Save size={20}/> {savingProgress ? 'Saving...' : 'Save Performance to File'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modals */}
+      {confirmingComplete && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ background: 'white', padding: '30px', borderRadius: '20px', width: '90%', maxWidth: '400px' }}>
+            <h3 style={{ margin: '0 0 10px', fontSize: '18px', fontWeight: '900' }}>Confirm Complete</h3>
+<p style={{ color: '#6b7280', margin: '0 0 20px' }}>Mark this lesson as complete? You can then record the learner progress notes.</p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button onClick={() => setConfirmingComplete(false)} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #e5e7eb', fontWeight: '700' }}>Back</button>
+              <button onClick={markLessonComplete} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', background: '#059669', color: 'white', fontWeight: '700' }}>Complete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCancelDialog && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ background: 'white', padding: '30px', borderRadius: '20px', width: '90%', maxWidth: '400px' }}>
+            <h3 style={{ margin: '0 0 20px', fontSize: '18px', fontWeight: '900' }}>Cancel Lesson</h3>
+            <select value={cancelReasonOption} onChange={e => setCancelReasonOption(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #e5e7eb', marginBottom: '15px' }}>
+              <option value="">-- Select reason --</option>
+              <option value="No fuel">No fuel</option>
+              <option value="Vehicle breakdown">Vehicle breakdown</option>
+              <option value="Personal emergency">Personal emergency</option>
+              <option value="Other">Other</option>
+            </select>
+            {cancelReasonOption === 'Other' && <input placeholder="Details..." value={cancelOtherDetails} onChange={e => setCancelOtherDetails(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #e5e7eb', marginBottom: '15px' }} />}
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button onClick={() => setShowCancelDialog(false)} style={{ flex: 1, padding: '12px', border: '1px solid #e5e7eb', borderRadius: '12px' }}>Back</button>
+              <button onClick={cancelLesson} style={{ flex: 1, padding: '12px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '700' }}>Confirm Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

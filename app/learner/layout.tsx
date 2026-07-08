@@ -201,7 +201,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                   </span>
                 )}
               </div>
-              <div style={{ fontSize: 12, color: theme.textMuted }}>Click ✕ to dismiss</div>
+              <div style={{ fontSize: 12, color: theme.textMuted }}> </div>
             </div>
 
             <button
@@ -237,7 +237,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
               </div>
             ) : notifications.length === 0 ? (
               <div style={{ padding: '60px 8px', textAlign: 'center', color: theme.textMuted }}>
-                <div style={{ fontSize: 44, marginBottom: 12 }}>🔔</div>
+                <div style={{ fontSize: 44, marginBottom: 12 }}> </div>
                 <div style={{ fontWeight: 800, color: theme.textMain }}>No notifications</div>
                 <div>You&apos;re all caught up</div>
               </div>
@@ -256,24 +256,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                       alignItems: 'flex-start',
                     }}
                   >
-                    <div
-                      style={{
-                        width: 42,
-                        height: 42,
-                        borderRadius: 999,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: n.is_read ? '#f1f5f9' : '#ff5a0014',
-                        color: n.is_read ? theme.textMain : '#ff5a00',
-                        fontWeight: 900,
-                        flexShrink: 0,
-                      }}
-                      aria-hidden
-                    >
-                      {n.is_read ? '🔔' : '🟠'}
-                    </div>
-
+                   
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
                         <div style={{ fontWeight: 900, color: theme.textMain, fontSize: 13, lineHeight: 1.3, textTransform: 'capitalize' }}>

@@ -40,7 +40,7 @@ export default function SignupPage() {
   const [drivingClasses, setDrivingClasses] = useState<string[]>([])
 
   const drivingClassOptions = [
-    'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Provisional'
+    'Class 1' , 'Class 2', 'Class 3', 'Class 4', 'Provisional'
   ]
 
   function toggleDrivingClass(cls: string) {

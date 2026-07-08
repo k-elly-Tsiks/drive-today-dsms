@@ -142,7 +142,6 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
     { id: 'dashboard', label: 'Dashboard', path: '/instructor/dashboard', icon: <LayoutDashboard size={18} /> },
     { id: 'lessons', label: 'My Lessons', path: '/instructor/lessons', icon: <Calendar size={18} /> },
     { id: 'progress', label: 'Progress', path: '/instructor/progress', icon: <TrendingUp size={18} /> },
-    { id: 'notifications', label: 'Notifications', path: '/instructor/notifications', icon: <Bell size={18} /> },
     { id: 'profile', label: 'Profile', path: '/instructor/profile', icon: <UserSquare2 size={18} /> },
   ]
 

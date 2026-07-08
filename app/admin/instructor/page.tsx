@@ -27,13 +27,20 @@ import {
 type Instructor = {
   user_id: string
   first_name: string
+  second_name?: string | null
   surname: string
   email: string
-  phone_number?: string
-  address?: string
+  phone_number?: string | null
+  address?: string | null
   status: 'approved' | 'pending' | 'rejected' | 'suspended'
   role: string
-  driving_classes_taught?: string 
+  dob?: string | null
+  gender?: string | null
+  id_number?: string | null
+  instructor_driving_classes?: string | string[] | null
+  instructor_licence_number?: string | null
+  instructor_licence_code?: string | null
+  instructor_licence_validity?: string | null
   workload_capacity?: number // Equivalent to "Slots" for learners
   created_at: string
 }
@@ -44,6 +51,7 @@ type Lesson = {
   lesson_date: string
   start_time: string
   status: string
+  lesson_class?: string
   learner?: { first_name: string; surname: string }
 }
 
@@ -51,6 +59,18 @@ type TrainingClass = {
   class_name: string 
 }
 // ── Components ─────────────────────────────────────────────────────────────────
+
+function renderDrivingClasses(classes: unknown) {
+  if (!classes) return '—'
+  if (Array.isArray(classes)) {
+    if (classes.length === 0) return '—'
+    return classes.map((cls, i) => <div key={i}>{cls}</div>)
+  }
+  if (typeof classes === 'string') {
+    return classes.split(',').map((cls, i) => <div key={i}>{cls.trim()}</div>)
+  }
+  return '—'
+}
 
 function Avatar({ name, size = 38, idx = 0 }: { name: string; size?: number; idx?: number }) {
   const avatarColors = ['#2563eb', '#7c3aed', '#059669', '#d97706', '#dc2626', '#0891b2', '#db2777']
@@ -86,18 +106,19 @@ function TableSkeleton() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       {[1, 2, 3, 4, 5].map((i) => (
-        <div key={i} className="skeleton-row" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr 1fr 1.2fr 60px', padding: '20px 24px', alignItems: 'center', borderTop: '1px solid #f1f5f9' }}>
+        <div key={i} className="skeleton-row" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1.4fr 1fr 1fr 1fr 60px', padding: '20px 24px', alignItems: 'center', borderTop: '1px solid #f1f5f9' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
             <div className="skeleton-pulse" style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#e2e8f0' }} />
             <div style={{ flex: 1 }}>
               <div className="skeleton-pulse" style={{ width: '120px', height: '14px', borderRadius: '4px', background: '#e2e8f0', marginBottom: '8px' }} />
-              <div className="skeleton-pulse" style={{ width: '160px', height: '11px', borderRadius: '4px', background: '#e2e8f0' }} />
+              <div className="skeleton-pulse" style={{ width: '80px', height: '11px', borderRadius: '4px', background: '#e2e8f0' }} />
             </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center' }}><div className="skeleton-pulse" style={{ width: '80px', height: '14px', borderRadius: '4px', background: '#e2e8f0' }} /></div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}><div className="skeleton-pulse" style={{ width: '90px', height: '14px', borderRadius: '4px', background: '#e2e8f0' }} /></div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}><div className="skeleton-pulse" style={{ width: '110px', height: '14px', borderRadius: '4px', background: '#e2e8f0' }} /></div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}><div className="skeleton-pulse" style={{ width: '70px', height: '14px', borderRadius: '4px', background: '#e2e8f0' }} /></div>
           <div style={{ display: 'flex', justifyContent: 'center' }}><div className="skeleton-pulse" style={{ width: '75px', height: '22px', borderRadius: '12px', background: '#e2e8f0' }} /></div>
           <div style={{ display: 'flex', justifyContent: 'center' }}><div className="skeleton-pulse" style={{ width: '30px', height: '14px', borderRadius: '4px', background: '#e2e8f0' }} /></div>
-          <div style={{ display: 'flex', justifyContent: 'center' }}><div className="skeleton-pulse" style={{ width: '90px', height: '14px', borderRadius: '4px', background: '#e2e8f0' }} /></div>
           <div style={{ display: 'flex', justifyContent: 'center' }}><div className="skeleton-pulse" style={{ width: '20px', height: '20px', borderRadius: '4px', background: '#e2e8f0' }} /></div>
         </div>
       ))}
@@ -117,6 +138,7 @@ export default function InstructorsPage() {
 
   // Modals
   const [viewInstructor, setViewInstructor] = useState<Instructor | null>(null)
+  const [isEditing, setIsEditing]           = useState(false)
   const [editModal, setEditModal]           = useState<Instructor | null>(null)
   const [capacityModal, setCapacityModal]   = useState<Instructor | null>(null)
   const [confirmModal, setConfirmModal]     = useState<{ type: 'approve' | 'deactivate' | 'reactivate'; instructor: Instructor } | null>(null)
@@ -187,12 +209,16 @@ export default function InstructorsPage() {
   }, [loadInstructors, loadTrainingClasses]) 
 
   useEffect(() => {
+    setIsEditing(false)
+  }, [viewInstructor])
+
+  useEffect(() => {
     if (viewInstructor) {
       const fetchSchedule = async () => {
         setLoadingLessons(true)
         const { data, error } = await supabase
           .from('lessons')
-          .select('*, learner:users(first_name, surname)')
+          .select('*, lesson_class, learner:users(first_name, surname)')
           .eq('instructor_id', viewInstructor.user_id)
           .order('lesson_date', { ascending: true })
         if (!error) {
@@ -216,9 +242,9 @@ export default function InstructorsPage() {
       const updates = {
         first_name: fd.get('fn') as string,
         surname: fd.get('sn') as string,
-        phone_number: fd.get('ph') as string,
-        address: fd.get('addr') as string,
-        driving_classes_taught: fd.get('cls') as string,
+        phone_number: (fd.get('ph') as string) || null,
+        address: (fd.get('addr') as string) || null,
+        instructor_driving_classes: (fd.get('cls') as string) || null,
       }
       
       const { error } = await supabase.from('users').update(updates).eq('user_id', editModal.user_id)
@@ -232,6 +258,43 @@ export default function InstructorsPage() {
 
       showToast('Instructor profile updated successfully.', 'success')
       setEditModal(null)
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Update failed', 'error')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  async function onSaveDetailEdit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (!viewInstructor) return
+    
+    setActionLoading(true)
+    try {
+      const fd = new FormData(e.currentTarget)
+      const updates = {
+        first_name: fd.get('first_name') as string,
+        second_name: (fd.get('second_name') as string) || null,
+        surname: fd.get('surname') as string,
+        phone_number: (fd.get('phone_number') as string) || null,
+        address: (fd.get('address') as string) || null,
+        dob: (fd.get('dob') as string) || null,
+        gender: (fd.get('gender') as string) || null,
+        id_number: (fd.get('id_number') as string) || null,
+        instructor_driving_classes: (fd.get('instructor_driving_classes') as string) || null,
+        instructor_licence_number: (fd.get('instructor_licence_number') as string) || null,
+        instructor_licence_code: (fd.get('instructor_licence_code') as string) || null,
+        instructor_licence_validity: (fd.get('instructor_licence_validity') as string) || null,
+      }
+      
+      const { error } = await supabase.from('users').update(updates).eq('user_id', viewInstructor.user_id)
+      if (error) throw error
+
+      setInstructors(prev => prev.map(i => i.user_id === viewInstructor.user_id ? { ...i, ...updates } : i))
+      setViewInstructor(prev => prev ? { ...prev, ...updates } : null)
+
+      showToast('Instructor profile updated successfully.', 'success')
+      setIsEditing(false)
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Update failed', 'error')
     } finally {
@@ -290,7 +353,13 @@ export default function InstructorsPage() {
     const q = search.toLowerCase()
     return (!q || `${i.first_name} ${i.surname} ${i.email}`.toLowerCase().includes(q)) &&
            (statusFilter === 'all' || i.status === statusFilter) &&
-           (classFilter === 'all' || i.driving_classes_taught === classFilter)
+           (classFilter === 'all' || 
+             (Array.isArray(i.instructor_driving_classes) 
+               ? i.instructor_driving_classes.includes(classFilter) 
+               : typeof i.instructor_driving_classes === 'string' 
+                 ? i.instructor_driving_classes.split(',').map(c => c.trim()).includes(classFilter) 
+                 : false)
+           )
   })
 
   return (
@@ -404,46 +473,177 @@ export default function InstructorsPage() {
           <div className="modal-card" onClick={e => e.stopPropagation()}>
             <div style={{ padding: '24px 28px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <Avatar name={`${viewInstructor.first_name} ${viewInstructor.surname}`} size={52} />
+                  <Avatar name={`${viewInstructor.first_name} ${viewInstructor.second_name ? viewInstructor.second_name + ' ' : ''}${viewInstructor.surname}`} size={52} />
                   <div>
-                    <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: '#1e293b' }}>{viewInstructor.first_name} {viewInstructor.surname}</h2>
+                    <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: '#1e293b' }}>{viewInstructor.first_name} {viewInstructor.second_name ? viewInstructor.second_name + ' ' : ''}{viewInstructor.surname}</h2>
                     <div style={{ marginTop: '4px' }}><StatusBadge status={viewInstructor.status} /></div>
                   </div>
                </div>
-               <button onClick={() => setViewInstructor(null)} style={{ border: 'none', background: '#f1f5f9', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#e2e8f0'} onMouseLeave={e => e.currentTarget.style.background = '#f1f5f9'}><X size={16} /></button>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  {!isEditing && (
+                    <button 
+                      onClick={() => setIsEditing(true)} 
+                      className="custom-btn-secondary" 
+                      style={{ padding: '6px 14px', fontSize: '13px', height: '36px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      <Edit3 size={14} /> Edit Info
+                    </button>
+                  )}
+                  <button onClick={() => setViewInstructor(null)} style={{ border: 'none', background: '#f1f5f9', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#e2e8f0'} onMouseLeave={e => e.currentTarget.style.background = '#f1f5f9'}><X size={16} /></button>
+               </div>
             </div>
 
-            <div className="info-grid">
+            <form onSubmit={onSaveDetailEdit} className="info-grid">
               <div>
-                <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#0b1329', margin: '0 0 16px' }}>Instructor Profile</h3>
-                
-                <div className="info-label">Email Address</div>
-                <div className="info-value"><Mail size={15} color="#94a3b8" /> {viewInstructor.email}</div>
-                
-                <div className="info-label">Phone Number</div>
-                <div className="info-value"><Phone size={15} color="#94a3b8" /> {viewInstructor.phone_number || '—'}</div>
-                
-                <div className="info-label">Instructor Address</div>
-                <div className="info-value"><MapPin size={15} color="#94a3b8" /> {viewInstructor.address || '—'}</div>
+                {isEditing ? (
+                  <>
+                    <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#0b1329', margin: '0 0 16px' }}>Edit Personal & Contact Details</h3>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                      <div>
+                        <label className="info-label">First Name</label>
+                        <input name="first_name" defaultValue={viewInstructor.first_name} className="form-control" required />
+                      </div>
+                      <div>
+                        <label className="info-label">Second Name</label>
+                        <input name="second_name" defaultValue={viewInstructor.second_name || ''} className="form-control" />
+                      </div>
+                    </div>
 
-                <div className="info-label"> Teaching Class</div>
-                <div className="info-value">
-                   <Award size={15} color="#94a3b8" /> {viewInstructor.driving_classes_taught || 'General'}
-</div>
-                
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '8px' }}>
-                  <div>
-                    <div className="info-label">Teaching Class</div>
-                    <div className="info-value" style={{ margin: 0 }}><Award size={15} color="#94a3b8" /> {viewInstructor.driving_classes_taught || 'General'}</div>
-                  </div>
-                  <div>
-                    <div className="info-label">Weekly Capacity</div>
-                    <div className="info-value" style={{ color: '#ff5a00', margin: 0 }}><Zap size={15} color="#ff5a00" /> <b>{viewInstructor.workload_capacity || 0} lessons</b></div>
-                  </div>
-                </div>
+                    <div style={{ marginBottom: '12px' }}>
+                      <label className="info-label">Surname</label>
+                      <input name="surname" defaultValue={viewInstructor.surname} className="form-control" required />
+                    </div>
+
+                    <div style={{ marginBottom: '12px' }}>
+                      <label className="info-label">Phone Number</label>
+                      <input name="phone_number" defaultValue={viewInstructor.phone_number || ''} className="form-control" placeholder="e.g. +263..." />
+                    </div>
+
+                    <div style={{ marginBottom: '12px' }}>
+                      <label className="info-label">Home Address</label>
+                      <input name="address" defaultValue={viewInstructor.address || ''} className="form-control" placeholder="Street address details" />
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                      <div>
+                        <label className="info-label">Date of Birth</label>
+                        <input type="date" name="dob" defaultValue={viewInstructor.dob ? new Date(viewInstructor.dob).toISOString().split('T')[0] : ''} className="form-control" />
+                      </div>
+                      <div>
+                        <label className="info-label">Gender</label>
+                        <select name="gender" defaultValue={viewInstructor.gender || ''} className="form-control" style={{ cursor: 'pointer' }}>
+                          <option value="">Select Gender</option>
+                          <option value="Male">Male</option>
+                          <option value="Female">Female</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div style={{ marginBottom: '12px' }}>
+                      <label className="info-label">National ID Number</label>
+                      <input name="id_number" defaultValue={viewInstructor.id_number || ''} className="form-control" />
+                    </div>
+
+                    <div style={{ marginBottom: '16px' }}>
+                      <label className="info-label">Permitted Teaching Class</label>
+                      <select name="instructor_driving_classes" defaultValue={viewInstructor.instructor_driving_classes || ''} className="form-control" style={{ cursor: 'pointer' }}>
+                        <option value="">Select Class</option>
+                        {classOptions.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    </div>
+
+                    <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#0b1329', margin: '20px 0 10px' }}>License Information</h3>
+                    <div style={{ border: '1px solid #e2e8f0', borderRadius: '10px', padding: '16px', background: '#f8fafc', marginBottom: '20px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                        <div>
+                          <label className="info-label">License Number</label>
+                          <input name="instructor_licence_number" defaultValue={viewInstructor.instructor_licence_number || ''} className="form-control" />
+                        </div>
+                        <div>
+                          <label className="info-label">License Code</label>
+                          <input name="instructor_licence_code" defaultValue={viewInstructor.instructor_licence_code || ''} className="form-control" placeholder="e.g. Code 4" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="info-label">License Expiry / Validity</label>
+                        <input type="date" name="instructor_licence_validity" defaultValue={viewInstructor.instructor_licence_validity ? new Date(viewInstructor.instructor_licence_validity).toISOString().split('T')[0] : ''} className="form-control" />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                      <button type="submit" className="custom-btn-primary" disabled={actionLoading} style={{ flex: 1, justifyContent: 'center' }}>
+                        {actionLoading ? 'Saving...' : 'Save Changes'}
+                      </button>
+                      <button type="button" className="custom-btn-secondary" onClick={() => setIsEditing(false)} style={{ flex: 1, justifyContent: 'center' }}>
+                        Cancel
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#0b1329', margin: '0 0 16px' }}>Personal & Contact Details</h3>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <div>
+                        <div className="info-label">First Name</div>
+                        <div className="info-value" style={{ margin: 0 }}>{viewInstructor.first_name}</div>
+                      </div>
+                      <div>
+                        <div className="info-label">Second Name</div>
+                        <div className="info-value" style={{ margin: 0 }}>{viewInstructor.second_name || '—'}</div>
+                      </div>
+                    </div>
+
+                    <div className="info-label" style={{ marginTop: '16px' }}>Surname</div>
+                    <div className="info-value">{viewInstructor.surname}</div>
+
+                    <div className="info-label">Email Address</div>
+                    <div className="info-value"><Mail size={15} color="#94a3b8" /> {viewInstructor.email}</div>
+                    
+                    <div className="info-label">Phone Number</div>
+                    <div className="info-value"><Phone size={15} color="#94a3b8" /> {viewInstructor.phone_number || '—'}</div>
+
+                    <div className="info-label">Home Address</div>
+                    <div className="info-value"><MapPin size={15} color="#94a3b8" /> {viewInstructor.address || '—'}</div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '8px' }}>
+                      <div>
+                        <div className="info-label">Date of Birth</div>
+                        <div className="info-value" style={{ margin: 0 }}>{viewInstructor.dob ? new Date(viewInstructor.dob).toLocaleDateString() : '—'}</div>
+                      </div>
+                      <div>
+                        <div className="info-label">Gender</div>
+                        <div className="info-value" style={{ margin: 0 }}>{viewInstructor.gender || '—'}</div>
+                      </div>
+                    </div>
+
+                    <div className="info-label" style={{ marginTop: '16px' }}>National ID Number</div>
+                    <div className="info-value">{viewInstructor.id_number || '—'}</div>
+
+                    <div className="info-label" style={{ marginTop: '16px' }}>Teaching Classes</div>
+                    <div className="info-value" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                      {renderDrivingClasses(viewInstructor.instructor_driving_classes)}
+                    </div>
+
+                    <div className="info-label" style={{ marginTop: '16px' }}>Instructor License Details</div>
+                    <div style={{ border: '1px solid #e2e8f0', borderRadius: '10px', padding: '12px', background: '#f8fafc' }}>
+                      <div className="info-value" style={{ margin: 0, justifyContent: 'space-between' }}>
+                        <span>{viewInstructor.instructor_licence_number || 'No license number'}</span>
+                        <span style={{ fontSize: '12px', fontWeight: '700', background: '#e2e8f0', color: '#475569', padding: '3px 8px', borderRadius: '6px' }}>
+                          Code: {viewInstructor.instructor_licence_code || 'N/A'}
+                        </span>
+                      </div>
+                      <div className="info-label" style={{ marginTop: '8px', marginBottom: '2px' }}>Validity</div>
+                      <div className="info-value" style={{ margin: 0, fontSize: '13px' }}>
+                        {viewInstructor.instructor_licence_validity ? `Expires on ${new Date(viewInstructor.instructor_licence_validity).toLocaleDateString()}` : '—'}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
-              <div className="schedule-card">
+              <div className="schedule-card" style={{ height: 'fit-content' }}>
                 <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#0b1329', marginTop: 0, marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={16} color="#64748b" /> Work Schedule</h3>
                 {loadingLessons ? (
                   <div style={{ padding: '20px 0', textAlign: 'center', color: '#94a3b8', fontSize: '13px' }} className="skeleton-pulse">Fetching records...</div>
@@ -452,12 +652,12 @@ export default function InstructorsPage() {
                     <p style={{ fontSize: '13px', margin: 0 }}>No lessons assigned yet.</p>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '240px', overflowY: 'auto', paddingRight: '4px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '350px', overflowY: 'auto', paddingRight: '4px' }}>
                     {instructorLessons.map(lesson => (
                       <div key={lesson.id} style={{ background: 'white', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
                           <div style={{ fontWeight: '600', fontSize: '13px', color: '#1e293b' }}>{new Date(lesson.lesson_date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</div>
-                          <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>{lesson.start_time} • {lesson.learner?.first_name}</div>
+                          <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>{lesson.start_time} • {lesson.learner?.first_name} ({lesson.lesson_class || 'N/A'})</div>
                         </div>
                         <span style={{ fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '6px', background: '#f1f5f9', color: '#475569' }}>{lesson.status.toUpperCase()}</span>
                       </div>
@@ -465,7 +665,7 @@ export default function InstructorsPage() {
                   </div>
                 )}
               </div>
-            </div>
+            </form>
           </div>
         </div>
       )}
@@ -489,21 +689,22 @@ export default function InstructorsPage() {
 
             <div style={{ marginBottom: '14px' }}>
               <label className="info-label">Phone Connection</label>
-              <input name="ph" defaultValue={editModal.phone_number} className="form-control" placeholder="e.g. +263..." />
+              <input name="ph" defaultValue={editModal.phone_number || ''} className="form-control" placeholder="e.g. +263..." />
             </div>
 
             <div style={{ marginBottom: '14px' }}>
               <label className="info-label">Address Placement</label>
-              <input name="addr" defaultValue={editModal.address} className="form-control" placeholder="Street layout details" />
+              <input name="addr" defaultValue={editModal.address || ''} className="form-control" placeholder="Street layout details" />
             </div>
 
             <div style={{ marginBottom: '24px' }}>
               <label className="info-label">Permitted Teaching Class</label>
-              <select name="cls" defaultValue={editModal.driving_classes_taught} className="form-control" style={{ cursor: 'pointer' }}>
+              <select name="cls" defaultValue={editModal.instructor_driving_classes || ''} className="form-control" style={{ cursor: 'pointer' }}>
                 <option value="">Select Permitted Class</option>
                 {classOptions.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
+            
 
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
               <button type="button" className="custom-btn-secondary" onClick={() => setEditModal(null)}>Cancel</button>
@@ -589,81 +790,82 @@ export default function InstructorsPage() {
         {/* DATAGRID CONTAINER */}
         <div style={{ background: 'white', borderRadius: '14px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01)', overflow: 'hidden' }}>
           <div style={{ overflowX: 'auto' }}>
-            <div style={{ minWidth: '950px' }}>
+            <div style={{ minWidth: '900px' }}>
               
-              {/* Header Columns Matrix */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr 1fr 1.2fr 60px', padding: '14px 24px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#64748b', fontSize: '11px', fontWeight: '700', letterSpacing: '0.5px' }}>
-                <span>INSTRUCTOR IDENTIFICATION DETAILS</span>
+              {/* Header Columns */}
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1.4fr 1fr 1fr 1fr 60px', padding: '14px 24px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#64748b', fontSize: '11px', fontWeight: '700', letterSpacing: '0.5px' }}>
+                <span>INSTRUCTOR</span>
+                <span style={{ textAlign: 'center' }}>PHONE</span>
+                <span style={{ textAlign: 'center' }}>ADDRESS</span>
                 <span style={{ textAlign: 'center' }}>TEACHING CLASS</span>
                 <span style={{ textAlign: 'center' }}>STAFF STATUS</span>
                 <span style={{ textAlign: 'center' }}>LESSON CAPACITY</span>
-                <span style={{ textAlign: 'center' }}>JOINED DATE</span>
                 <span></span>
               </div>
 
-              {/* Data Content Body */}
+              {/* Data Rows */}
               {loading ? (
                 <TableSkeleton />
               ) : filtered.length === 0 ? (
                 <div style={{ padding: '50px 24px', textAlign: 'center', color: '#94a3b8', fontSize: '14px', fontWeight: '500' }}>
-                  No instructors match the current search or filter query selection matrix.
+                  No instructors match the current search or filter.
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   {filtered.map((inst, idx) => (
-                    <div key={inst.user_id} className="instructor-row" onClick={() => setViewInstructor(inst)} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr 1fr 1.2fr 60px', padding: '14px 24px', alignItems: 'center', borderTop: idx !== 0 ? '1px solid #f1f5f9' : 'none', cursor: 'pointer' }}>
-                      
-                      {/* Column 1: Identity */}
+                    <div key={inst.user_id} className="instructor-row" onClick={() => setViewInstructor(inst)} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1.4fr 1fr 1fr 1fr 60px', padding: '14px 24px', alignItems: 'center', borderTop: idx !== 0 ? '1px solid #f1f5f9' : 'none', cursor: 'pointer' }}>
+
+                      {/* Instructor identity */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
-                        <Avatar name={`${inst.first_name} ${inst.surname}`} idx={idx} size={36} />
+                        <Avatar name={`${inst.first_name} ${inst.second_name ? inst.second_name + ' ' : ''}${inst.surname}`} idx={idx} size={36} />
                         <div style={{ minWidth: 0 }}>
-                          <div style={{ fontWeight: '600', fontSize: '14px', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{inst.first_name} {inst.surname}</div>
-                          <div style={{ fontSize: '12px', color: '#94a3b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: '2px' }}>{inst.email}</div>
+                          <div style={{ fontWeight: '600', fontSize: '14px', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{inst.first_name} {inst.second_name ? inst.second_name + ' ' : ''}{inst.surname}</div>
+                          <div style={{ fontSize: '11.5px', color: '#94a3b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: '2px' }}>{inst.email}</div>
                         </div>
                       </div>
-                      
-                      {/* Column 2: Driving Class */}
-                      <div style={{ fontSize: '13px', fontWeight: '600', color: '#475569', textAlign: 'center' }}>
-                        {inst.driving_classes_taught ? (
-                          <span style={{ background: '#f1f5f9', padding: '4px 10px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>{inst.driving_classes_taught}</span>
-                        ) : '—'}
+
+                      {/* Phone */}
+                      <div style={{ fontSize: '13px', fontWeight: '500', color: '#475569', textAlign: 'center' }}>
+                        {inst.phone_number || '—'}
                       </div>
-                      
-                      {/* Column 3: Status Badge */}
+
+                      {/* Address */}
+                      <div style={{ fontSize: '13px', fontWeight: '500', color: '#475569', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {inst.address || '—'}
+                      </div>
+
+                      {/* Teaching Class */}
+                      <div style={{ fontSize: '13px', fontWeight: '600', color: '#475569', textAlign: 'center' }}>
+                        {renderDrivingClasses(inst.instructor_driving_classes)}
+                      </div>
+
+                      {/* Staff Status */}
                       <div style={{ display: 'flex', justifyContent: 'center' }}>
                         <StatusBadge status={inst.status} />
                       </div>
-                      
-                      {/* Column 4: Slots Allocated */}
-                      <div style={{ fontWeight: '700', color: '#ff5a00', fontSize: '14px', textAlign: 'center' }}>
-                        {inst.workload_capacity || 0}
+
+                      {/* Lesson Capacity */}
+                      <div style={{ fontWeight: '700', color: '#ff5a00', fontSize: '15px', textAlign: 'center' }}>
+                        {inst.workload_capacity ?? '—'}
                       </div>
-                      
-                      {/* Column 5: Created At */}
-                      <div style={{ fontSize: '12.5px', color: '#64748b', fontWeight: '500', textAlign: 'center' }}>
-                        {new Date(inst.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
-                      </div>
-                      
-                      {/* Column 6: Action Overlay */}
-                      <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }} onClick={e => e.stopPropagation()}>
+
+                      {/* Action dots */}
+                      <div style={{ position: 'relative', display: 'flex', justifyContent: 'flex-end' }} onClick={e => e.stopPropagation()}>
                         <button onClick={() => setOpenMenu(openMenu === inst.user_id ? null : inst.user_id)} style={{ border: 'none', background: 'transparent', width: '30px', height: '30px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
                           <MoreVertical size={16} />
                         </button>
-                        
+
                         {openMenu === inst.user_id && (
                           <div ref={menuRef} style={{ position: 'absolute', right: '100%', top: '0', background: 'white', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.02)', zIndex: 100, width: '180px', overflow: 'hidden', marginRight: '4px' }}>
                             <button className="menu-item" onClick={() => { setViewInstructor(inst); setOpenMenu(null); }}><User size={14} /> View Record</button>
                             <button className="menu-item" onClick={() => { setEditModal(inst); setOpenMenu(null); }}><Edit3 size={14} /> Edit Details</button>
                             <button className="menu-item" onClick={() => { setCapacityModal(inst); setCapacityInput(String(inst.workload_capacity || 0)); setOpenMenu(null); }}><Zap size={14} /> Set Capacity</button>
-                            
                             {inst.status === 'pending' && (
                               <button className="menu-item" style={{ color: '#16a34a' }} onClick={() => { setConfirmModal({ type: 'approve', instructor: inst }); setOpenMenu(null); }}><CheckCircle size={14} /> Approve Staff</button>
                             )}
-                            
                             {inst.status === 'approved' && (
                               <button className="menu-item" style={{ color: '#dc2626' }} onClick={() => { setConfirmModal({ type: 'deactivate', instructor: inst }); setOpenMenu(null); }}><Ban size={14} /> Deactivate</button>
                             )}
-                            
                             {inst.status === 'suspended' && (
                               <button className="menu-item" style={{ color: '#2563eb' }} onClick={() => { setConfirmModal({ type: 'reactivate', instructor: inst }); setOpenMenu(null); }}><RotateCcw size={14} /> Reactivate Profile</button>
                             )}

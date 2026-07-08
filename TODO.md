@@ -1,15 +1,7 @@
 # TODO
 
-## Design unification: Instructor + Learner -> match Admin
-- [x] Inspect learner/instructor pages and identify inline button/card/background styling differences vs admin.
-- [x] Refactor `app/instructor/dashboard/page.tsx` to use shared cards/stat cards.
-
-
-
-- [ ] Refactor `app/instructor/lessons/page.tsx` to use shared cards/buttons.
-
-- [ ] Refactor `app/instructor/progress/page.tsx` to use shared card/button components and remove duplicated inline styling where possible.
-- [ ] Refactor `app/learner/lessons/page.tsx` similarly.
-
-- [ ] Run `npm run lint` and `npx tsc --noEmit` to ensure there are no errors.
+- [ ] Update `app/instructor/lessons/page.tsx` to record **separate** ratings for Steering, Parking, Reversing, and Road (instead of one shared rating).
+- [ ] Ensure ratings persist to `progress_tracking` fields: `steering_rating`, `parking_rating`, `reversing_rating`, `road_awareness_rating`.
+- [ ] Ensure the instructor “Complete” flow updates `lesson_bookings.status` to `completed`, then shows performance sheet, then after saving progress reloads bookings and switches UI to `History`.
+- [ ] Run `npm run lint` and `npm run build` to confirm TypeScript/ESLint passes.
 
