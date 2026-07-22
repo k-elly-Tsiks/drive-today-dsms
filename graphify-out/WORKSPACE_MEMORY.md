@@ -1,6 +1,6 @@
 # Workspace Memory
 This file is maintained automatically by Code Janitor so Claude, Codex, Bob, and any other AI agent can reuse repo context without rescanning everything from scratch.
-Generated: 2026-07-08T08:37:42.524Z
+Generated: 2026-07-22T08:32:21.218Z
 Workspace: drive-today-dsms
 Workspace root: c:\Users\kelly\Desktop\drive-today-dsms
 Refresh reason: tracked-change
@@ -16,13 +16,13 @@ Structured manifest: workspace.json
 - Audience: any AI agent working in this repository can treat this file as the current handoff ledger.
 - Graphify report: not available yet
 - Graphify graph: not available yet
-- Last activity: 2026-07-08T08:37:40.601Z
+- Last activity: 2026-07-22T08:32:18.378Z
 ## Workspace Focus
-- Active file in focus: app/admin/lessons/page.tsx
-- Hottest files right now: app/admin/learner/page.tsx (10), app/admin/instructor/page.tsx (3), app/admin/lessons/page.tsx (3)
-- Suggested starting points: app/admin/lessons/page.tsx, app/admin/learner/page.tsx, app/admin/instructor/page.tsx, .github/modernize/code-migration/.gitignore, .gitignore, AGENTS.md
+- Active file in focus: app/instructor/notifications/page.tsx
+- Hottest files right now: app/admin/learner/page.tsx (10), app/admin/instructor/page.tsx (3), app/admin/lessons/page.tsx (3), app/admin/dashboard/page.tsx (1)
+- Suggested starting points: app/instructor/notifications/page.tsx, app/admin/learner/page.tsx, app/admin/instructor/page.tsx, app/admin/lessons/page.tsx, app/admin/dashboard/page.tsx, app/admin/reports/page.tsx
 ## Current Workspace
-- Active file: app/admin/lessons/page.tsx
+- Active file: app/instructor/notifications/page.tsx
 - Tracked files in snapshot: 70
 - Top-level areas: app (44), [root] (17), public (6), lib (2), .github (1)
 - Primary file types: .tsx (40), .ts (6), .md (5), .svg (5), .json (4), .mjs (2), [no extension] (2), .css (1)
@@ -34,11 +34,23 @@ Structured manifest: workspace.json
 - Runtime dependencies: @supabase/ssr, @supabase/supabase-js, lucide-react, next, react, react-dom
 - Dev dependencies: @tailwindcss/postcss, @types/node, @types/react, @types/react-dom, eslint, eslint-config-next, html2canvas, jspdf, tailwindcss, typescript
 ## Current Stack
-- Logged change events: 16
-- Change mix: save (16)
-- Remembered file snapshots: 3
-- Working tree summary: 16 modifieds, 4 untrackeds
+- Logged change events: 20
+- Change mix: save (20)
+- Remembered file snapshots: 7
+- Working tree summary: 7 modifieds
 ## Tracked Snapshots
+- app/instructor/lessons/page.tsx | 443 lines | 23665 chars | hash 1f0361923609
+  Last snapshot: 2026-07-22T08:32:18.378Z
+  Preview: "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Layers, CalendarCheck, CheckCir..."
+- app/admin/reports/page.tsx | 898 lines | 46337 chars | hash 0114f9f5d49b
+  Last snapshot: 2026-07-22T08:31:46.937Z
+  Preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / TrendingUp, / TrendingD..."
+- app/admin/dashboard/page.tsx | 617 lines | 34933 chars | hash 99c08fbe9aaa
+  Last snapshot: 2026-07-22T08:29:59.712Z
+  Preview: "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Users, UserCheck, Calendar, Dolla..."
+- app/instructor/dashboard/page.tsx | 299 lines | 11183 chars | hash 90a106cf66a1
+  Last snapshot: 2026-07-22T08:29:21.448Z
+  Preview: "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Calendar, CheckCircle, Clock, Use..."
 - app/admin/lessons/page.tsx | 801 lines | 42505 chars | hash d03f97f24d2c
   Last snapshot: 2026-07-08T08:37:40.601Z
   Preview: "'use client' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' // / import React, { useState, useEffect, useCallback, useRef } from 'react' / const supabase = createC..."
@@ -50,6 +62,30 @@ Structured manifest: workspace.json
   Preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use..."
 
 ## Recent Changes
+### 2026-07-22T08:32:18.378Z | saved | app/instructor/lessons/page.tsx
+- Summary: Line 76: removed 3 lines.
+- Before: 445 lines | 23,740 chars | hash c93a882f973b | preview: "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Layers, CalendarCheck, CheckCir..."
+- After: 443 lines | 23,665 chars | hash 1f0361923609 | preview: "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Layers, CalendarCheck, CheckCir..."
+- Previous fragment: "hoveredStat, setHoveredStat] = useState<number | null>(null) / const ["
+
+### 2026-07-22T08:31:46.937Z | saved | app/admin/reports/page.tsx
+- Summary: Line 293: removed 1 line.
+- Before: 898 lines | 46,350 chars | hash c27056e31f5d | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / TrendingUp, / TrendingD..."
+- After: 898 lines | 46,337 chars | hash 0114f9f5d49b | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / TrendingUp, / TrendingD..."
+- Previous fragment: ", html2canvas"
+
+### 2026-07-22T08:29:59.712Z | saved | app/admin/dashboard/page.tsx
+- Summary: Line 264: removed 1 line.
+- Before: 617 lines | 35,042 chars | hash eb371be63c01 | preview: "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Users, UserCheck, Calendar, Dolla..."
+- After: 617 lines | 34,933 chars | hash 99c08fbe9aaa | preview: "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Users, UserCheck, Calendar, Dolla..."
+- Previous fragment: "const maxWorkload = instructorWorkload.length > 0 ? Math.max(...instructorWorkload.map(i => i.count), 1) : 1"
+
+### 2026-07-22T08:29:21.448Z | saved | app/instructor/dashboard/page.tsx
+- Summary: Line 8: removed 3 lines.
+- Before: 301 lines | 11,373 chars | hash af19f2505808 | preview: "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Calendar, CheckCircle, Clock, Use..."
+- After: 299 lines | 11,183 chars | hash 90a106cf66a1 | preview: "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Calendar, CheckCircle, Clock, Use..."
+- Previous fragment: "import { DTCard } from '@/app/_components/ui/dt-card' / import { DTStatCard } from '@/app/_components/ui/dt-stat-card' / import { dtTheme } from '@/app/_components/ui/learner-in..."
+
 ### 2026-07-08T08:37:40.601Z | saved | app/admin/lessons/page.tsx
 - Summary: Saved without a textual diff.
 - Before: 801 lines | 42,505 chars | hash d03f97f24d2c | preview: "'use client' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' // / import React, { useState, useEffect, useCallback, useRef } from 'react' / const supabase = createC..."
@@ -103,60 +139,41 @@ Structured manifest: workspace.json
 - After: 836 lines | 48,992 chars | hash f3d9f5d0e532 | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use..."
 - Previous fragment: "driving_classes_taken?: string | null"
 
-### 2026-07-07T14:04:06.665Z | saved | app/admin/learner/page.tsx
-- Summary: Line 212: replaced 4 lines with 5 lines.
-- Before: 677 lines | 39,326 chars | hash 5c3cfa3f9c8f | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use..."
-- After: 678 lines | 39,343 chars | hash 88942138d399 | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use..."
-- Previous fragment: "null, / address: (fd.get('addr') as string) || null, / driving_classes_taken: (fd.get('cls') as string) || null, / }"
-- Current fragment: "undefined, / address: (fd.get('addr') as string) || undefined, / driving_classes_taken: (fd.get('cls') as string) || undefined, / }"
-
-### 2026-07-07T14:03:31.370Z | saved | app/admin/learner/page.tsx
-- Summary: Line 33: replaced 16 lines with 17 lines.
-- Before: 676 lines | 39,296 chars | hash 88fab422b248 | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use..."
-- After: 677 lines | 39,326 chars | hash 5c3cfa3f9c8f | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use..."
-- Previous fragment: "address?: string / status: 'approved' | 'pending' | 'rejected' | 'suspended' / role: string / slots_allocated?: number / driving_class?: string / driving_classes_taken?: string..."
-- Current fragment: "| null / address?: string | null / status: 'approved' | 'pending' | 'rejected' | 'suspended' / role: string / slots_allocated?: number / driving_class?: string | null / driving_..."
-
-### 2026-07-07T14:02:50.934Z | saved | app/admin/learner/page.tsx
-- Summary: Line 211: replaced 4 lines with 5 lines.
-- Before: 675 lines | 39,264 chars | hash 034beacec4c1 | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use..."
-- After: 676 lines | 39,296 chars | hash 88fab422b248 | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use..."
-- Previous fragment: "fd.get('ph') as string, / address: fd.get('addr') as string, / driving_classes_taken: fd.get('cls') as string, / }"
-- Current fragment: "(fd.get('ph') as string) || null, / address: (fd.get('addr') as string) || null, / driving_classes_taken: (fd.get('cls') as string) || null, / }"
-
-### 2026-07-07T14:02:28.363Z | saved | app/admin/learner/page.tsx
-- Summary: Line 229: replaced 2 lines with 3 lines.
-- Before: 674 lines | 39,247 chars | hash 21507edbe0f9 | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use..."
-- After: 675 lines | 39,264 chars | hash 034beacec4c1 | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use..."
-- Previous fragment: "String(err || 'Failed to update learner') / showToast(message, 'error')"
-- Current fragment: "(err ? JSON.stringify(err) : 'Failed to update learner') / showToast(message, 'error')"
-
 
 ## Hot Files
 - app/admin/learner/page.tsx (10 tracked changes)
 - app/admin/instructor/page.tsx (3 tracked changes)
 - app/admin/lessons/page.tsx (3 tracked changes)
+- app/admin/dashboard/page.tsx (1 tracked changes)
+- app/admin/reports/page.tsx (1 tracked changes)
+- app/instructor/dashboard/page.tsx (1 tracked changes)
+- app/instructor/lessons/page.tsx (1 tracked changes)
 
 ## Git Snapshot
 - Branch: blackboxai/learner-admin-consistency
-- HEAD: 2026-06-24 7ddaf38 notification layout
-- Working tree summary: 16 modifieds, 4 untrackeds
-- M TODO.md
+- HEAD: 2026-07-08 be3b009 changes from 8 july
+- Working tree summary: 7 modifieds
 - M app/admin/dashboard/page.tsx
-- M app/admin/instructor/page.tsx
-- M app/admin/layout.tsx
-- M app/admin/learner/page.tsx
-- M app/admin/lessons/page.tsx
 - M app/admin/reports/page.tsx
-- M app/instructor/layout.tsx
+- M app/instructor/dashboard/page.tsx
 - M app/instructor/lessons/page.tsx
-- M app/instructor/profile/page.tsx
-- M app/learner/layout.tsx
-- M app/learner/lessons/page.tsx
-- Additional git status lines were omitted for brevity.
+- M graphify-out/WORKSPACE_MEMORY.md
+- M workspace.json
+- M workspacememory.md
 
 ## GitHub Snapshot
-GitHub context unavailable: fetch failed
+GitHub Repository: k-elly-Tsiks/drive-today-dsms
+Visibility: public | Default branch: main
+Stars: 0 | Forks: 0 | Open issues: 1
+
+Latest commit on main:
+- f958f51 by k-elly-Tsiks on 2026-06-23
+  feat(ui): unify learner/instructor card + button styles
+
+Open pull requests:
+- #1 Fix instructor dashboard and align learner/instructor workspace (k-elly-Tsiks, open)
+
+URL: https://github.com/k-elly-Tsiks/drive-today-dsms
 
 ## Graphify Snapshot
 Graphify report not found. Generate Graphify output if you want architecture-aware memory excerpts here.

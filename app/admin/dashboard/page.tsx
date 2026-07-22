@@ -261,7 +261,7 @@ export default function AdminDashboard() {
   }
 
   const avatarColors = ['#ff5a00', '#2563eb', '#059669', '#7c3aed', '#0891b2']
-  const maxWorkload = instructorWorkload.length > 0 ? Math.max(...instructorWorkload.map(i => i.count), 1) : 1
+ 
 
   // Option 2 Minimal Style Configurations for metric blocks
   const statCards = [

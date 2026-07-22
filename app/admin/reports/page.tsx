@@ -290,7 +290,7 @@ export default function ReportsPage() {
 
   const exportCombinedPDF = async () => {
     try {
-      const [{ default: jsPDF }, html2canvas] = await Promise.all([
+      const [{ default: jsPDF }] = await Promise.all([
         import('jspdf'),
         import('html2canvas'),
       ])

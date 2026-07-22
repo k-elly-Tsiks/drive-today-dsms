@@ -73,8 +73,6 @@ export default function InstructorLessonsPage() {
   const [search, setSearch] = useState('')
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   
-  const [hoveredStat, setHoveredStat] = useState<number | null>(null)
-  
   const [confirmingComplete, setConfirmingComplete] = useState(false)
   const [showCancelDialog, setShowCancelDialog] = useState(false)
   const [showProgressSheet, setShowProgressSheet] = useState(false)

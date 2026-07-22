@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-08T08:37:42.524Z",
-  "generatedAtEpochMs": 1783499862524,
+  "generatedAt": "2026-07-22T08:32:21.218Z",
+  "generatedAtEpochMs": 1784709141218,
   "generator": {
     "name": "Code Janitor",
     "feature": "workspace-memory"
@@ -14,7 +14,7 @@
   "workspace": {
     "name": "drive-today-dsms",
     "root": "c:\\Users\\kelly\\Desktop\\drive-today-dsms",
-    "activeFile": "app/admin/lessons/page.tsx",
+    "activeFile": "app/instructor/notifications/page.tsx",
     "refreshReason": "tracked-change",
     "outputFiles": {
       "markdown": "graphify-out/WORKSPACE_MEMORY.md",
@@ -22,17 +22,18 @@
       "structuredManifest": "workspace.json"
     },
     "suggestedStartingPoints": [
-      "app/admin/lessons/page.tsx",
+      "app/instructor/notifications/page.tsx",
       "app/admin/learner/page.tsx",
       "app/admin/instructor/page.tsx",
+      "app/admin/lessons/page.tsx",
+      "app/admin/dashboard/page.tsx",
+      "app/admin/reports/page.tsx",
+      "app/instructor/dashboard/page.tsx",
+      "app/instructor/lessons/page.tsx",
       ".github/modernize/code-migration/.gitignore",
       ".gitignore",
       "AGENTS.md",
-      "README.md",
-      "package-lock.json",
-      "package.json",
-      "pnpm-lock.yaml",
-      "tsconfig.json"
+      "README.md"
     ],
     "stats": {
       "totalFiles": 70,
@@ -571,17 +572,49 @@
     }
   },
   "currentStack": {
-    "lastActivityAt": "2026-07-08T08:37:40.601Z",
-    "trackedChangeCount": 16,
-    "trackedFileSnapshotCount": 3,
+    "lastActivityAt": "2026-07-22T08:32:18.378Z",
+    "trackedChangeCount": 20,
+    "trackedFileSnapshotCount": 7,
     "changeTypeCounts": {
-      "save": 16,
+      "save": 20,
       "create": 0,
       "delete": 0,
       "rename": 0
     }
   },
   "trackedSnapshots": [
+    {
+      "filePath": "app/instructor/lessons/page.tsx",
+      "updatedAt": 1784709138378,
+      "lineCount": 443,
+      "charCount": 23665,
+      "hash": "1f0361923609",
+      "preview": "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Layers, CalendarCheck, CheckCir..."
+    },
+    {
+      "filePath": "app/admin/reports/page.tsx",
+      "updatedAt": 1784709106937,
+      "lineCount": 898,
+      "charCount": 46337,
+      "hash": "0114f9f5d49b",
+      "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / TrendingUp, / TrendingD..."
+    },
+    {
+      "filePath": "app/admin/dashboard/page.tsx",
+      "updatedAt": 1784708999712,
+      "lineCount": 617,
+      "charCount": 34933,
+      "hash": "99c08fbe9aaa",
+      "preview": "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Users, UserCheck, Calendar, Dolla..."
+    },
+    {
+      "filePath": "app/instructor/dashboard/page.tsx",
+      "updatedAt": 1784708961448,
+      "lineCount": 299,
+      "charCount": 11183,
+      "hash": "90a106cf66a1",
+      "preview": "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Calendar, CheckCircle, Clock, Use..."
+    },
     {
       "filePath": "app/admin/lessons/page.tsx",
       "updatedAt": 1783499860601,
@@ -608,6 +641,134 @@
     }
   ],
   "recentChanges": [
+    {
+      "type": "save",
+      "path": "app/instructor/lessons/page.tsx",
+      "toPath": "",
+      "summary": "Line 76: removed 3 lines.",
+      "recordedAt": "2026-07-22T08:32:18.378Z",
+      "recordedAtEpochMs": 1784709138378,
+      "before": {
+        "kind": "text",
+        "lineCount": 445,
+        "charCount": 23740,
+        "hash": "c93a882f973b",
+        "preview": "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Layers, CalendarCheck, CheckCir...",
+        "updatedAt": 1784709138377
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 443,
+        "charCount": 23665,
+        "hash": "1f0361923609",
+        "preview": "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Layers, CalendarCheck, CheckCir...",
+        "updatedAt": 1784709138378
+      },
+      "diff": {
+        "lineStart": 76,
+        "removedLines": 3,
+        "addedLines": 0,
+        "summary": "Line 76: removed 3 lines.",
+        "beforeFragment": "hoveredStat, setHoveredStat] = useState<number | null>(null) / const [",
+        "afterFragment": ""
+      }
+    },
+    {
+      "type": "save",
+      "path": "app/admin/reports/page.tsx",
+      "toPath": "",
+      "summary": "Line 293: removed 1 line.",
+      "recordedAt": "2026-07-22T08:31:46.937Z",
+      "recordedAtEpochMs": 1784709106937,
+      "before": {
+        "kind": "text",
+        "lineCount": 898,
+        "charCount": 46350,
+        "hash": "c27056e31f5d",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / TrendingUp, / TrendingD...",
+        "updatedAt": 1784709106936
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 898,
+        "charCount": 46337,
+        "hash": "0114f9f5d49b",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / TrendingUp, / TrendingD...",
+        "updatedAt": 1784709106937
+      },
+      "diff": {
+        "lineStart": 293,
+        "removedLines": 1,
+        "addedLines": 0,
+        "summary": "Line 293: removed 1 line.",
+        "beforeFragment": ", html2canvas",
+        "afterFragment": ""
+      }
+    },
+    {
+      "type": "save",
+      "path": "app/admin/dashboard/page.tsx",
+      "toPath": "",
+      "summary": "Line 264: removed 1 line.",
+      "recordedAt": "2026-07-22T08:29:59.712Z",
+      "recordedAtEpochMs": 1784708999712,
+      "before": {
+        "kind": "text",
+        "lineCount": 617,
+        "charCount": 35042,
+        "hash": "eb371be63c01",
+        "preview": "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Users, UserCheck, Calendar, Dolla...",
+        "updatedAt": 1784708999711
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 617,
+        "charCount": 34933,
+        "hash": "99c08fbe9aaa",
+        "preview": "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Users, UserCheck, Calendar, Dolla...",
+        "updatedAt": 1784708999712
+      },
+      "diff": {
+        "lineStart": 264,
+        "removedLines": 1,
+        "addedLines": 0,
+        "summary": "Line 264: removed 1 line.",
+        "beforeFragment": "const maxWorkload = instructorWorkload.length > 0 ? Math.max(...instructorWorkload.map(i => i.count), 1) : 1",
+        "afterFragment": ""
+      }
+    },
+    {
+      "type": "save",
+      "path": "app/instructor/dashboard/page.tsx",
+      "toPath": "",
+      "summary": "Line 8: removed 3 lines.",
+      "recordedAt": "2026-07-22T08:29:21.448Z",
+      "recordedAtEpochMs": 1784708961448,
+      "before": {
+        "kind": "text",
+        "lineCount": 301,
+        "charCount": 11373,
+        "hash": "af19f2505808",
+        "preview": "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Calendar, CheckCircle, Clock, Use...",
+        "updatedAt": 1784708961448
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 299,
+        "charCount": 11183,
+        "hash": "90a106cf66a1",
+        "preview": "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Calendar, CheckCircle, Clock, Use...",
+        "updatedAt": 1784708961448
+      },
+      "diff": {
+        "lineStart": 8,
+        "removedLines": 3,
+        "addedLines": 0,
+        "summary": "Line 8: removed 3 lines.",
+        "beforeFragment": "import { DTCard } from '@/app/_components/ui/dt-card' / import { DTStatCard } from '@/app/_components/ui/dt-stat-card' / import { dtTheme } from '@/app/_components/ui/learner-in...",
+        "afterFragment": ""
+      }
+    },
     {
       "type": "save",
       "path": "app/admin/lessons/page.tsx",
@@ -875,134 +1036,6 @@
         "beforeFragment": "driving_classes_taken?: string | null",
         "afterFragment": ""
       }
-    },
-    {
-      "type": "save",
-      "path": "app/admin/learner/page.tsx",
-      "toPath": "",
-      "summary": "Line 212: replaced 4 lines with 5 lines.",
-      "recordedAt": "2026-07-07T14:04:06.665Z",
-      "recordedAtEpochMs": 1783433046665,
-      "before": {
-        "kind": "text",
-        "lineCount": 677,
-        "charCount": 39326,
-        "hash": "5c3cfa3f9c8f",
-        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
-        "updatedAt": 1783433046663
-      },
-      "after": {
-        "kind": "text",
-        "lineCount": 678,
-        "charCount": 39343,
-        "hash": "88942138d399",
-        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
-        "updatedAt": 1783433046665
-      },
-      "diff": {
-        "lineStart": 212,
-        "removedLines": 4,
-        "addedLines": 5,
-        "summary": "Line 212: replaced 4 lines with 5 lines.",
-        "beforeFragment": "null, / address: (fd.get('addr') as string) || null, / driving_classes_taken: (fd.get('cls') as string) || null, / }",
-        "afterFragment": "undefined, / address: (fd.get('addr') as string) || undefined, / driving_classes_taken: (fd.get('cls') as string) || undefined, / }"
-      }
-    },
-    {
-      "type": "save",
-      "path": "app/admin/learner/page.tsx",
-      "toPath": "",
-      "summary": "Line 33: replaced 16 lines with 17 lines.",
-      "recordedAt": "2026-07-07T14:03:31.370Z",
-      "recordedAtEpochMs": 1783433011370,
-      "before": {
-        "kind": "text",
-        "lineCount": 676,
-        "charCount": 39296,
-        "hash": "88fab422b248",
-        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
-        "updatedAt": 1783433011368
-      },
-      "after": {
-        "kind": "text",
-        "lineCount": 677,
-        "charCount": 39326,
-        "hash": "5c3cfa3f9c8f",
-        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
-        "updatedAt": 1783433011370
-      },
-      "diff": {
-        "lineStart": 33,
-        "removedLines": 16,
-        "addedLines": 17,
-        "summary": "Line 33: replaced 16 lines with 17 lines.",
-        "beforeFragment": "address?: string / status: 'approved' | 'pending' | 'rejected' | 'suspended' / role: string / slots_allocated?: number / driving_class?: string / driving_classes_taken?: string...",
-        "afterFragment": "| null / address?: string | null / status: 'approved' | 'pending' | 'rejected' | 'suspended' / role: string / slots_allocated?: number / driving_class?: string | null / driving_..."
-      }
-    },
-    {
-      "type": "save",
-      "path": "app/admin/learner/page.tsx",
-      "toPath": "",
-      "summary": "Line 211: replaced 4 lines with 5 lines.",
-      "recordedAt": "2026-07-07T14:02:50.934Z",
-      "recordedAtEpochMs": 1783432970934,
-      "before": {
-        "kind": "text",
-        "lineCount": 675,
-        "charCount": 39264,
-        "hash": "034beacec4c1",
-        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
-        "updatedAt": 1783432970932
-      },
-      "after": {
-        "kind": "text",
-        "lineCount": 676,
-        "charCount": 39296,
-        "hash": "88fab422b248",
-        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
-        "updatedAt": 1783432970934
-      },
-      "diff": {
-        "lineStart": 211,
-        "removedLines": 4,
-        "addedLines": 5,
-        "summary": "Line 211: replaced 4 lines with 5 lines.",
-        "beforeFragment": "fd.get('ph') as string, / address: fd.get('addr') as string, / driving_classes_taken: fd.get('cls') as string, / }",
-        "afterFragment": "(fd.get('ph') as string) || null, / address: (fd.get('addr') as string) || null, / driving_classes_taken: (fd.get('cls') as string) || null, / }"
-      }
-    },
-    {
-      "type": "save",
-      "path": "app/admin/learner/page.tsx",
-      "toPath": "",
-      "summary": "Line 229: replaced 2 lines with 3 lines.",
-      "recordedAt": "2026-07-07T14:02:28.363Z",
-      "recordedAtEpochMs": 1783432948363,
-      "before": {
-        "kind": "text",
-        "lineCount": 674,
-        "charCount": 39247,
-        "hash": "21507edbe0f9",
-        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
-        "updatedAt": 1783432948362
-      },
-      "after": {
-        "kind": "text",
-        "lineCount": 675,
-        "charCount": 39264,
-        "hash": "034beacec4c1",
-        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Search, / Filter, / Use...",
-        "updatedAt": 1783432948363
-      },
-      "diff": {
-        "lineStart": 229,
-        "removedLines": 2,
-        "addedLines": 3,
-        "summary": "Line 229: replaced 2 lines with 3 lines.",
-        "beforeFragment": "String(err || 'Failed to update learner') / showToast(message, 'error')",
-        "afterFragment": "(err ? JSON.stringify(err) : 'Failed to update learner') / showToast(message, 'error')"
-      }
     }
   ],
   "hotFiles": [
@@ -1017,41 +1050,44 @@
     {
       "filePath": "app/admin/lessons/page.tsx",
       "count": 3
+    },
+    {
+      "filePath": "app/admin/dashboard/page.tsx",
+      "count": 1
+    },
+    {
+      "filePath": "app/admin/reports/page.tsx",
+      "count": 1
+    },
+    {
+      "filePath": "app/instructor/dashboard/page.tsx",
+      "count": 1
+    },
+    {
+      "filePath": "app/instructor/lessons/page.tsx",
+      "count": 1
     }
   ],
   "git": {
     "available": true,
     "branch": "blackboxai/learner-admin-consistency",
-    "headSummary": "2026-06-24 7ddaf38 notification layout",
-    "statusSummary": "16 modifieds, 4 untrackeds",
-    "changedFileCount": 20,
+    "headSummary": "2026-07-08 be3b009 changes from 8 july",
+    "statusSummary": "7 modifieds",
+    "changedFileCount": 7,
     "statusLines": [
-      "M TODO.md",
       "M app/admin/dashboard/page.tsx",
-      "M app/admin/instructor/page.tsx",
-      "M app/admin/layout.tsx",
-      "M app/admin/learner/page.tsx",
-      "M app/admin/lessons/page.tsx",
       "M app/admin/reports/page.tsx",
-      "M app/instructor/layout.tsx",
+      "M app/instructor/dashboard/page.tsx",
       "M app/instructor/lessons/page.tsx",
-      "M app/instructor/profile/page.tsx",
-      "M app/learner/layout.tsx",
-      "M app/learner/lessons/page.tsx",
-      "M app/learner/practice/page.tsx",
-      "M app/signup/page.tsx",
-      "M package-lock.json",
-      "M package.json",
-      "?? .vscode/",
-      "?? graphify-out/",
-      "?? workspace.json",
-      "?? workspacememory.md"
+      "M graphify-out/WORKSPACE_MEMORY.md",
+      "M workspace.json",
+      "M workspacememory.md"
     ],
     "error": ""
   },
   "github": {
-    "available": false,
-    "summary": "fetch failed"
+    "available": true,
+    "summary": "GitHub Repository: k-elly-Tsiks/drive-today-dsms\nVisibility: public | Default branch: main\nStars: 0 | Forks: 0 | Open issues: 1\n\nLatest commit on main:\n- f958f51 by k-elly-Tsiks on 2026-06-23\n  feat(ui): unify learner/instructor card + button styles\n\nOpen pull requests:\n- #1 Fix instructor dashboard and align learner/instructor workspace (k-elly-Tsiks, open)\n\nURL: https://github.com/k-elly-Tsiks/drive-today-dsms"
   },
   "graphify": {
     "reportAvailable": false,
