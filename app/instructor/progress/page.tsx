@@ -141,8 +141,12 @@ export default function InstructorProgressPage() {
       .eq('instructor_id', user.id)
       .order('recorded_at', { ascending: false })
 
-    const progressBookingIds = new Set(progressData?.map(p => p.booking_id))
-    const pendingBookings = bookingsData?.filter(b => !progressBookingIds.has(b.booking_id)) || []
+    const progressBookingIds = new Set(
+      progressData?.map((p: { booking_id: string }) => p.booking_id)
+    )
+    const pendingBookings = bookingsData?.filter(
+      (b: { booking_id: string }) => !progressBookingIds.has(b.booking_id)
+    ) || []
 
     setCompletedBookings(pendingBookings)
     setProgressRecords(progressData || [])

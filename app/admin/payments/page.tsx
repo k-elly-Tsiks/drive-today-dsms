@@ -99,11 +99,13 @@ const loadData = useCallback(async () => {
       setBillings(billRes.data || [])
       setLearners(learnRes.data || [])
       // Map the DB columns (training_type) to the UI state (item_name)
-      const mappedPrices = (priceRes.data || []).map(p => ({
-        price_id: p.price_id,
-        item_name: p.driving_class ? `${p.training_type} (${p.driving_class})` : p.training_type,
-        amount: p.price_per_lesson
-      }))
+      const mappedPrices = (priceRes.data || []).map(
+        (p: { price_id: string; driving_class?: string; training_type: string; price_per_lesson: number }) => ({
+          price_id: p.price_id,
+          item_name: p.driving_class ? `${p.training_type} (${p.driving_class})` : p.training_type,
+          amount: p.price_per_lesson
+        })
+      )
       setPrices(mappedPrices)
     } catch (error) {
       console.error("Fetch error:", error)

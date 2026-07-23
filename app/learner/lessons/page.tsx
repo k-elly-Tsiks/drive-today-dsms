@@ -191,11 +191,11 @@ export default function LearnerLessonsPage() {
       .eq('status', 'scheduled')
 
     const workloadMap: Record<string, number> = {}
-    instructors.forEach(i => {
+    instructors.forEach((i: { user_id: string }) => {
       workloadMap[i.user_id] = 0
     })
 
-    allBookings?.forEach(b => {
+    allBookings?.forEach((b: { instructor_id?: string }) => {
       if (b.instructor_id && workloadMap[b.instructor_id] !== undefined) {
         workloadMap[b.instructor_id]++
       }

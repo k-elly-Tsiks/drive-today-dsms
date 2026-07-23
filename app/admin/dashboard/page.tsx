@@ -161,13 +161,18 @@ export default function AdminDashboard() {
       supabase.from('users').select('user_id, first_name, surname, workload_capacity').eq('role', 'instructor').eq('status', 'approved'),
     ])
 
-    const totalRevenue = paymentsData?.reduce((sum, p) => sum + Number(p.amount), 0) || 0
-    const remaining = todayBookings?.filter(b => b.status === 'scheduled').length || 0
+    const totalRevenue = paymentsData?.reduce(
+      (sum: number, p: { amount: number | string }) => sum + Number(p.amount),
+      0
+    ) || 0
+    const remaining = todayBookings?.filter(
+      (b: { status: string }) => b.status === 'scheduled'
+    ).length || 0
 
     const loadMap: Record<string, { name: string; count: number; capacity: number }> = {}
     if (allInstructorsResponse?.data) {
       const activeInstructorsList = allInstructorsResponse.data
-      activeInstructorsList.forEach((inst) => {
+      activeInstructorsList.forEach((inst: { user_id: string; first_name: string; surname: string; workload_capacity?: number }) => {
         loadMap[inst.user_id] = {
           name: `${inst.first_name} ${inst.surname}`,
           count: 0,
@@ -176,7 +181,7 @@ export default function AdminDashboard() {
       })
     }
 
-    weekBookings?.forEach(b => {
+    weekBookings?.forEach((b: { instructor_id?: string }) => {
       if (!b.instructor_id) return
       if (loadMap[b.instructor_id]) {
         loadMap[b.instructor_id].count++
@@ -261,7 +266,6 @@ export default function AdminDashboard() {
   }
 
   const avatarColors = ['#ff5a00', '#2563eb', '#059669', '#7c3aed', '#0891b2']
- 
 
   // Option 2 Minimal Style Configurations for metric blocks
   const statCards = [

@@ -18,16 +18,31 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    await supabase.auth.signOut()
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-console.log("AUTH RESULT:", data)
-console.log("AUTH ERROR:", error)
-    if (error) {
-      setError('Invalid email or password. Please try again.')
+    let authResult
+    try {
+      authResult = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+    } catch (fetchError) {
+      console.error('Supabase fetch error:', fetchError)
+      setError(
+        'Unable to reach Supabase. Please check your Supabase URL, internet connection, and restart the dev server.'
+      )
+      setLoading(false)
+      return
+    }
+
+    const { data, error } = authResult
+    console.log('AUTH RESULT:', data)
+    console.log('AUTH ERROR:', error)
+
+    if (error || !data?.user) {
+      setError(
+        error?.message ||
+          'Invalid email or password. Please try again.'
+      )
       setLoading(false)
       return
     }
