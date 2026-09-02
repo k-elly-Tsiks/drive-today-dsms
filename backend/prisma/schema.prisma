@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int     @id @default(autoincrement())
+  email     String  @unique
+  password  String
+  createdAt DateTime @default(now())
+}
+
+model Driver {
+  id        Int     @id @default(autoincrement())
+  name      String
+  licenseNo String?
+  createdAt DateTime @default(now())
+  vehicles  Vehicle[]
+  trips     Trip[]
+}
+
+model Vehicle {
+  id        Int     @id @default(autoincrement())
+  plate     String  @unique
+  model     String?
+  driverId  Int?
+  driver    Driver? @relation(fields: [driverId], references: [id])
+}
+
+model Trip {
+  id         Int      @id @default(autoincrement())
+  startAt    DateTime
+  endAt      DateTime?
+  origin     String?
+  destination String?
+  driverId   Int
+  driver     Driver   @relation(fields: [driverId], references: [id])
+  vehicleId  Int?
+  vehicle    Vehicle? @relation(fields: [vehicleId], references: [id])
+  incidents  Incident[]
+}
+
+model Incident {
+  id       Int      @id @default(autoincrement())
+  tripId   Int
+  trip     Trip     @relation(fields: [tripId], references: [id])
+  type     String
+  notes    String?
+  createdAt DateTime @default(now())
+}
