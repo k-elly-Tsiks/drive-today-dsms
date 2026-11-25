@@ -1,6 +1,6 @@
 # Workspace Memory
 This file is maintained automatically by Code Janitor so Claude, Codex, Bob, and any other AI agent can reuse repo context without rescanning everything from scratch.
-Generated: 2026-11-25T12:01:03.570Z
+Generated: 2026-11-25T12:38:20.210Z
 Workspace: drive-today-dsms
 Workspace root: c:\Users\kelly\Desktop\drive-today-dsms
 Refresh reason: tracked-change
@@ -16,13 +16,13 @@ Structured manifest: workspace.json
 - Audience: any AI agent working in this repository can treat this file as the current handoff ledger.
 - Graphify report: not available yet
 - Graphify graph: not available yet
-- Last activity: 2026-11-25T12:01:00.582Z
+- Last activity: 2026-11-25T12:38:15.655Z
 ## Workspace Focus
-- Active file in focus: app/admin/instructor/page.tsx
-- Hottest files right now: app/admin/instructor/page.tsx (6), app/admin/lessons/page.tsx (6), app/learner/lessons/page.tsx (6), app/instructor/progress/page.tsx (5)
-- Suggested starting points: app/admin/instructor/page.tsx, app/admin/lessons/page.tsx, app/learner/lessons/page.tsx, app/instructor/progress/page.tsx, app/learner/practice/page.tsx, app/admin/dashboard/page.tsx
+- Active file in focus: app/admin/dashboard/page.tsx
+- Hottest files right now: app/admin/lessons/page.tsx (6), app/learner/lessons/page.tsx (6), app/instructor/progress/page.tsx (5), app/admin/dashboard/page.tsx (4)
+- Suggested starting points: app/admin/dashboard/page.tsx, app/admin/lessons/page.tsx, app/learner/lessons/page.tsx, app/instructor/progress/page.tsx, app/admin/instructor/page.tsx, app/learner/practice/page.tsx
 ## Current Workspace
-- Active file: app/admin/instructor/page.tsx
+- Active file: app/admin/dashboard/page.tsx
 - Tracked files in snapshot: 125
 - Top-level areas: app (51), birthday_cards (36), [root] (18), lib (8), public (6), supabase (5), .github (1)
 - Primary file types: .tsx (41), .jpg (34), .ts (19), .md (5), .sql (5), .svg (5), .json (4), .html (2)
@@ -37,8 +37,11 @@ Structured manifest: workspace.json
 - Logged change events: 40
 - Change mix: save (38), create (1), delete (1)
 - Remembered file snapshots: 17
-- Working tree summary: 5 modifieds
+- Working tree summary: 4 modifieds
 ## Tracked Snapshots
+- app/admin/dashboard/page.tsx | 663 lines | 36583 chars | hash 30fbdca5f72e
+  Last snapshot: 2026-11-25T12:37:40.670Z
+  Preview: "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Users, UserCheck, Calendar, Dolla..."
 - app/instructor/progress/page.tsx | 428 lines | 21723 chars | hash 0dbc90eadf67
   Last snapshot: 2026-11-25T06:56:03.194Z
   Preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { CheckCircle2, Star } from..."
@@ -60,11 +63,16 @@ Structured manifest: workspace.json
 - app/learner/lessons/page.tsx | 741 lines | 31969 chars | hash 7fc8c7d9fc5d
   Last snapshot: 2026-07-30T12:55:55.771Z
   Preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { CalendarDays, Clock4, AlertTriangle, Phone, ListChecks, ArrowLeft } from 'lucide-react' / import { createClient } from '@/lib/..."
-- app/admin/lessons/page.tsx | 953 lines | 52284 chars | hash 3d1fb66d7470
-  Last snapshot: 2026-07-30T07:55:33.297Z
-  Preview: "'use client' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' // / import React, { useState, useEffect, useCallback, useRef } from 'react' / const supabase = createC..."
 
 ## Recent Changes
+### 2026-11-25T12:38:15.655Z | saved | app/admin/dashboard/page.tsx
+
+### 2026-11-25T12:37:40.670Z | saved | app/admin/dashboard/page.tsx
+- Summary: Line 361: removed 10 lines.
+- Before: 672 lines | 37,474 chars | hash c73df71bc77e | preview: "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Users, UserCheck, Calendar, Dolla..."
+- After: 663 lines | 36,583 chars | hash 30fbdca5f72e | preview: "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Users, UserCheck, Calendar, Dolla..."
+- Previous fragment: "<div style={{ display: 'flex', gap: '12px' }}> / <button / onClick={() => { setApprovingUser(null); setSlotCount(''); setModalError('') }} / style={{ flex: 1, padding: '12px', b..."
+
 ### 2026-11-25T12:01:00.582Z | saved | app/admin/instructor/page.tsx
 
 ### 2026-11-25T12:00:42.028Z | saved | app/admin/instructor/page.tsx
@@ -107,35 +115,23 @@ Structured manifest: workspace.json
 
 ### 2026-11-25T06:04:48.309Z | saved | lib/supabase/client.ts
 
-### 2026-11-19T10:40:39.963Z | saved | app/learner/practice/page.tsx
-- Summary: Saved without a textual diff.
-- Before: 481 lines | 27,190 chars | hash 51792253f91e | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci..."
-- After: 481 lines | 27,190 chars | hash 51792253f91e | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci..."
-
-### 2026-11-19T10:11:05.640Z | saved | app/learner/payments/page.tsx
-- Summary: Line 6: removed 1 line.
-- Before: 295 lines | 14,384 chars | hash 86df6ce253bf | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { AlertTriangle, ArrowLeft,..."
-- After: 295 lines | 14,373 chars | hash 4eb1ffdb93a6 | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { AlertTriangle, CheckCircl..."
-- Previous fragment: "ArrowLeft,"
-
 
 ## Hot Files
-- app/admin/instructor/page.tsx (6 tracked changes)
 - app/admin/lessons/page.tsx (6 tracked changes)
 - app/learner/lessons/page.tsx (6 tracked changes)
 - app/instructor/progress/page.tsx (5 tracked changes)
+- app/admin/dashboard/page.tsx (4 tracked changes)
+- app/admin/instructor/page.tsx (4 tracked changes)
 - app/learner/practice/page.tsx (3 tracked changes)
-- app/admin/dashboard/page.tsx (2 tracked changes)
 - app/admin/settings/page.tsx (2 tracked changes)
 - app/learner/notification (2 tracked changes)
 
 ## Git Snapshot
 - Branch: blackboxai/learner-admin-consistency
-- HEAD: 2026-11-25 16f492a changes
-- Working tree summary: 5 modifieds
-- M app/instructor/progress/page.tsx
+- HEAD: 2026-11-25 6eb5b55 changes
+- Working tree summary: 4 modifieds
+- M app/admin/dashboard/page.tsx
 - M graphify-out/WORKSPACE_MEMORY.md
-- M pnpm-lock.yaml
 - M workspace.json
 - M workspacememory.md
 
@@ -145,8 +141,8 @@ Visibility: public | Default branch: main
 Stars: 0 | Forks: 0 | Open issues: 1
 
 Latest commit on main:
-- f958f51 by k-elly-Tsiks on 2026-06-23
-  feat(ui): unify learner/instructor card + button styles
+- 6eb5b55 by k-elly-Tsiks on 2026-11-25
+  changes
 
 Open pull requests:
 - #1 Fix instructor dashboard and align learner/instructor workspace (k-elly-Tsiks, open)

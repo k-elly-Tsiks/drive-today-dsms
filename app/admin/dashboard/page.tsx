@@ -360,13 +360,15 @@ export default function AdminDashboard() {
             />
             <div style={{ display: 'flex', gap: '12px' }}>
               <button
-                onClick={() => { setApprovingUser(null); setSlotCount(''); setModalError('') }}
-                style={{ flex: 1, padding: '12px', borderRadius: '10px', border: `1px solid ${theme.border}`, background: 'transparent', color: theme.textMuted, fontSize: '13px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}
+                onClick={() => setApprovingUser(null)}
+                disabled={approving}
+                style={{ flex: 1, padding: '12px', borderRadius: '10px', border: `1px solid ${theme.border}`, background: 'transparent', color: theme.textMuted, fontSize: '13px', fontWeight: '600', cursor: approving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}
               >Cancel</button>
               <button
-                onClick={confirmApprove} disabled={approving}
+                onClick={confirmApprove}
+                disabled={approving}
                 style={{ flex: 2, padding: '12px', borderRadius: '10px', border: 'none', background: approving ? theme.textMuted : '#22c55e', color: 'white', fontSize: '13px', fontWeight: '700', cursor: approving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}
-              >{approving ? 'Approving...' : 'Confirm & Approve'}</button>
+              >{approving ? 'Approving...' : 'Confirm Approval'}</button>
             </div>
           </div>
         </div>

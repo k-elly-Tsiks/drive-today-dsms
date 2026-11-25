@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-25T12:01:03.570Z",
-  "generatedAtEpochMs": 1795608063570,
+  "generatedAt": "2026-11-25T12:38:20.210Z",
+  "generatedAtEpochMs": 1795610300210,
   "generator": {
     "name": "Code Janitor",
     "feature": "workspace-memory"
@@ -14,7 +14,7 @@
   "workspace": {
     "name": "drive-today-dsms",
     "root": "c:\\Users\\kelly\\Desktop\\drive-today-dsms",
-    "activeFile": "app/admin/instructor/page.tsx",
+    "activeFile": "app/admin/dashboard/page.tsx",
     "refreshReason": "tracked-change",
     "outputFiles": {
       "markdown": "graphify-out/WORKSPACE_MEMORY.md",
@@ -22,12 +22,12 @@
       "structuredManifest": "workspace.json"
     },
     "suggestedStartingPoints": [
-      "app/admin/instructor/page.tsx",
+      "app/admin/dashboard/page.tsx",
       "app/admin/lessons/page.tsx",
       "app/learner/lessons/page.tsx",
       "app/instructor/progress/page.tsx",
+      "app/admin/instructor/page.tsx",
       "app/learner/practice/page.tsx",
-      "app/admin/dashboard/page.tsx",
       "app/admin/settings/page.tsx",
       "app/learner/notification",
       ".github/modernize/code-migration/.gitignore",
@@ -910,7 +910,7 @@
     }
   },
   "currentStack": {
-    "lastActivityAt": "2026-11-25T12:01:00.582Z",
+    "lastActivityAt": "2026-11-25T12:38:15.655Z",
     "trackedChangeCount": 40,
     "trackedFileSnapshotCount": 17,
     "changeTypeCounts": {
@@ -921,6 +921,14 @@
     }
   },
   "trackedSnapshots": [
+    {
+      "filePath": "app/admin/dashboard/page.tsx",
+      "updatedAt": 1795610260670,
+      "lineCount": 663,
+      "charCount": 36583,
+      "hash": "30fbdca5f72e",
+      "preview": "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Users, UserCheck, Calendar, Dolla..."
+    },
     {
       "filePath": "app/instructor/progress/page.tsx",
       "updatedAt": 1795589763194,
@@ -976,17 +984,52 @@
       "charCount": 31969,
       "hash": "7fc8c7d9fc5d",
       "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { CalendarDays, Clock4, AlertTriangle, Phone, ListChecks, ArrowLeft } from 'lucide-react' / import { createClient } from '@/lib/..."
-    },
-    {
-      "filePath": "app/admin/lessons/page.tsx",
-      "updatedAt": 1785398133297,
-      "lineCount": 953,
-      "charCount": 52284,
-      "hash": "3d1fb66d7470",
-      "preview": "'use client' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' // / import React, { useState, useEffect, useCallback, useRef } from 'react' / const supabase = createC..."
     }
   ],
   "recentChanges": [
+    {
+      "type": "save",
+      "path": "app/admin/dashboard/page.tsx",
+      "toPath": "",
+      "summary": "",
+      "recordedAt": "2026-11-25T12:38:15.655Z",
+      "recordedAtEpochMs": 1795610295655,
+      "before": null,
+      "after": null,
+      "diff": null
+    },
+    {
+      "type": "save",
+      "path": "app/admin/dashboard/page.tsx",
+      "toPath": "",
+      "summary": "Line 361: removed 10 lines.",
+      "recordedAt": "2026-11-25T12:37:40.670Z",
+      "recordedAtEpochMs": 1795610260670,
+      "before": {
+        "kind": "text",
+        "lineCount": 672,
+        "charCount": 37474,
+        "hash": "c73df71bc77e",
+        "preview": "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Users, UserCheck, Calendar, Dolla...",
+        "updatedAt": 1795610260667
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 663,
+        "charCount": 36583,
+        "hash": "30fbdca5f72e",
+        "preview": "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Users, UserCheck, Calendar, Dolla...",
+        "updatedAt": 1795610260670
+      },
+      "diff": {
+        "lineStart": 361,
+        "removedLines": 10,
+        "addedLines": 0,
+        "summary": "Line 361: removed 10 lines.",
+        "beforeFragment": "<div style={{ display: 'flex', gap: '12px' }}> / <button / onClick={() => { setApprovingUser(null); setSlotCount(''); setModalError('') }} / style={{ flex: 1, padding: '12px', b...",
+        "afterFragment": ""
+      }
+    },
     {
       "type": "save",
       "path": "app/admin/instructor/page.tsx",
@@ -1199,70 +1242,9 @@
       "before": null,
       "after": null,
       "diff": null
-    },
-    {
-      "type": "save",
-      "path": "app/learner/practice/page.tsx",
-      "toPath": "",
-      "summary": "Saved without a textual diff.",
-      "recordedAt": "2026-11-19T10:40:39.963Z",
-      "recordedAtEpochMs": 1795084839963,
-      "before": {
-        "kind": "text",
-        "lineCount": 481,
-        "charCount": 27190,
-        "hash": "51792253f91e",
-        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci...",
-        "updatedAt": 1795084839962
-      },
-      "after": {
-        "kind": "text",
-        "lineCount": 481,
-        "charCount": 27190,
-        "hash": "51792253f91e",
-        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci...",
-        "updatedAt": 1795084839963
-      },
-      "diff": null
-    },
-    {
-      "type": "save",
-      "path": "app/learner/payments/page.tsx",
-      "toPath": "",
-      "summary": "Line 6: removed 1 line.",
-      "recordedAt": "2026-11-19T10:11:05.640Z",
-      "recordedAtEpochMs": 1795083065640,
-      "before": {
-        "kind": "text",
-        "lineCount": 295,
-        "charCount": 14384,
-        "hash": "86df6ce253bf",
-        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { AlertTriangle, ArrowLeft,...",
-        "updatedAt": 1795083065640
-      },
-      "after": {
-        "kind": "text",
-        "lineCount": 295,
-        "charCount": 14373,
-        "hash": "4eb1ffdb93a6",
-        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { AlertTriangle, CheckCircl...",
-        "updatedAt": 1795083065640
-      },
-      "diff": {
-        "lineStart": 6,
-        "removedLines": 1,
-        "addedLines": 0,
-        "summary": "Line 6: removed 1 line.",
-        "beforeFragment": "ArrowLeft,",
-        "afterFragment": ""
-      }
     }
   ],
   "hotFiles": [
-    {
-      "filePath": "app/admin/instructor/page.tsx",
-      "count": 6
-    },
     {
       "filePath": "app/admin/lessons/page.tsx",
       "count": 6
@@ -1276,12 +1258,16 @@
       "count": 5
     },
     {
-      "filePath": "app/learner/practice/page.tsx",
-      "count": 3
+      "filePath": "app/admin/dashboard/page.tsx",
+      "count": 4
     },
     {
-      "filePath": "app/admin/dashboard/page.tsx",
-      "count": 2
+      "filePath": "app/admin/instructor/page.tsx",
+      "count": 4
+    },
+    {
+      "filePath": "app/learner/practice/page.tsx",
+      "count": 3
     },
     {
       "filePath": "app/admin/settings/page.tsx",
@@ -1295,13 +1281,12 @@
   "git": {
     "available": true,
     "branch": "blackboxai/learner-admin-consistency",
-    "headSummary": "2026-11-25 16f492a changes",
-    "statusSummary": "5 modifieds",
-    "changedFileCount": 5,
+    "headSummary": "2026-11-25 6eb5b55 changes",
+    "statusSummary": "4 modifieds",
+    "changedFileCount": 4,
     "statusLines": [
-      "M app/instructor/progress/page.tsx",
+      "M app/admin/dashboard/page.tsx",
       "M graphify-out/WORKSPACE_MEMORY.md",
-      "M pnpm-lock.yaml",
       "M workspace.json",
       "M workspacememory.md"
     ],
@@ -1309,7 +1294,7 @@
   },
   "github": {
     "available": true,
-    "summary": "GitHub Repository: k-elly-Tsiks/drive-today-dsms\nVisibility: public | Default branch: main\nStars: 0 | Forks: 0 | Open issues: 1\n\nLatest commit on main:\n- f958f51 by k-elly-Tsiks on 2026-06-23\n  feat(ui): unify learner/instructor card + button styles\n\nOpen pull requests:\n- #1 Fix instructor dashboard and align learner/instructor workspace (k-elly-Tsiks, open)\n\nURL: https://github.com/k-elly-Tsiks/drive-today-dsms"
+    "summary": "GitHub Repository: k-elly-Tsiks/drive-today-dsms\nVisibility: public | Default branch: main\nStars: 0 | Forks: 0 | Open issues: 1\n\nLatest commit on main:\n- 6eb5b55 by k-elly-Tsiks on 2026-11-25\n  changes\n\nOpen pull requests:\n- #1 Fix instructor dashboard and align learner/instructor workspace (k-elly-Tsiks, open)\n\nURL: https://github.com/k-elly-Tsiks/drive-today-dsms"
   },
   "graphify": {
     "reportAvailable": false,
