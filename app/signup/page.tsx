@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { DRIVING_CLASS_OPTIONS } from '@/lib/driving-classes'
 
 export default function SignupPage() {
   const [step, setStep] = useState(1)
@@ -39,10 +40,6 @@ export default function SignupPage() {
   const [instructorLicenceValidity, setInstructorLicenceValidity] = useState('')
   const [drivingClasses, setDrivingClasses] = useState<string[]>([])
 
-  const drivingClassOptions = [
-    'Class 1' , 'Class 2', 'Class 3', 'Class 4', 'Provisional'
-  ]
-
   function toggleDrivingClass(cls: string) {
     setDrivingClasses(prev =>
       prev.includes(cls) ? prev.filter(c => c !== cls) : [...prev, cls]
@@ -70,6 +67,12 @@ export default function SignupPage() {
     // Validate phone
     if (phone.length < 10) {
       setError('Please enter a valid phone number.')
+      setLoading(false)
+      return
+    }
+
+    if (role === 'learner' && !drivingClass) {
+      setError('Please select your driving class.')
       setLoading(false)
       return
     }
@@ -430,7 +433,7 @@ export default function SignupPage() {
                       marginTop: '4px',
                     }}>
                       <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', marginBottom: '10px' }}>
-                        Optional — Licence Information
+                        Driving and licence information
                       </p>
                       <div className="flex flex-col gap-3">
                         <div>
@@ -443,13 +446,17 @@ export default function SignupPage() {
                             style={inputStyle}
                           />
                         </div>
+                        <label style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', marginBottom: '-8px' }}>
+                          Driving Class (required)
+                        </label>
                         <select
                           value={drivingClass}
                           onChange={(e) => setDrivingClass(e.target.value)}
+                          required
                           style={inputStyle}
                         >
-                          <option value="" style={{ background: '#1e3a8a' }}>Driving Class Required (optional)</option>
-                          {drivingClassOptions.map(c => (
+                          <option value="" style={{ background: '#1e3a8a' }}>Select your driving class</option>
+                          {DRIVING_CLASS_OPTIONS.map(c => (
                             <option key={c} value={c} style={{ background: '#1e3a8a' }}>{c}</option>
                           ))}
                         </select>
@@ -518,7 +525,7 @@ export default function SignupPage() {
                           Driving Classes You Can Teach:
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          {drivingClassOptions.map(cls => (
+                          {DRIVING_CLASS_OPTIONS.map(cls => (
                             <button
                               key={cls}
                               type="button"

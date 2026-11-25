@@ -4,7 +4,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { CalendarDays, Clock4 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { DTSkeleton } from '@/app/_components/ui/dt-skeleton'
-import { bookLessonSlots, describeBooking, formatMoney, getMyLessonPrice } from '@/app/learner/_lib/book-lesson-slots'
+import { DRIVING_CLASS_OPTIONS } from '@/lib/driving-classes'
+import { bookLessonSlots, describeBooking, formatMoney, getMyLessonPrice, saveLearnerDrivingClass } from '@/app/learner/_lib/book-lesson-slots'
 
 type Slot = {
   slot_id: string
@@ -13,7 +14,9 @@ type Slot = {
 }
 
 type FirstBookingDialogProps = {
+  learnerId: string
   learnerName: string
+  drivingClass?: string | null
   remainingSlots: number
   onLater: () => void
   onBooked: (summary: string) => void
@@ -25,7 +28,9 @@ const blue = '#1e293b'
 const orange = '#ff5a00'
 
 export function FirstBookingDialog({
+  learnerId,
   learnerName,
+  drivingClass,
   remainingSlots,
   onLater,
   onBooked,
@@ -33,6 +38,8 @@ export function FirstBookingDialog({
   const [slots, setSlots] = useState<Slot[]>([])
   const [lessonPrice, setLessonPrice] = useState<number | null>(null)
   const [selectedSlots, setSelectedSlots] = useState<string[]>([])
+  const [drivingClassInput, setDrivingClassInput] = useState(drivingClass || '')
+  const [savedDrivingClass, setSavedDrivingClass] = useState(drivingClass || '')
   const [loading, setLoading] = useState(true)
   const [confirming, setConfirming] = useState(false)
   const [error, setError] = useState('')
@@ -90,6 +97,16 @@ export function FirstBookingDialog({
     setConfirming(true)
     setError('')
 
+    if (!savedDrivingClass.trim()) {
+      const savedClass = await saveLearnerDrivingClass(learnerId, drivingClassInput)
+      if (!savedClass.ok) {
+        setError(savedClass.message)
+        setConfirming(false)
+        return
+      }
+      setSavedDrivingClass(savedClass.drivingClass)
+    }
+
     const result = await bookLessonSlots(selectedSlots)
     if (!result.ok) {
       setError(result.message)
@@ -120,6 +137,26 @@ export function FirstBookingDialog({
           You have <b style={{ color: orange }}>{remainingSlots}</b> slot(s) to book. Pick the dates and times that suit you, and an instructor for your class will be assigned automatically.
           {lessonPrice !== null && <> Each lesson costs <b>{formatMoney(lessonPrice)}</b>.</>}
         </p>
+
+        {!savedDrivingClass.trim() && (
+          <div style={{ marginBottom: '14px' }}>
+            <label htmlFor="first-booking-driving-class" style={{ display: 'block', color: blue, fontSize: '13px', fontWeight: '700', marginBottom: '6px' }}>
+              Select your driving class to match an instructor
+            </label>
+            <select
+              id="first-booking-driving-class"
+              value={drivingClassInput}
+              onChange={event => setDrivingClassInput(event.target.value)}
+              style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #d1d5db', background: 'white', font: 'inherit' }}
+            >
+              <option value="">Select a driving class</option>
+              {DRIVING_CLASS_OPTIONS.map(className => <option key={className} value={className}>{className}</option>)}
+            </select>
+            <p style={{ margin: '6px 0 0', color: '#6b7280', fontSize: '12px' }}>
+              This will be saved to your profile when you confirm your booking.
+            </p>
+          </div>
+        )}
 
         {error && (
           <div style={{ background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '10px', padding: '10px 14px', marginBottom: '12px', color: '#991b1b', fontSize: '13px', fontWeight: '600' }}>
@@ -196,7 +233,7 @@ export function FirstBookingDialog({
               disabled={confirming || selectedSlots.length === 0}
               style={{ padding: '10px 18px', borderRadius: '10px', border: 'none', background: orange, color: 'white', fontSize: '13px', fontWeight: '700', cursor: confirming || selectedSlots.length === 0 ? 'not-allowed' : 'pointer', opacity: selectedSlots.length === 0 ? 0.6 : 1, fontFamily: 'inherit' }}
             >
-              {confirming ? 'Booking...' : 'Confirm Bookings'}
+              {confirming ? 'Booking...' : savedDrivingClass.trim() ? 'Confirm Bookings' : 'Save Class and Confirm Bookings'}
             </button>
           </div>
         </div>

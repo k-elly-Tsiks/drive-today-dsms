@@ -334,3 +334,5 @@ REVOKE ALL ON FUNCTION public.protect_user_account_fields() FROM PUBLIC, anon, a
 -- FROM public.users AS profile
 -- WHERE profile.user_id = booking.learner_id
 --   AND booking.lesson_fee IS NULL;
+
+NOTIFY pgrst, 'reload schema';

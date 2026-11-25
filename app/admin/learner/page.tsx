@@ -229,6 +229,10 @@ export default function LearnersPage() {
     try {
       const fd = new FormData(e.currentTarget)
       const drivingClassVal = (fd.get('cls') as string) || null
+      if (!drivingClassVal) {
+        showToast("Please select the learner's driving class.", 'error')
+        return
+      }
       const updates = {
         first_name: fd.get('fn') as string,
         surname: fd.get('sn') as string,
@@ -266,6 +270,10 @@ export default function LearnersPage() {
     try {
       const fd = new FormData(e.currentTarget)
       const drivingClassVal = (fd.get('driving_class') as string) || null
+      if (!drivingClassVal) {
+        showToast("Please select the learner's driving class.", 'error')
+        return
+      }
       const updates = {
         first_name: fd.get('first_name') as string,
         second_name: (fd.get('second_name') as string) || null,
@@ -557,7 +565,7 @@ export default function LearnersPage() {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                       <div>
                         <label className="info-label">Required Driving Class</label>
-                        <select name="driving_class" defaultValue={viewLearner.driving_class || viewLearner.driving_classes_taken || ''} className="form-control" style={{ cursor: 'pointer' }}>
+                        <select name="driving_class" defaultValue={viewLearner.driving_class || viewLearner.driving_classes_taken || ''} className="form-control" style={{ cursor: 'pointer' }} required>
                           <option value="">Select Class</option>
                           {classOptions.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
@@ -729,8 +737,8 @@ export default function LearnersPage() {
             </div>
 
             <div style={{ marginBottom: '24px' }}>
-              <label className="info-label">Target Driving License Class</label>
-              <select name="cls" defaultValue={editModal.driving_class || editModal.driving_classes_taken || ''} className="form-control" style={{ cursor: 'pointer' }}>
+              <label className="info-label">Target Driving License Class (required)</label>
+              <select name="cls" defaultValue={editModal.driving_class || editModal.driving_classes_taken || ''} className="form-control" style={{ cursor: 'pointer' }} required>
                 <option value="">Select Target Class</option>
                 {classOptions.map(c => <option key={c} value={c}>{c}</option>)}
               </select>

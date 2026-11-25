@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
+import { DRIVING_CLASS_OPTIONS } from '@/lib/driving-classes'
 
 const supabase = createClient()
 
@@ -8,6 +9,29 @@ const MIGRATION_MESSAGE =
 export type BookLessonSlotsResult =
   | { ok: true; booked: number; instructorName: string; lessonFee: number | null; totalFee: number | null }
   | { ok: false; slotTaken: boolean; message: string }
+
+export type SaveDrivingClassResult =
+  | { ok: true; drivingClass: string }
+  | { ok: false; message: string }
+
+export async function saveLearnerDrivingClass(userId: string, drivingClass: string): Promise<SaveDrivingClassResult> {
+  const selectedClass = drivingClass.trim()
+  if (!DRIVING_CLASS_OPTIONS.includes(selectedClass)) {
+    return { ok: false, message: 'Please select a valid driving class.' }
+  }
+
+  const { data, error } = await supabase
+    .from('users')
+    .update({ driving_class: selectedClass })
+    .eq('user_id', userId)
+    .select('user_id')
+    .maybeSingle()
+
+  if (error) return { ok: false, message: `Could not save your driving class: ${error.message}` }
+  if (!data) return { ok: false, message: 'Your driving class was not saved. Please try again.' }
+
+  return { ok: true, drivingClass: selectedClass }
+}
 
 // The database function checks approval and the lesson allowance, assigns the
 // approved instructor for the learner's class with the lowest workload,

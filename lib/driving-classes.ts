@@ -1,3 +1,5 @@
+export const DRIVING_CLASS_OPTIONS = ['Class 1', 'Class 2', 'Class 3', 'Class 4', 'Provisional']
+
 // Instructor classes are stored in several shapes: a real array from signup,
 // a single value from the admin edit form, and older rows saved as JSON text
 // ('["Class 1","Class 2"]'), Postgres array text ('{"Class 1"}') or a

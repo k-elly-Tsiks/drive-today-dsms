@@ -5,7 +5,8 @@ import { CalendarDays, Clock4, AlertTriangle, ListChecks } from 'lucide-react'
 
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { bookLessonSlots, describeBooking, formatMoney, getMyLessonPrice } from '@/app/learner/_lib/book-lesson-slots'
+import { DRIVING_CLASS_OPTIONS } from '@/lib/driving-classes'
+import { bookLessonSlots, describeBooking, formatMoney, getMyLessonPrice, saveLearnerDrivingClass } from '@/app/learner/_lib/book-lesson-slots'
 
 type Slot = {
   slot_id: string
@@ -57,6 +58,7 @@ export default function LearnerLessonsPage() {
   const [lessonPrice, setLessonPrice] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedSlots, setSelectedSlots] = useState<string[]>([])
+  const [drivingClassInput, setDrivingClassInput] = useState('')
   const [selectionStorageKey, setSelectionStorageKey] = useState('')
   const [selectionStorageReady, setSelectionStorageReady] = useState(false)
   const [confirming, setConfirming] = useState(false)
@@ -161,6 +163,7 @@ export default function LearnerLessonsPage() {
     const maxSelectableSlots = Math.max(0, allocatedSlots - usedBookings)
 
     setLearner(learnerResult.data)
+    setDrivingClassInput(learnerResult.data?.driving_class || '')
     setLessonPrice(price)
     setBookings(bookingsResult.data || [])
     setAvailableSlots(slotsResult.data || [])
@@ -221,6 +224,22 @@ export default function LearnerLessonsPage() {
 
     setConfirming(true)
     setError('')
+
+    if (!learner?.driving_class?.trim()) {
+      if (!learner) {
+        setError('Could not load your learner profile. Please refresh and try again.')
+        setConfirming(false)
+        return
+      }
+
+      const savedClass = await saveLearnerDrivingClass(learner.user_id, drivingClassInput)
+      if (!savedClass.ok) {
+        setError(savedClass.message)
+        setConfirming(false)
+        return
+      }
+      setLearner(current => current ? { ...current, driving_class: savedClass.drivingClass } : current)
+    }
 
     const result = await bookLessonSlots(selectedSlots)
     if (!result.ok) {
@@ -533,6 +552,25 @@ export default function LearnerLessonsPage() {
                 </div>
               ) : (
                 <div>
+                  {!learner?.driving_class?.trim() && (
+                    <div style={{ background: 'white', borderRadius: '14px', padding: '16px 20px', marginBottom: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+                      <label htmlFor="booking-driving-class" style={{ display: 'block', marginBottom: '8px', color: blue, fontSize: '13px', fontWeight: '700' }}>
+                        Select your driving class to match an instructor
+                      </label>
+                      <select
+                        id="booking-driving-class"
+                        value={drivingClassInput}
+                        onChange={event => setDrivingClassInput(event.target.value)}
+                        style={{ width: '100%', maxWidth: '360px', padding: '10px 12px', borderRadius: '8px', border: '1px solid #d1d5db', background: 'white', font: 'inherit' }}
+                      >
+                        <option value="">Select a driving class</option>
+                        {DRIVING_CLASS_OPTIONS.map(className => <option key={className} value={className}>{className}</option>)}
+                      </select>
+                      <p style={{ margin: '8px 0 0', color: '#6b7280', fontSize: '12px' }}>
+                        This will be saved to your profile when you confirm your booking.
+                      </p>
+                    </div>
+                  )}
                   <div style={{ background: 'white', borderRadius: '14px', padding: '16px 20px', marginBottom: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
                     <div>
                       <p style={{ margin: 0, fontSize: '13px', color: '#4b5563', fontWeight: '600' }}>
@@ -551,7 +589,7 @@ export default function LearnerLessonsPage() {
                         disabled={confirming}
                         style={{ padding: '10px 20px', borderRadius: '10px', border: 'none', background: orange, color: 'white', fontSize: '13px', fontWeight: '700', cursor: confirming ? 'not-allowed' : 'pointer' }}
                       >
-                        {confirming ? 'Booking...' : 'Confirm Bookings'}
+                        {confirming ? 'Booking...' : learner?.driving_class?.trim() ? 'Confirm Bookings' : 'Save Class and Confirm Bookings'}
                       </button>
                     ) : (
                       <span />

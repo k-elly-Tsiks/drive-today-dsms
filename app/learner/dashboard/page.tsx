@@ -13,6 +13,7 @@ type LearnerProfile = {
   first_name: string
   surname: string
   slots_allocated?: number | null
+  driving_class?: string | null
 }
 
 function firstBookingDismissedKey(learnerId: string) {
@@ -84,7 +85,7 @@ export default function LearnerDashboard() {
       { count: completedLessonsCount = 0 },
       { count: activeBookingCount = 0 },
     ] = await Promise.all([
-      supabase.from('users').select('first_name, surname, slots_allocated').eq('user_id', user.id).single(),
+      supabase.from('users').select('first_name, surname, slots_allocated, driving_class').eq('user_id', user.id).single(),
       supabase.from('lesson_bookings').select(`
         booking_id, status,
         lesson_slots (slot_date, slot_time),
@@ -215,7 +216,9 @@ export default function LearnerDashboard() {
 
       {showFirstBooking && (
         <FirstBookingDialog
+          learnerId={learnerId}
           learnerName={learner?.first_name || 'Learner'}
+          drivingClass={learner?.driving_class}
           remainingSlots={stats.remainingSlots}
           onLater={postponeFirstBooking}
           onBooked={handleFirstBooking}
