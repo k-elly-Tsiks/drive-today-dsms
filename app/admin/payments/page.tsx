@@ -17,6 +17,21 @@ function first<T>(val: T | T[] | undefined | null): T | null {
   return Array.isArray(val) ? val[0] : val;
 }
 
+function getErrorMessage(error: unknown): string {
+  if (typeof error === 'object' && error !== null) {
+    const message = 'message' in error && typeof error.message === 'string' ? error.message : ''
+    const code = 'code' in error && typeof error.code === 'string' ? ` [${error.code}]` : ''
+    const details = 'details' in error && typeof error.details === 'string' ? error.details : ''
+    const hint = 'hint' in error && typeof error.hint === 'string' ? error.hint : ''
+    const context = [details, hint].filter(Boolean).join(' ')
+    if (message || code || context) return `${message || 'Payment request failed'}${code}${context ? `: ${context}` : ''}`
+  }
+  if (error instanceof Error) {
+    return error.message
+  }
+  return 'An unexpected error occurred while recording payment.'
+}
+
 // ─── Shared UI Components ─────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: string }) {
@@ -164,26 +179,44 @@ const loadData = useCallback(async () => {
     setActionLoading(false)
 }
  async function handleRecordPayment() {
-    if (!payLearner || !payAmount) return
+    const amount = Number(payAmount)
+    if (!payLearner) {
+      setActionError('Select a learner before recording a payment.')
+      return
+    }
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setActionError('Enter a payment amount greater than zero.')
+      return
+    }
+    if (!payPurpose.trim()) {
+      setActionError('Select a payment allocation.')
+      return
+    }
+
     setActionLoading(true)
-    
+    setActionError('')
+
     try {
       const { error: pErr } = await supabase.from('payments').insert({
-        learner_id: payLearner, 
-        amount: parseFloat(payAmount), 
-        payment_method: payMethod, 
-        transaction_ref: payPurpose, 
+        learner_id: payLearner,
+        amount,
+        payment_method: payMethod,
+        transaction_ref: payPurpose,
       })
 
-      if (pErr) throw pErr
+      if (pErr) {
+        console.error('Payment recording failed:', pErr)
+        setActionError(`Payment was not recorded: ${getErrorMessage(pErr)}`)
+        return
+      }
 
       setPayAmount('')
       setActionError('')
       await loadData() 
       setActiveTab('payments') 
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'An error occurred'
-      setActionError(`Payment was not recorded: ${msg}`)
+      console.error('Unexpected payment recording failure:', err)
+      setActionError(`Payment was not recorded: ${getErrorMessage(err)}`)
     } finally {
       setActionLoading(false)
     }

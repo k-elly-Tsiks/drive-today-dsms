@@ -6,13 +6,14 @@ import { dtTheme } from './learner-instructor-theme'
 type DTStatCardProps = {
   label: string
   value: string | number
+  valueColor?: string
   sub: string
   badgeBg: string
   icon: React.ReactNode
   onClick?: () => void
 }
 
-export function DTStatCard({ label, value, sub, badgeBg, icon, onClick }: DTStatCardProps) {
+export function DTStatCard({ label, value, valueColor, sub, badgeBg, icon, onClick }: DTStatCardProps) {
   const [isDark, setIsDark] = React.useState(false)
 
   React.useEffect(() => {
@@ -57,7 +58,7 @@ export function DTStatCard({ label, value, sub, badgeBg, icon, onClick }: DTStat
     >
       <div>
         <p style={{ margin: '0 0 4px', fontSize: 12.5, color: theme.textMuted, fontWeight: 500 }}>{label}</p>
-        <p style={{ margin: '0 0 4px', fontSize: 28, fontWeight: 700, color: theme.textMain, letterSpacing: '-0.5px' }}>
+        <p style={{ margin: '0 0 4px', fontSize: 28, fontWeight: 700, color: valueColor || theme.textMain, letterSpacing: '-0.5px' }}>
           {value}
         </p>
         <p style={{ margin: 0, fontSize: 11.5, color: theme.textMuted }}>{sub}</p>

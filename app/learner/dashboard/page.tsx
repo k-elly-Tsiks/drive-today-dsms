@@ -7,6 +7,7 @@ import { BookOpen, Calendar, CheckCircle, CreditCard, FileQuestion, TrendingUp }
 import { DTSkeleton } from '@/app/_components/ui/dt-skeleton'
 import { DTStatCard } from '@/app/_components/ui/dt-stat-card'
 import { FirstBookingDialog } from '@/app/learner/_components/first-booking-dialog'
+import { invoicedTotal, lessonFeesTotal, paidTotal } from '@/lib/fees'
 
 
 type LearnerProfile = {
@@ -27,7 +28,9 @@ type Booking = {
   instructor?: { first_name: string; surname: string } | null
 }
 
-type Payment = { amount: number }
+type Payment = { amount: number | string }
+type LessonCharge = { status: string; lesson_fee: number | string | null }
+type Invoice = { document_type?: string | null; total_amount: number | string }
 
 const supabase = createClient()
 
@@ -52,13 +55,18 @@ function first<T>(val: T | T[] | null | undefined): T | null {
 export default function LearnerDashboard() {
   const [learner, setLearner] = useState<LearnerProfile | null>(null)
   const [bookings, setBookings] = useState<Booking[]>([])
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<{
+    scheduledLessons: number
+    completedLessons: number
+    remainingSlots: number
+    totalPaid: number | null
+  }>({
     scheduledLessons: 0,
     completedLessons: 0,
     remainingSlots: 0,
-    totalPaid: 0,
-    progressRecords: 0,
+    totalPaid: null,
   })
+  const [balanceError, setBalanceError] = useState('')
   const [loading, setLoading] = useState(true)
   const [learnerId, setLearnerId] = useState('')
   const [showFirstBooking, setShowFirstBooking] = useState(false)
@@ -79,8 +87,9 @@ export default function LearnerDashboard() {
     const [
       { data: profile },
       { data: lessonData },
-      { data: paymentData },
-      { count: progressCount = 0 },
+      { data: paymentData, error: paymentError },
+      { data: lessonChargeData, error: lessonChargeError },
+      { data: invoiceData, error: invoiceError },
       { count: scheduledLessonsCount = 0 },
       { count: completedLessonsCount = 0 },
       { count: activeBookingCount = 0 },
@@ -92,7 +101,8 @@ export default function LearnerDashboard() {
         instructor:users!lesson_bookings_instructor_id_fkey (first_name, surname)
       `).eq('learner_id', user.id).order('created_at', { ascending: false }).limit(6),
       supabase.from('payments').select('amount').eq('learner_id', user.id),
-      supabase.from('progress_tracking').select('progress_id', { count: 'exact', head: true }).eq('learner_id', user.id),
+      supabase.from('lesson_bookings').select('status, lesson_fee').eq('learner_id', user.id).neq('status', 'cancelled'),
+      supabase.from('quotations').select('document_type, total_amount').eq('learner_id', user.id),
       supabase.from('lesson_bookings').select('booking_id', { count: 'exact', head: true }).eq('learner_id', user.id).eq('status', 'scheduled'),
       supabase.from('lesson_bookings').select('booking_id', { count: 'exact', head: true }).eq('learner_id', user.id).eq('status', 'completed'),
       supabase.from('lesson_bookings').select('booking_id', { count: 'exact', head: true }).eq('learner_id', user.id).neq('status', 'cancelled'),
@@ -101,6 +111,9 @@ export default function LearnerDashboard() {
     const lessons = (lessonData || []) as unknown as Booking[]
 
     const payments = (paymentData || []) as Payment[]
+    const lessonCharges = (lessonChargeData || []) as LessonCharge[]
+    const invoices = (invoiceData || []) as Invoice[]
+    const balanceLoadError = paymentError || lessonChargeError || invoiceError
     const allocated = Number(profile?.slots_allocated) || 0
 
     const remainingSlots = Math.max(allocated - activeBookingCount, 0)
@@ -108,12 +121,14 @@ export default function LearnerDashboard() {
     setLearner(profile)
     setLearnerId(user.id)
     setBookings(lessons)
+    setBalanceError(balanceLoadError ? `Could not calculate your balance: ${balanceLoadError.message}` : '')
     setStats({
       scheduledLessons: scheduledLessonsCount,
       completedLessons: completedLessonsCount,
       remainingSlots,
-      totalPaid: payments.reduce((sum, payment) => sum + Number(payment.amount), 0),
-      progressRecords: progressCount,
+      totalPaid: balanceLoadError
+        ? null
+        : paidTotal(payments) - lessonFeesTotal(lessonCharges) - invoicedTotal(invoices),
     })
 
     // A learner who has never booked a lesson is on their first visit, so prompt
@@ -180,11 +195,18 @@ export default function LearnerDashboard() {
     },
     {
       label: 'Total Paid',
-      value: `$${stats.totalPaid.toLocaleString()}`,
-      sub: `${stats.progressRecords} progress update${stats.progressRecords === 1 ? '' : 's'}`,
+      value: stats.totalPaid === null
+        ? 'Unavailable'
+        : `${stats.totalPaid < 0 ? '-$' : '$'}${Math.abs(stats.totalPaid).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      valueColor: stats.totalPaid !== null && stats.totalPaid < 0 ? '#dc2626' : undefined,
+      sub: balanceError
+        ? 'Balance unavailable'
+        : stats.totalPaid !== null && stats.totalPaid < 0
+          ? 'Amount owed after recorded payments'
+          : 'Payments less lesson fees and invoices',
       path: '/learner/payments',
-      icon: <CreditCard size={18} color="#ff5a00" />,
-      badgeBg: '#fff2eb',
+      icon: <CreditCard size={18} color={stats.totalPaid !== null && stats.totalPaid < 0 ? '#dc2626' : '#ff5a00'} />,
+      badgeBg: stats.totalPaid !== null && stats.totalPaid < 0 ? '#fff1f2' : '#fff2eb',
     },
   ]
 
@@ -246,6 +268,7 @@ export default function LearnerDashboard() {
                 key={i}
                 label={card.label}
                 value={card.value}
+                valueColor={card.valueColor}
                 sub={card.sub}
                 badgeBg={card.badgeBg}
                 icon={card.icon}
@@ -254,6 +277,11 @@ export default function LearnerDashboard() {
             ))}
       </div>
 
+      {balanceError && (
+        <p role="alert" style={{ color: '#b91c1c', fontSize: '13px', margin: '-20px 0 24px' }}>
+          {balanceError}
+        </p>
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '20px' }}>
         <div style={{ background: theme.cardBg, borderRadius: '16px', padding: '24px', boxShadow: '0 4px 18px rgba(0,0,0,0.02)', border: `1px solid ${theme.border}` }}>
