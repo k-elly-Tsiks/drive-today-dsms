@@ -1,9 +1,9 @@
 # Workspace Memory
 This file is maintained automatically by Code Janitor so Claude, Codex, Bob, and any other AI agent can reuse repo context without rescanning everything from scratch.
-Generated: 2026-11-25T08:54:41.564Z
+Generated: 2026-11-25T12:01:03.570Z
 Workspace: drive-today-dsms
 Workspace root: c:\Users\kelly\Desktop\drive-today-dsms
-Refresh reason: startup
+Refresh reason: tracked-change
 Output path: graphify-out/WORKSPACE_MEMORY.md
 Shared mirror: workspacememory.md
 Structured manifest: workspace.json
@@ -16,16 +16,16 @@ Structured manifest: workspace.json
 - Audience: any AI agent working in this repository can treat this file as the current handoff ledger.
 - Graphify report: not available yet
 - Graphify graph: not available yet
-- Last activity: 2026-11-25T06:56:03.194Z
+- Last activity: 2026-11-25T12:01:00.582Z
 ## Workspace Focus
-- Active file in focus: app/instructor/progress/page.tsx
-- Hottest files right now: app/admin/lessons/page.tsx (10), app/learner/lessons/page.tsx (6), app/instructor/progress/page.tsx (4), app/admin/instructor/page.tsx (3)
-- Suggested starting points: app/instructor/progress/page.tsx, app/admin/lessons/page.tsx, app/learner/lessons/page.tsx, app/admin/instructor/page.tsx, app/learner/practice/page.tsx, app/admin/dashboard/page.tsx
+- Active file in focus: app/admin/instructor/page.tsx
+- Hottest files right now: app/admin/instructor/page.tsx (6), app/admin/lessons/page.tsx (6), app/learner/lessons/page.tsx (6), app/instructor/progress/page.tsx (5)
+- Suggested starting points: app/admin/instructor/page.tsx, app/admin/lessons/page.tsx, app/learner/lessons/page.tsx, app/instructor/progress/page.tsx, app/learner/practice/page.tsx, app/admin/dashboard/page.tsx
 ## Current Workspace
-- Active file: app/instructor/progress/page.tsx
-- Tracked files in snapshot: 116
-- Top-level areas: app (48), birthday_cards (36), [root] (18), public (6), lib (5), supabase (2), .github (1)
-- Primary file types: .tsx (40), .jpg (34), .ts (14), .md (5), .svg (5), .json (4), .html (2), .mjs (2)
+- Active file: app/admin/instructor/page.tsx
+- Tracked files in snapshot: 125
+- Top-level areas: app (51), birthday_cards (36), [root] (18), lib (8), public (6), supabase (5), .github (1)
+- Primary file types: .tsx (41), .jpg (34), .ts (19), .md (5), .sql (5), .svg (5), .json (4), .html (2)
 - Key files: .github/modernize/code-migration/.gitignore, .gitignore, AGENTS.md, README.md, package-lock.json, package.json, pnpm-lock.yaml, tsconfig.json
 ## Package Snapshot
 - Package: drive-today-dsms v0.1.0
@@ -37,7 +37,7 @@ Structured manifest: workspace.json
 - Logged change events: 40
 - Change mix: save (38), create (1), delete (1)
 - Remembered file snapshots: 17
-- Working tree summary: 27 modifieds, 1 deleted, 9 untrackeds
+- Working tree summary: 5 modifieds
 ## Tracked Snapshots
 - app/instructor/progress/page.tsx | 428 lines | 21723 chars | hash 0dbc90eadf67
   Last snapshot: 2026-11-25T06:56:03.194Z
@@ -65,6 +65,14 @@ Structured manifest: workspace.json
   Preview: "'use client' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' // / import React, { useState, useEffect, useCallback, useRef } from 'react' / const supabase = createC..."
 
 ## Recent Changes
+### 2026-11-25T12:01:00.582Z | saved | app/admin/instructor/page.tsx
+
+### 2026-11-25T12:00:42.028Z | saved | app/admin/instructor/page.tsx
+
+### 2026-11-25T12:00:13.430Z | saved | app/admin/instructor/page.tsx
+
+### 2026-11-25T11:58:38.992Z | saved | app/instructor/progress/page.tsx
+
 ### 2026-11-25T06:56:03.194Z | saved | app/instructor/progress/page.tsx
 - Summary: Saved without a textual diff.
 - Before: 428 lines | 21,723 chars | hash 0dbc90eadf67 | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { CheckCircle2, Star } from..."
@@ -110,26 +118,12 @@ Structured manifest: workspace.json
 - After: 295 lines | 14,373 chars | hash 4eb1ffdb93a6 | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { AlertTriangle, CheckCircl..."
 - Previous fragment: "ArrowLeft,"
 
-### 2026-11-19T09:48:59.570Z | saved | app/learner/practice/page.tsx
-- Summary: Saved without a textual diff.
-- Before: 481 lines | 27,190 chars | hash 51792253f91e | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci..."
-- After: 481 lines | 27,190 chars | hash 51792253f91e | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci..."
-
-### 2026-11-19T09:48:55.359Z | saved | app/learner/practice/page.tsx
-- Summary: Saved without a textual diff.
-- Before: 481 lines | 27,190 chars | hash 51792253f91e | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci..."
-- After: 481 lines | 27,190 chars | hash 51792253f91e | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci..."
-
-### 2026-11-19T09:47:38.592Z | saved | app/learner/payments/page.tsx
-
-### 2026-11-19T09:47:22.177Z | saved | app/learner/materials/page.tsx
-
 
 ## Hot Files
-- app/admin/lessons/page.tsx (10 tracked changes)
+- app/admin/instructor/page.tsx (6 tracked changes)
+- app/admin/lessons/page.tsx (6 tracked changes)
 - app/learner/lessons/page.tsx (6 tracked changes)
-- app/instructor/progress/page.tsx (4 tracked changes)
-- app/admin/instructor/page.tsx (3 tracked changes)
+- app/instructor/progress/page.tsx (5 tracked changes)
 - app/learner/practice/page.tsx (3 tracked changes)
 - app/admin/dashboard/page.tsx (2 tracked changes)
 - app/admin/settings/page.tsx (2 tracked changes)
@@ -137,21 +131,13 @@ Structured manifest: workspace.json
 
 ## Git Snapshot
 - Branch: blackboxai/learner-admin-consistency
-- HEAD: 2026-07-23 250ff19 removed code error
-- Working tree summary: 27 modifieds, 1 deleted, 9 untrackeds
-- M README.md
-- M app/admin/dashboard/page.tsx
-- M app/admin/instructor/page.tsx
-- M app/admin/layout.tsx
-- M app/admin/learner/page.tsx
-- M app/admin/lessons/page.tsx
-- M app/admin/notification/page.tsx
-- M app/admin/settings/page.tsx
-- M app/instructor/dashboard/page.tsx
-- M app/instructor/layout.tsx
-- M app/instructor/lessons/page.tsx
-- M app/instructor/notifications/page.tsx
-- Additional git status lines were omitted for brevity.
+- HEAD: 2026-11-25 16f492a changes
+- Working tree summary: 5 modifieds
+- M app/instructor/progress/page.tsx
+- M graphify-out/WORKSPACE_MEMORY.md
+- M pnpm-lock.yaml
+- M workspace.json
+- M workspacememory.md
 
 ## GitHub Snapshot
 GitHub Repository: k-elly-Tsiks/drive-today-dsms

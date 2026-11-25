@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-25T08:54:41.564Z",
-  "generatedAtEpochMs": 1795596881564,
+  "generatedAt": "2026-11-25T12:01:03.570Z",
+  "generatedAtEpochMs": 1795608063570,
   "generator": {
     "name": "Code Janitor",
     "feature": "workspace-memory"
@@ -14,18 +14,18 @@
   "workspace": {
     "name": "drive-today-dsms",
     "root": "c:\\Users\\kelly\\Desktop\\drive-today-dsms",
-    "activeFile": "app/instructor/progress/page.tsx",
-    "refreshReason": "startup",
+    "activeFile": "app/admin/instructor/page.tsx",
+    "refreshReason": "tracked-change",
     "outputFiles": {
       "markdown": "graphify-out/WORKSPACE_MEMORY.md",
       "markdownMirror": "workspacememory.md",
       "structuredManifest": "workspace.json"
     },
     "suggestedStartingPoints": [
-      "app/instructor/progress/page.tsx",
+      "app/admin/instructor/page.tsx",
       "app/admin/lessons/page.tsx",
       "app/learner/lessons/page.tsx",
-      "app/admin/instructor/page.tsx",
+      "app/instructor/progress/page.tsx",
       "app/learner/practice/page.tsx",
       "app/admin/dashboard/page.tsx",
       "app/admin/settings/page.tsx",
@@ -36,11 +36,11 @@
       "README.md"
     ],
     "stats": {
-      "totalFiles": 116,
+      "totalFiles": 125,
       "topLevelAreas": [
         {
           "name": "app",
-          "count": 48
+          "count": 51
         },
         {
           "name": "birthday_cards",
@@ -51,16 +51,16 @@
           "count": 18
         },
         {
+          "name": "lib",
+          "count": 8
+        },
+        {
           "name": "public",
           "count": 6
         },
         {
-          "name": "lib",
-          "count": 5
-        },
-        {
           "name": "supabase",
-          "count": 2
+          "count": 5
         },
         {
           "name": ".github",
@@ -70,7 +70,7 @@
       "primaryFileTypes": [
         {
           "name": ".tsx",
-          "count": 40
+          "count": 41
         },
         {
           "name": ".jpg",
@@ -78,10 +78,14 @@
         },
         {
           "name": ".ts",
-          "count": 14
+          "count": 19
         },
         {
           "name": ".md",
+          "count": 5
+        },
+        {
+          "name": ".sql",
           "count": 5
         },
         {
@@ -94,10 +98,6 @@
         },
         {
           "name": ".html",
-          "count": 2
-        },
-        {
-          "name": ".mjs",
           "count": 2
         }
       ],
@@ -299,6 +299,12 @@
           "isKeyFile": false
         },
         {
+          "path": "app/instructor/_lib/feedback-message.ts",
+          "topLevelArea": "app",
+          "extension": ".ts",
+          "isKeyFile": false
+        },
+        {
           "path": "app/instructor/dashboard/page.tsx",
           "topLevelArea": "app",
           "extension": ".tsx",
@@ -344,6 +350,18 @@
           "path": "app/layout.tsx",
           "topLevelArea": "app",
           "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/learner/_components/first-booking-dialog.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/learner/_lib/book-lesson-slots.ts",
+          "topLevelArea": "app",
+          "extension": ".ts",
           "isKeyFile": false
         },
         {
@@ -653,6 +671,18 @@
           "isKeyFile": false
         },
         {
+          "path": "lib/driving-classes.ts",
+          "topLevelArea": "lib",
+          "extension": ".ts",
+          "isKeyFile": false
+        },
+        {
+          "path": "lib/fees.ts",
+          "topLevelArea": "lib",
+          "extension": ".ts",
+          "isKeyFile": false
+        },
+        {
           "path": "lib/supabase/admin.ts",
           "topLevelArea": "lib",
           "extension": ".ts",
@@ -666,6 +696,12 @@
         },
         {
           "path": "lib/supabase/password-reset-admin.ts",
+          "topLevelArea": "lib",
+          "extension": ".ts",
+          "isKeyFile": false
+        },
+        {
+          "path": "lib/supabase/password-reset-code.ts",
           "topLevelArea": "lib",
           "extension": ".ts",
           "isKeyFile": false
@@ -779,6 +815,24 @@
           "isKeyFile": false
         },
         {
+          "path": "supabase/migrations/20261125000000_complete_lesson_booking.sql",
+          "topLevelArea": "supabase",
+          "extension": ".sql",
+          "isKeyFile": false
+        },
+        {
+          "path": "supabase/migrations/20261126000000_approval_assignment_and_fees.sql",
+          "topLevelArea": "supabase",
+          "extension": ".sql",
+          "isKeyFile": false
+        },
+        {
+          "path": "supabase/migrations/20261127000000_password_reset_codes.sql",
+          "topLevelArea": "supabase",
+          "extension": ".sql",
+          "isKeyFile": false
+        },
+        {
           "path": "TODO.md",
           "topLevelArea": "[root]",
           "extension": ".md",
@@ -838,7 +892,7 @@
       "@supabase/ssr": "^0.9.0",
       "@supabase/supabase-js": "^2.100.0",
       "lucide-react": "^1.17.0",
-      "next": "^16.2.6",
+      "next": "^16.4.6",
       "react": "19.2.4",
       "react-dom": "19.2.4"
     },
@@ -856,7 +910,7 @@
     }
   },
   "currentStack": {
-    "lastActivityAt": "2026-11-25T06:56:03.194Z",
+    "lastActivityAt": "2026-11-25T12:01:00.582Z",
     "trackedChangeCount": 40,
     "trackedFileSnapshotCount": 17,
     "changeTypeCounts": {
@@ -933,6 +987,50 @@
     }
   ],
   "recentChanges": [
+    {
+      "type": "save",
+      "path": "app/admin/instructor/page.tsx",
+      "toPath": "",
+      "summary": "",
+      "recordedAt": "2026-11-25T12:01:00.582Z",
+      "recordedAtEpochMs": 1795608060582,
+      "before": null,
+      "after": null,
+      "diff": null
+    },
+    {
+      "type": "save",
+      "path": "app/admin/instructor/page.tsx",
+      "toPath": "",
+      "summary": "",
+      "recordedAt": "2026-11-25T12:00:42.028Z",
+      "recordedAtEpochMs": 1795608042028,
+      "before": null,
+      "after": null,
+      "diff": null
+    },
+    {
+      "type": "save",
+      "path": "app/admin/instructor/page.tsx",
+      "toPath": "",
+      "summary": "",
+      "recordedAt": "2026-11-25T12:00:13.430Z",
+      "recordedAtEpochMs": 1795608013430,
+      "before": null,
+      "after": null,
+      "diff": null
+    },
+    {
+      "type": "save",
+      "path": "app/instructor/progress/page.tsx",
+      "toPath": "",
+      "summary": "",
+      "recordedAt": "2026-11-25T11:58:38.992Z",
+      "recordedAtEpochMs": 1795607918992,
+      "before": null,
+      "after": null,
+      "diff": null
+    },
     {
       "type": "save",
       "path": "app/instructor/progress/page.tsx",
@@ -1158,84 +1256,16 @@
         "beforeFragment": "ArrowLeft,",
         "afterFragment": ""
       }
-    },
-    {
-      "type": "save",
-      "path": "app/learner/practice/page.tsx",
-      "toPath": "",
-      "summary": "Saved without a textual diff.",
-      "recordedAt": "2026-11-19T09:48:59.570Z",
-      "recordedAtEpochMs": 1795081739570,
-      "before": {
-        "kind": "text",
-        "lineCount": 481,
-        "charCount": 27190,
-        "hash": "51792253f91e",
-        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci...",
-        "updatedAt": 1795081739568
-      },
-      "after": {
-        "kind": "text",
-        "lineCount": 481,
-        "charCount": 27190,
-        "hash": "51792253f91e",
-        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci...",
-        "updatedAt": 1795081739570
-      },
-      "diff": null
-    },
-    {
-      "type": "save",
-      "path": "app/learner/practice/page.tsx",
-      "toPath": "",
-      "summary": "Saved without a textual diff.",
-      "recordedAt": "2026-11-19T09:48:55.359Z",
-      "recordedAtEpochMs": 1795081735359,
-      "before": {
-        "kind": "text",
-        "lineCount": 481,
-        "charCount": 27190,
-        "hash": "51792253f91e",
-        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci...",
-        "updatedAt": 1795081735356
-      },
-      "after": {
-        "kind": "text",
-        "lineCount": 481,
-        "charCount": 27190,
-        "hash": "51792253f91e",
-        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci...",
-        "updatedAt": 1795081735359
-      },
-      "diff": null
-    },
-    {
-      "type": "save",
-      "path": "app/learner/payments/page.tsx",
-      "toPath": "",
-      "summary": "",
-      "recordedAt": "2026-11-19T09:47:38.592Z",
-      "recordedAtEpochMs": 1795081658592,
-      "before": null,
-      "after": null,
-      "diff": null
-    },
-    {
-      "type": "save",
-      "path": "app/learner/materials/page.tsx",
-      "toPath": "",
-      "summary": "",
-      "recordedAt": "2026-11-19T09:47:22.177Z",
-      "recordedAtEpochMs": 1795081642177,
-      "before": null,
-      "after": null,
-      "diff": null
     }
   ],
   "hotFiles": [
     {
+      "filePath": "app/admin/instructor/page.tsx",
+      "count": 6
+    },
+    {
       "filePath": "app/admin/lessons/page.tsx",
-      "count": 10
+      "count": 6
     },
     {
       "filePath": "app/learner/lessons/page.tsx",
@@ -1243,11 +1273,7 @@
     },
     {
       "filePath": "app/instructor/progress/page.tsx",
-      "count": 4
-    },
-    {
-      "filePath": "app/admin/instructor/page.tsx",
-      "count": 3
+      "count": 5
     },
     {
       "filePath": "app/learner/practice/page.tsx",
@@ -1269,47 +1295,15 @@
   "git": {
     "available": true,
     "branch": "blackboxai/learner-admin-consistency",
-    "headSummary": "2026-07-23 250ff19 removed code error",
-    "statusSummary": "27 modifieds, 1 deleted, 9 untrackeds",
-    "changedFileCount": 37,
+    "headSummary": "2026-11-25 16f492a changes",
+    "statusSummary": "5 modifieds",
+    "changedFileCount": 5,
     "statusLines": [
-      "M README.md",
-      "M app/admin/dashboard/page.tsx",
-      "M app/admin/instructor/page.tsx",
-      "M app/admin/layout.tsx",
-      "M app/admin/learner/page.tsx",
-      "M app/admin/lessons/page.tsx",
-      "M app/admin/notification/page.tsx",
-      "M app/admin/settings/page.tsx",
-      "M app/instructor/dashboard/page.tsx",
-      "M app/instructor/layout.tsx",
-      "M app/instructor/lessons/page.tsx",
-      "M app/instructor/notifications/page.tsx",
-      "M app/instructor/profile/page.tsx",
       "M app/instructor/progress/page.tsx",
-      "M app/learner/dashboard/page.tsx",
-      "M app/learner/layout.tsx",
-      "M app/learner/lessons/page.tsx",
-      "M app/learner/materials/page.tsx",
-      "D app/learner/notification/page.tsx",
-      "M app/learner/payments/page.tsx",
-      "M app/learner/practice/page.tsx",
-      "M app/learner/profile/page.tsx",
-      "M app/learner/progress/page.tsx",
-      "M app/login/page.tsx",
       "M graphify-out/WORKSPACE_MEMORY.md",
-      "M lib/supabase/client.ts",
+      "M pnpm-lock.yaml",
       "M workspace.json",
-      "M workspacememory.md",
-      "?? app/admin/types.ts",
-      "?? app/api/",
-      "?? app/reset-password/",
-      "?? birthday_cards/",
-      "?? lib/supabase/admin.ts",
-      "?? lib/supabase/password-reset-admin.ts",
-      "?? lib/supabase/password-reset-errors.ts",
-      "?? proxy.ts",
-      "?? supabase/"
+      "M workspacememory.md"
     ],
     "error": ""
   },

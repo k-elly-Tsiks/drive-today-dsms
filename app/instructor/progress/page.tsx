@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 import { CheckCircle2, Star } from 'lucide-react'
 import { feedbackMessage } from '@/app/instructor/_lib/feedback-message'
 
@@ -143,9 +142,6 @@ export default function InstructorProgressPage() {
   const [roadAwarenessRating, setRoadAwarenessRating] = useState(0)
   const [comments, setComments] = useState('')
 
-  const router = useRouter()
-  const routerRef = useRef(router)
-
   const blue = '#1e293b'
   const orange = '#ff5a00'
   const lightBlue = '#fff2eb'
@@ -153,7 +149,7 @@ export default function InstructorProgressPage() {
   const loadData = useCallback(async () => {
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { routerRef.current.push('/login'); return }
+    if (!user) { window.location.assign('/login'); return }
 
     const { data: bookingsData, error: bookingsError } = await supabase
       .from('lesson_bookings')
