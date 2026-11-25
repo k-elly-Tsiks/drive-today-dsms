@@ -1,5 +1,5 @@
 CREATE OR REPLACE FUNCTION public.complete_lesson_booking(
-  p_booking_id public.lesson_bookings.booking_id%TYPE
+  p_booking_id uuid
 )
 RETURNS text
 LANGUAGE plpgsql
@@ -49,7 +49,9 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.complete_lesson_booking(public.lesson_bookings.booking_id%TYPE)
+REVOKE ALL ON FUNCTION public.complete_lesson_booking(uuid)
   FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.complete_lesson_booking(public.lesson_bookings.booking_id%TYPE)
+GRANT EXECUTE ON FUNCTION public.complete_lesson_booking(uuid)
   TO authenticated;
+
+NOTIFY pgrst, 'reload schema';
