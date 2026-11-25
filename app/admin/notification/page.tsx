@@ -88,7 +88,7 @@ export default function NotificationsPage() {
 
     setNotifications(data || [])
     setLoading(false)
-  }, [])
+  }, [supabase])
 
   const checkAdmin = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -100,7 +100,7 @@ export default function NotificationsPage() {
       .single()
     if (data?.role !== 'admin') { routerRef.current.push('/login'); return }
     await loadNotifications()
-  }, [loadNotifications])
+  }, [supabase, loadNotifications])
 
   useEffect(() => {
     let cancelled = false

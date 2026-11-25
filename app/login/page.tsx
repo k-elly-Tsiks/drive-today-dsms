@@ -1,8 +1,33 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+
+const ACCOUNT_MESSAGES: Record<string, string> = {
+  pending: 'Your account is pending approval. Please wait for the administrator.',
+  suspended: 'Your account has been suspended. Please contact the administrator.',
+  rejected: 'Your registration was not approved. Please contact the administrator.',
+  missing: 'Account not found. Please contact the administrator.',
+}
+
+const errorBoxStyle: React.CSSProperties = {
+  background: 'rgba(239, 68, 68, 0.2)',
+  border: '1px solid rgba(239, 68, 68, 0.4)',
+  borderRadius: '10px',
+  padding: '10px 14px',
+  marginBottom: '16px',
+  color: '#fca5a5',
+  fontSize: '13px',
+}
+
+// Explains why the portal sent the user back here (see proxy.ts).
+function AccountNotice() {
+  const reason = useSearchParams().get('account')
+  const message = reason ? ACCOUNT_MESSAGES[reason] : undefined
+  if (!message) return null
+  return <div style={errorBoxStyle}>{message}</div>
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -14,6 +39,7 @@ export default function LoginPage() {
   const [showResetDialog, setShowResetDialog] = useState(false)
   const [resetStep, setResetStep] = useState<'email' | 'password' | 'complete'>('email')
   const [resetEmail, setResetEmail] = useState('')
+  const [resetCode, setResetCode] = useState('')
   const [resetPassword, setResetPassword] = useState('')
   const [confirmResetPassword, setConfirmResetPassword] = useState('')
   const [resetError, setResetError] = useState('')
@@ -29,13 +55,13 @@ export default function LoginPage() {
       const response = await fetch('/api/password-reset/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: resetEmail.trim().toLowerCase() }),
+        body: JSON.stringify({ email: resetEmail.trim().toLowerCase(), code: resetCode }),
       })
       const result: { allowed?: boolean; error?: string } = await response.json()
 
       if (!response.ok) throw new Error(result.error ?? 'Unable to check reset permission.')
       if (!result.allowed) {
-        setResetError('An administrator has not approved a password reset for this email.')
+        setResetError('That email and reset code do not match an approved password reset.')
         return
       }
 
@@ -67,13 +93,14 @@ export default function LoginPage() {
       const response = await fetch('/api/password-reset/complete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: normalizedEmail, password: resetPassword }),
+        body: JSON.stringify({ email: normalizedEmail, code: resetCode, password: resetPassword }),
       })
       const result: { success?: boolean; error?: string } = await response.json()
 
       if (!response.ok) throw new Error(result.error ?? 'Unable to update your password.')
 
       setEmail(normalizedEmail)
+      setResetCode('')
       setResetStep('complete')
     } catch (resetError) {
       console.error('Password reset failed:', resetError)
@@ -85,6 +112,7 @@ export default function LoginPage() {
 
   function openResetDialog() {
     setResetEmail(email)
+    setResetCode('')
     setResetStep('email')
     setResetPassword('')
     setConfirmResetPassword('')
@@ -113,8 +141,6 @@ export default function LoginPage() {
     }
 
     const { data, error } = authResult
-    console.log('AUTH RESULT:', data)
-    console.log('AUTH ERROR:', error)
 
     if (error || !data?.user) {
       setError(
@@ -131,24 +157,19 @@ export default function LoginPage() {
       .eq('user_id', data.user.id)
       .single()
 
-console.log("AUTH USER ID:", data.user.id)
-console.log("DB USER RECORD:", userRecord)
-console.log("USER ERROR:", userError)
-
     if (userError ||!userRecord) {
-      setError('Account not found. Please contact the administrator.')
+      await supabase.auth.signOut()
+      setError(ACCOUNT_MESSAGES.missing)
       setLoading(false)
       return
     }
 
-    if (userRecord.status === 'pending') {
-      setError('Your account is pending approval. Please wait for the administrator.')
-      setLoading(false)
-      return
-    }
-
-    if (userRecord.status === 'suspended') {
-      setError('Your account has been suspended. Please contact the administrator.')
+    // Unapproved accounts must not keep a session, or they could open the
+    // portals directly.
+    const blockedMessage = ACCOUNT_MESSAGES[userRecord.status]
+    if (blockedMessage) {
+      await supabase.auth.signOut()
+      setError(blockedMessage)
       setLoading(false)
       return
     }
@@ -249,20 +270,14 @@ console.log("USER ERROR:", userError)
           </div>
 
           {/* Error Message */}
-          {error && (
-            <div
-              style={{
-                background: 'rgba(239, 68, 68, 0.2)',
-                border: '1px solid rgba(239, 68, 68, 0.4)',
-                borderRadius: '10px',
-                padding: '10px 14px',
-                marginBottom: '16px',
-                color: '#fca5a5',
-                fontSize: '13px',
-              }}
-            >
+          {error ? (
+            <div style={errorBoxStyle}>
               {error}
             </div>
+          ) : (
+            <Suspense fallback={null}>
+              <AccountNotice />
+            </Suspense>
           )}
 
           {/* Form */}
@@ -493,7 +508,7 @@ console.log("USER ERROR:", userError)
             </h2>
             <p style={{ margin: '0 0 20px', color: '#64748b', fontSize: '14px', lineHeight: 1.5 }}>
               {resetStep === 'email'
-                ? 'Enter the email selected by the administrator, then continue.'
+                ? 'Enter your email and the reset code the administrator gave you.'
                 : resetStep === 'password'
                   ? `Set a new password for ${resetEmail.trim().toLowerCase()}.`
                   : 'Your password has been updated. You can now sign in with your new password.'}
@@ -530,6 +545,21 @@ console.log("USER ERROR:", userError)
                   value={resetEmail}
                   onChange={(event) => setResetEmail(event.target.value)}
                   style={resetInputStyle}
+                />
+                <label htmlFor="reset-code" style={resetLabelStyle}>
+                  Reset code
+                </label>
+                <input
+                  id="reset-code"
+                  type="text"
+                  autoComplete="one-time-code"
+                  autoCapitalize="characters"
+                  spellCheck={false}
+                  required
+                  placeholder="XXXX-XXXX"
+                  value={resetCode}
+                  onChange={(event) => setResetCode(event.target.value)}
+                  style={{ ...resetInputStyle, fontFamily: 'monospace', letterSpacing: '2px', textTransform: 'uppercase' }}
                 />
                 <button type="submit" disabled={resetLoading} style={resetPrimaryButtonStyle}>
                   {resetLoading ? 'Checking permission...' : 'Next'}

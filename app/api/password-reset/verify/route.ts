@@ -1,15 +1,17 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getPasswordResetDatabaseError } from '@/lib/supabase/password-reset-errors'
+import { checkResetCode } from '@/lib/supabase/password-reset-code'
 
 export async function POST(request: Request) {
   let email: unknown
+  let code: unknown
 
   try {
     const body: unknown = await request.json()
-    email = typeof body === 'object' && body !== null && 'email' in body
-      ? body.email
-      : null
+    if (typeof body === 'object' && body !== null) {
+      email = 'email' in body ? body.email : null
+      code = 'code' in body ? body.code : null
+    }
   } catch {
     return NextResponse.json({ error: 'Enter the email address for your account.' }, { status: 400 })
   }
@@ -20,30 +22,19 @@ export async function POST(request: Request) {
       { status: 400 }
     )
   }
+  if (typeof code !== 'string' || !code.trim()) {
+    return NextResponse.json(
+      { error: 'Enter the reset code the administrator gave you.' },
+      { status: 400 }
+    )
+  }
 
   try {
-    const normalizedEmail = email.trim().toLowerCase()
     const adminClient = createAdminClient()
-    const { data, error } = await adminClient
-      .from('password_reset_permissions')
-      .select('user_id')
-      .eq('email', normalizedEmail)
-      .gt('expires_at', new Date().toISOString())
-      .maybeSingle()
+    const check = await checkResetCode(adminClient, email.trim().toLowerCase(), code)
+    if (!check.ok) return check.response
 
-    if (error) {
-      console.error('Unable to verify password reset permission:', error)
-      const databaseError = getPasswordResetDatabaseError(
-        error,
-        'Unable to check reset permission. Please try again later.'
-      )
-      return NextResponse.json(
-        { error: databaseError.message },
-        { status: databaseError.status }
-      )
-    }
-
-    return NextResponse.json({ allowed: Boolean(data) })
+    return NextResponse.json({ allowed: true })
   } catch (error) {
     console.error('Password reset permission verification failed:', error)
     return NextResponse.json(

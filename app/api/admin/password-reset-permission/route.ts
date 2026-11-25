@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { authorizePasswordResetAdmin } from '@/lib/supabase/password-reset-admin'
 import { getPasswordResetDatabaseError } from '@/lib/supabase/password-reset-errors'
+import { generateResetCode, hashResetCode } from '@/lib/supabase/password-reset-code'
 
 export async function GET(request: Request) {
   try {
@@ -110,6 +111,8 @@ export async function POST(request: Request) {
       )
     }
 
+    // Only the hash is stored; the admin sees the code once and passes it on.
+    const code = generateResetCode()
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
     const { error: grantError } = await authorization.adminClient
       .from('password_reset_permissions')
@@ -119,6 +122,8 @@ export async function POST(request: Request) {
           email,
           expires_at: expiresAt,
           granted_by: authorization.user.id,
+          code_hash: hashResetCode(code),
+          failed_attempts: 0,
         },
         { onConflict: 'user_id' }
       )
@@ -135,7 +140,7 @@ export async function POST(request: Request) {
       )
     }
 
-    return NextResponse.json({ allowed: true, expiresAt })
+    return NextResponse.json({ allowed: true, expiresAt, code })
   } catch (error) {
     console.error('Password reset permission update failed:', error)
     return NextResponse.json(

@@ -137,6 +137,9 @@ export default function LearnersPage() {
   const [learnerLessons, setLearnerLessons] = useState<Lesson[]>([])
   const [loadingLessons, setLoadingLessons] = useState(false)
   const [slotsInput, setSlotsInput]         = useState('')
+  const [slotsUsed, setSlotsUsed]           = useState<number | null>(null)
+  const [slotsBookable, setSlotsBookable]   = useState(0)
+  const [slotsMode, setSlotsMode]           = useState<'set' | 'extra'>('set')
   const [actionLoading, setActionLoading]   = useState(false)
   const [toast, setToast]                   = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
 
@@ -297,28 +300,80 @@ export default function LearnersPage() {
     }
   }
 
+  // Booked and completed lessons both use up a slot; cancelled ones give it back.
+  async function countUsedSlots(learnerId: string) {
+    const { count, error } = await supabase
+      .from('lesson_bookings')
+      .select('booking_id', { count: 'exact', head: true })
+      .eq('learner_id', learnerId)
+      .neq('status', 'cancelled')
+    if (error) throw error
+    return count ?? 0
+  }
+
+  async function openSlotsModal(learner: Learner, mode: 'set' | 'extra') {
+    setSlotsModal(learner)
+    setSlotsMode(mode)
+    setSlotsUsed(null)
+    setSlotsInput('')
+    try {
+      const used = await countUsedSlots(learner.user_id)
+      const allocated = Math.max(Number(learner.slots_allocated) || 0, Number(learner.allowed_slots) || 0)
+      setSlotsUsed(used)
+      setSlotsBookable(Math.max(0, allocated - used))
+      setSlotsInput(mode === 'extra' ? '1' : String(Math.max(0, allocated - used)))
+    } catch {
+      showToast('Could not load the learner booking history.', 'error')
+      setSlotsModal(null)
+    }
+  }
+
   async function onUpdateSlots() {
     if (!slotsModal) return
     const num = parseInt(slotsInput)
-    if (isNaN(num) || num < 0) {
-      showToast('Please insert a valid slot configuration balance.', 'error')
+    if (isNaN(num) || num < (slotsMode === 'extra' ? 1 : 0)) {
+      showToast(slotsMode === 'extra' ? 'Enter at least 1 extra lesson.' : 'Please insert a valid slot configuration balance.', 'error')
       return
     }
     setActionLoading(true)
+
+    // The stored total must also cover the lessons already booked or completed.
+    // "Set" makes num the new bookable balance; "extra" adds num on top of it.
+    let total: number
+    let bookable: number
+    try {
+      const used = await countUsedSlots(slotsModal.user_id)
+      const allocated = Math.max(Number(slotsModal.slots_allocated) || 0, Number(slotsModal.allowed_slots) || 0)
+      total = slotsMode === 'extra' ? Math.max(allocated, used) + num : used + num
+      bookable = total - used
+    } catch {
+      showToast('Could not load the learner booking history.', 'error')
+      setActionLoading(false)
+      return
+    }
+
     const { data: updatedLearner, error } = await supabase
       .from('users')
-      .update({ slots_allocated: num, allowed_slots: num })
+      .update({ slots_allocated: total, allowed_slots: total })
       .eq('user_id', slotsModal.user_id)
       .select('user_id')
       .maybeSingle()
     if (!error && updatedLearner) {
-      setLearners(prev => prev.map(l => l.user_id === slotsModal.user_id ? { ...l, slots_allocated: num, allowed_slots: num } : l))
-      
+      setLearners(prev => prev.map(l => l.user_id === slotsModal.user_id ? { ...l, slots_allocated: total, allowed_slots: total } : l))
+
       if (viewLearner && viewLearner.user_id === slotsModal.user_id) {
-        setViewLearner(prev => prev ? { ...prev, slots_allocated: num, allowed_slots: num } : null)
+        setViewLearner(prev => prev ? { ...prev, slots_allocated: total, allowed_slots: total } : null)
       }
 
-      showToast('Booking slots reallocated effectively.', 'success')
+      await supabase.from('notifications').insert({
+        recipient_id: slotsModal.user_id,
+        message: slotsMode === 'extra'
+          ? `You have been given ${num} extra lesson(s). You can now book ${bookable} lesson(s) - choose your slots under My Lessons.`
+          : `Your lesson allowance has been updated. You can now book ${bookable} lesson(s) - choose your slots under My Lessons.`,
+        type: 'approval',
+      })
+
+      showToast(`${slotsModal.first_name} can now book ${bookable} slot(s).`, 'success')
       setSlotsModal(null)
       setSlotsInput('')
     } else {
@@ -683,14 +738,23 @@ export default function LearnersPage() {
       {slotsModal && (
         <div className="modal-overlay" onClick={() => setSlotsModal(null)}>
           <div className="modal-card" style={{ maxWidth: '360px', padding: '24px' }} onClick={e => e.stopPropagation()}>
-            <h3 style={{ margin: '0 0 6px', fontSize: '16px', fontWeight: '700', color: '#0b1329' }}>Assign Program Slots</h3>
-            <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 20px' }}>Configure direct training token volume for <b>{slotsModal.first_name}</b>.</p>
-            
+            <h3 style={{ margin: '0 0 6px', fontSize: '16px', fontWeight: '700', color: '#0b1329' }}>{slotsMode === 'extra' ? 'Add Extra Lessons' : 'Assign Program Slots'}</h3>
+            <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px' }}>
+              {slotsMode === 'extra'
+                ? <>How many extra lessons should <b>{slotsModal.first_name}</b> get?</>
+                : <>How many slots can <b>{slotsModal.first_name}</b> book from now on?</>}
+            </p>
+            <p style={{ fontSize: '12px', color: '#94a3b8', margin: '0 0 20px' }}>
+              {slotsUsed === null
+                ? 'Loading booking history...'
+                : `${slotsUsed} lesson(s) already booked or completed are not affected. Currently able to book: ${slotsBookable}.`}
+            </p>
+
             <input type="number" min="0" autoFocus value={slotsInput} onChange={e => setSlotsInput(e.target.value)} style={{ width: '100%', padding: '12px', fontSize: '20px', borderRadius: '10px', border: '2px solid #e2e8f0', marginBottom: '20px', textAlign: 'center', fontWeight: '700', color: '#0b1329' }} placeholder="0" />
-            
+
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
               <button className="custom-btn-secondary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setSlotsModal(null)}>Cancel</button>
-              <button className="custom-btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={onUpdateSlots} disabled={actionLoading}>Update Balance</button>
+              <button className="custom-btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={onUpdateSlots} disabled={actionLoading || slotsUsed === null}>Update Balance</button>
             </div>
           </div>
         </div>
@@ -833,7 +897,8 @@ export default function LearnersPage() {
                           <div ref={menuRef} style={{ position: 'absolute', right: '100%', top: '0', background: 'white', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.02)', zIndex: 100, width: '180px', overflow: 'hidden', marginRight: '4px' }}>
                             <button className="menu-item" onClick={() => { setViewLearner(l); setOpenMenu(null); }}><User size={14} /> View Record</button>
                             <button className="menu-item" onClick={() => { setEditModal(l); setOpenMenu(null); }}><Edit3 size={14} /> Edit Details</button>
-                            <button className="menu-item" onClick={() => { setSlotsModal(l); setSlotsInput(String(Math.max(Number(l.slots_allocated) || 0, Number(l.allowed_slots) || 0))); setOpenMenu(null); }}><Ticket size={14} /> Reallocate Slots</button>
+                            <button className="menu-item" onClick={() => { void openSlotsModal(l, 'set'); setOpenMenu(null); }}><Ticket size={14} /> Reallocate Slots</button>
+                            <button className="menu-item" onClick={() => { void openSlotsModal(l, 'extra'); setOpenMenu(null); }}><Ticket size={14} /> Add Extra Lessons</button>
                             {l.status === 'pending' && (
                               <button className="menu-item" style={{ color: '#16a34a' }} onClick={() => { setConfirmModal({ type: 'approve', learner: l }); setOpenMenu(null); }}><CheckCircle size={14} /> Approve Account</button>
                             )}

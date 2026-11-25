@@ -20,8 +20,6 @@ export function DTSkeleton({ w = '100%', h = '14px', r = '6px' }: DTSkeletonProp
     return () => obs.disconnect()
   }, [])
 
-  const shimmerBg = dtTheme.shimmerBg.dark
-
   return (
     <div
       style={{

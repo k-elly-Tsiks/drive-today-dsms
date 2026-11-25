@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { CheckCircle2, Star } from 'lucide-react'
+import { feedbackMessage } from '@/app/instructor/_lib/feedback-message'
 
 
 type Booking = {
@@ -305,7 +306,14 @@ export default function InstructorProgressPage() {
 
     await supabase.from('notifications').insert({
       recipient_id: selectedBooking.learner_id,
-      message: `Your instructor has recorded progress for your lesson on ${selectedBooking.lesson_slots?.slot_date}. Check your progress page.`,
+      message: feedbackMessage({
+        lessonDate: selectedBooking.lesson_slots?.slot_date,
+        steering: steeringRating,
+        parking: parkingRating,
+        reversing: reversingRating,
+        roadAwareness: roadAwarenessRating,
+        comments,
+      }),
       type: 'lesson_reminder',
     })
 

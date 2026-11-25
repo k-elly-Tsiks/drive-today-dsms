@@ -5,4 +5,5 @@ export type Notification = {
   is_read: boolean
   created_at: string
   recipient_id: string
+  recipient?: { first_name: string; surname: string; role: string } | null
 }

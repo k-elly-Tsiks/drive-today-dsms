@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getPasswordResetDatabaseError } from '@/lib/supabase/password-reset-errors'
+import { checkResetCode } from '@/lib/supabase/password-reset-code'
 
 type ClaimedPermission = {
   user_id: string
@@ -8,6 +9,8 @@ type ClaimedPermission = {
   expires_at: string
   granted_by: string
   created_at: string
+  code_hash: string
+  failed_attempts: number
 }
 
 export async function POST(request: Request) {
@@ -24,13 +27,16 @@ export async function POST(request: Request) {
     !('email' in body) ||
     typeof body.email !== 'string' ||
     !('password' in body) ||
-    typeof body.password !== 'string'
+    typeof body.password !== 'string' ||
+    !('code' in body) ||
+    typeof body.code !== 'string'
   ) {
-    return NextResponse.json({ error: 'Enter your email and new password.' }, { status: 400 })
+    return NextResponse.json({ error: 'Enter your email, reset code and new password.' }, { status: 400 })
   }
 
   const email = body.email.trim().toLowerCase()
   const password = body.password
+  const code = body.code
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 })
   }
@@ -52,27 +58,9 @@ export async function POST(request: Request) {
     )
   }
 
-  const { data: permission, error: permissionError } = await adminClient
-    .from('password_reset_permissions')
-    .select('user_id, email, expires_at')
-    .eq('email', email)
-    .gt('expires_at', new Date().toISOString())
-    .maybeSingle()
-
-  if (permissionError) {
-    console.error('Unable to load password reset permission:', permissionError)
-    const databaseError = getPasswordResetDatabaseError(
-      permissionError,
-      'Unable to complete password reset.'
-    )
-    return NextResponse.json({ error: databaseError.message }, { status: databaseError.status })
-  }
-  if (!permission) {
-    return NextResponse.json(
-      { error: 'An administrator has not approved a password reset for this email.' },
-      { status: 403 }
-    )
-  }
+  const check = await checkResetCode(adminClient, email, code)
+  if (!check.ok) return check.response
+  const permission = { user_id: check.userId }
 
   const { data: profile, error: profileError } = await adminClient
     .from('users')
@@ -107,7 +95,7 @@ export async function POST(request: Request) {
     .eq('user_id', permission.user_id)
     .eq('email', email)
     .gt('expires_at', new Date().toISOString())
-    .select('user_id, email, expires_at, granted_by, created_at')
+    .select('user_id, email, expires_at, granted_by, created_at, code_hash, failed_attempts')
     .maybeSingle()
 
   if (claimError) {

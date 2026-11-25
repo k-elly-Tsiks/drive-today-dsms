@@ -5,6 +5,7 @@ import { CalendarDays, Clock4, AlertTriangle, ListChecks } from 'lucide-react'
 
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { bookLessonSlots, describeBooking, formatMoney, getMyLessonPrice } from '@/app/learner/_lib/book-lesson-slots'
 
 type Slot = {
   slot_id: string
@@ -54,6 +55,7 @@ export default function LearnerLessonsPage() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [availableSlots, setAvailableSlots] = useState<Slot[]>([])
   const [learner, setLearner] = useState<LearnerProfile | null>(null)
+  const [lessonPrice, setLessonPrice] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedSlots, setSelectedSlots] = useState<string[]>([])
   const [selectionStorageKey, setSelectionStorageKey] = useState('')
@@ -103,7 +105,7 @@ export default function LearnerLessonsPage() {
     const today = [now.getFullYear(), now.getMonth() + 1, now.getDate()].map(n => String(n).padStart(2, '0')).join('-')
     const currentTime = now.toTimeString().slice(0, 5)
 
-    const [learnerResult, bookingsResult, slotsResult] = await Promise.all([
+    const [learnerResult, bookingsResult, slotsResult, price] = await Promise.all([
       supabase
         .from('users')
         .select('user_id, first_name, surname, slots_allocated, allowed_slots, driving_class')
@@ -129,6 +131,7 @@ export default function LearnerLessonsPage() {
         .order('slot_date', { ascending: true })
         .order('slot_time', { ascending: true })
         .limit(60),
+      getMyLessonPrice(),
     ])
 
     const loadError = learnerResult.error || bookingsResult.error || slotsResult.error
@@ -162,6 +165,7 @@ export default function LearnerLessonsPage() {
     const maxSelectableSlots = Math.max(0, allocatedSlots - usedBookings)
 
     setLearner(learnerResult.data)
+    setLessonPrice(price)
     setBookings(bookingsResult.data || [])
     setAvailableSlots(slotsResult.data || [])
     const validRestoredSlots = restoredSlots.filter(slotId => availableSlotIds.has(slotId)).slice(0, maxSelectableSlots)
@@ -225,101 +229,16 @@ export default function LearnerLessonsPage() {
     setConfirming(true)
     setError('')
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
+    const result = await bookLessonSlots(selectedSlots)
+    if (!result.ok) {
+      setError(result.message)
+      if (result.slotTaken) await loadData()
       setConfirming(false)
       return
     }
 
-    const { data: instructors } = await supabase
-      .from('users')
-      .select('user_id, instructor_driving_classes')
-      .eq('role', 'instructor')
-      .eq('status', 'approved')
-
-    if (!instructors || instructors.length === 0) {
-      setError('No instructors available. Please contact the administrator.')
-      setConfirming(false)
-      return
-    }
-
-    const learnerClass = learner?.driving_class?.trim() || ''
-
-    const eligibleInstructors = instructors.filter((instructor: { user_id: string; instructor_driving_classes?: string | string[] | null }) => {
-      if (!learnerClass) return true
-      if (!instructor.instructor_driving_classes) return false
-      if (Array.isArray(instructor.instructor_driving_classes)) {
-        return instructor.instructor_driving_classes.includes(learnerClass)
-      }
-      return instructor.instructor_driving_classes
-        .split(',')
-        .map(c => c.trim())
-        .includes(learnerClass)
-    })
-
-    const selectedPool = eligibleInstructors.length > 0 ? eligibleInstructors : instructors
-
-    const { data: allBookings } = await supabase
-      .from('lesson_bookings')
-      .select('instructor_id')
-      .eq('status', 'scheduled')
-
-    const workloadMap: Record<string, number> = {}
-    selectedPool.forEach((i: { user_id: string }) => {
-      workloadMap[i.user_id] = 0
-    })
-
-    allBookings?.forEach((b: { instructor_id?: string }) => {
-      if (b.instructor_id && workloadMap[b.instructor_id] !== undefined) {
-        workloadMap[b.instructor_id]++
-      }
-    })
-
-    const assignedInstructor = Object.entries(workloadMap).sort(([, a], [, b]) => a - b)[0]?.[0]
-    if (!assignedInstructor) {
-      setError('No instructors available. Please contact the administrator.')
-      setConfirming(false)
-      return
-    }
-
-    const bookingsToInsert = selectedSlots.map(slotId => ({
-      learner_id: user.id,
-      instructor_id: assignedInstructor,
-      slot_id: slotId,
-      status: 'scheduled',
-    }))
-
-    const { error: bookingError } = await supabase.from('lesson_bookings').insert(bookingsToInsert)
-
-    if (bookingError) {
-      if (bookingError.message.includes('This lesson slot is no longer available.')) {
-        setError('One or more selected slots were just booked by another learner. Please choose different slots.')
-        await loadData()
-      } else {
-        setError(`Failed to book lessons: ${bookingError.message}`)
-      }
-      setConfirming(false)
-      return
-    }
-
-    for (const slotId of selectedSlots) {
-      await supabase.from('lesson_slots').update({ status: 'booked' }).eq('slot_id', slotId)
-    }
-
-    await supabase.from('notifications').insert({
-      recipient_id: user.id,
-      message: `Your ${selectedSlots.length} lesson slot(s) have been confirmed and an instructor has been assigned.`,
-      type: 'lesson_reminder',
-    })
-
-    await supabase.from('notifications').insert({
-      recipient_id: assignedInstructor,
-      message: `You have been assigned ${selectedSlots.length} new lesson(s).`,
-      type: 'lesson_reminder',
-    })
-
-    setSuccessMessage(`${selectedSlots.length} lesson(s) booked successfully!`)
-    setTimeout(() => setSuccessMessage(''), 4000)
+    setSuccessMessage(describeBooking(result))
+    setTimeout(() => setSuccessMessage(''), 8000)
 
     if (selectionStorageKey) {
       try {
@@ -355,13 +274,15 @@ export default function LearnerLessonsPage() {
     setCancelling(true)
     setError('')
 
-    const { error: cancelError } = await supabase
+    const { data: cancelled, error: cancelError } = await supabase
       .from('lesson_bookings')
       .update({ status: 'cancelled', cancellation_reason: cancelReason })
       .eq('booking_id', selectedBooking.booking_id)
+      .select('booking_id')
+      .maybeSingle()
 
-    if (cancelError) {
-      setError('Failed to cancel lesson.')
+    if (cancelError || !cancelled) {
+      setError(cancelError ? `Failed to cancel lesson: ${cancelError.message}` : 'The cancellation was not saved. The database did not allow this change.')
       setCancelling(false)
       return
     }
@@ -620,9 +541,16 @@ export default function LearnerLessonsPage() {
               ) : (
                 <div>
                   <div style={{ background: 'white', borderRadius: '14px', padding: '16px 20px', marginBottom: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-                    <p style={{ margin: 0, fontSize: '13px', color: '#4b5563', fontWeight: '600' }}>
-                      Selected slots: <span style={{ color: orange, fontWeight: '800' }}>{selectedSlots.length}</span> of {remainingSlots} allowed slots
-                    </p>
+                    <div>
+                      <p style={{ margin: 0, fontSize: '13px', color: '#4b5563', fontWeight: '600' }}>
+                        Selected slots: <span style={{ color: orange, fontWeight: '800' }}>{selectedSlots.length}</span> of {remainingSlots} allowed slots
+                      </p>
+                      <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#4b5563', fontWeight: '600' }}>
+                        {lessonPrice === null
+                          ? 'Lesson price not set yet. The administrator will confirm the fee.'
+                          : <>Total fee: <span style={{ color: blue, fontWeight: '800' }}>{formatMoney(selectedSlots.length * lessonPrice)}</span> ({selectedSlots.length} x {formatMoney(lessonPrice)})</>}
+                      </p>
+                    </div>
 
                     {selectedSlots.length > 0 ? (
                       <button

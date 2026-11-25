@@ -96,8 +96,9 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     async function loadData() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
-      const { data } = await supabase.from('users').select('first_name, surname, role').eq('user_id', user.id).single()
-      if (data) setProfile({ name: `${data.first_name} ${data.surname}`, role: data.role || 'Learner' })
+      const { data } = await supabase.from('users').select('first_name, surname, role, status').eq('user_id', user.id).single()
+      if (!data || data.role !== 'learner' || data.status !== 'approved') { router.push('/login'); return }
+      setProfile({ name: `${data.first_name} ${data.surname}`, role: data.role })
       setLoading(false)
     }
     loadData()

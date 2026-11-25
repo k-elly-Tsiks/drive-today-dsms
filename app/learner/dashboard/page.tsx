@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { BookOpen, Calendar, CheckCircle, CreditCard, FileQuestion, TrendingUp } from 'lucide-react'
 import { DTSkeleton } from '@/app/_components/ui/dt-skeleton'
 import { DTStatCard } from '@/app/_components/ui/dt-stat-card'
+import { FirstBookingDialog } from '@/app/learner/_components/first-booking-dialog'
 
 
 type LearnerProfile = {
@@ -13,6 +14,10 @@ type LearnerProfile = {
   surname: string
   allowed_slots?: number | null
   slots_allocated?: number | null
+}
+
+function firstBookingDismissedKey(learnerId: string) {
+  return `learner-first-booking-dismissed:${learnerId}`
 }
 
 type Booking = {
@@ -55,6 +60,9 @@ export default function LearnerDashboard() {
     progressRecords: 0,
   })
   const [loading, setLoading] = useState(true)
+  const [learnerId, setLearnerId] = useState('')
+  const [showFirstBooking, setShowFirstBooking] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
 
   const router = useRouter()
   const routerRef = useRef(router)
@@ -98,15 +106,28 @@ export default function LearnerDashboard() {
       Number(profile?.allowed_slots) || 0,
     )
 
+    const remainingSlots = Math.max(allocated - activeBookingCount, 0)
+
     setLearner(profile)
+    setLearnerId(user.id)
     setBookings(lessons)
     setStats({
       scheduledLessons: scheduledLessonsCount,
       completedLessons: completedLessonsCount,
-      remainingSlots: Math.max(allocated - activeBookingCount, 0),
+      remainingSlots,
       totalPaid: payments.reduce((sum, payment) => sum + Number(payment.amount), 0),
       progressRecords: progressCount,
     })
+
+    // A learner who has never booked a lesson is on their first visit, so prompt
+    // them to pick slots unless they chose "Later" earlier in this session.
+    let dismissed = false
+    try {
+      dismissed = sessionStorage.getItem(firstBookingDismissedKey(user.id)) === 'true'
+    } catch {
+      dismissed = false
+    }
+    setShowFirstBooking(lessons.length === 0 && remainingSlots > 0 && !dismissed)
     setLoading(false)
   }, [])
 
@@ -118,6 +139,22 @@ export default function LearnerDashboard() {
     init()
     return () => { cancelled = true }
   }, [loadDashboard])
+
+  function postponeFirstBooking() {
+    try {
+      sessionStorage.setItem(firstBookingDismissedKey(learnerId), 'true')
+    } catch {
+      // Without storage the prompt simply returns on the next visit.
+    }
+    setShowFirstBooking(false)
+  }
+
+  function handleFirstBooking(summary: string) {
+    setShowFirstBooking(false)
+    setSuccessMessage(`${summary} You can see your lessons under My Lessons.`)
+    setTimeout(() => setSuccessMessage(''), 8000)
+    void loadDashboard()
+  }
 
   const statCards = [
     {
@@ -173,6 +210,21 @@ export default function LearnerDashboard() {
           </p>
         </div>
       </div>
+
+      {successMessage && (
+        <div style={{ background: '#d1fae5', border: '1px solid #6ee7b7', borderRadius: '10px', padding: '12px 16px', marginBottom: '20px', color: '#065f46', fontSize: '13px', fontWeight: '600' }}>
+          {successMessage}
+        </div>
+      )}
+
+      {showFirstBooking && (
+        <FirstBookingDialog
+          learnerName={learner?.first_name || 'Learner'}
+          remainingSlots={stats.remainingSlots}
+          onLater={postponeFirstBooking}
+          onBooked={handleFirstBooking}
+        />
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '20px', marginBottom: '32px' }}>
         {loading

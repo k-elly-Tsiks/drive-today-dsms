@@ -116,13 +116,14 @@ export default function SignupPage() {
       instructor_licence_validity : instructorLicenceValidity || null,
       instructor_driving_classes : drivingClasses,
     })
-console.log("DB ERROR:", dbError)
     if (dbError) {
       setError('Failed to save your details. Please try again.')
       setLoading(false)
       return
     }
 
+    // New accounts wait for administrator approval, so they get no session.
+    await supabase.auth.signOut()
     setSuccess(true)
     setLoading(false)
   }

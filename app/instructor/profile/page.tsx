@@ -167,7 +167,7 @@ export default function LearnerProfilePage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    const { error: updateError } = await supabase
+    const { data: saved, error: updateError } = await supabase
       .from('users')
       .update({
         phone_number: phone,
@@ -179,9 +179,11 @@ export default function LearnerProfilePage() {
         driving_class: drivingClass || null,
       })
       .eq('user_id', user.id)
+      .select('user_id')
+      .maybeSingle()
 
-    if (updateError) {
-      setError('Failed to update profile.')
+    if (updateError || !saved) {
+      setError(updateError ? `Failed to update profile: ${updateError.message}` : 'Your profile was not saved. The database did not allow this change.')
       setSaving(false)
       return
     }

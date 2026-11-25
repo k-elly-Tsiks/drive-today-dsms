@@ -85,6 +85,7 @@ export default function SettingsPage() {
   const [resetPermissionEnabled, setResetPermissionEnabled] = useState(false)
   const [loadingResetPermission, setLoadingResetPermission] = useState(false)
   const [resetEmailWarning, setResetEmailWarning] = useState('')
+  const [issuedResetCode, setIssuedResetCode] = useState('')
 
   const router = useRouter()
 
@@ -223,16 +224,17 @@ export default function SettingsPage() {
           allowed: !resetPermissionEnabled,
         }),
       })
-      const result: { allowed?: boolean; error?: string } = await response.json()
+      const result: { allowed?: boolean; code?: string; error?: string } = await response.json()
       if (!response.ok) throw new Error(result.error ?? 'Unable to update reset permission.')
 
       setResetPermissionEnabled(result.allowed === true)
+      setIssuedResetCode(result.allowed && result.code ? result.code : '')
       const recipient = resetRecipients.find(
         (candidate) => candidate.user_id === selectedResetRecipient
       )
       showToast(
         result.allowed
-          ? `Password reset allowed for ${recipient?.email}. It can be used once within 24 hours.`
+          ? `Password reset allowed for ${recipient?.email}. Give them the reset code shown below.`
           : 'Password reset permission revoked.'
       )
     } catch (error) {
@@ -388,7 +390,7 @@ export default function SettingsPage() {
                 </div>
 
                 <p style={{ margin: '0 0 16px', color: '#64748b', fontSize: '13px', lineHeight: 1.5 }}>
-                  Select an account to allow one password reset. No email will be sent. The approval expires after 24 hours if unused.
+                  Select an account to allow one password reset. A one-time reset code is shown here for you to give to the account owner; they need it together with their email. No email will be sent. The approval expires after 24 hours if unused.
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div>
@@ -398,6 +400,7 @@ export default function SettingsPage() {
                       value={selectedResetRecipient}
                       onChange={(event) => {
                         setSelectedResetRecipient(event.target.value)
+                        setIssuedResetCode('')
                       }}
                       className="dashboard-control"
                       disabled={resetRecipients.length === 0}
@@ -434,9 +437,21 @@ export default function SettingsPage() {
                       {loadingResetPermission
                         ? 'Checking reset permission...'
                         : resetPermissionEnabled
-                          ? 'This account is currently allowed to reset its password.'
+                          ? 'This account is currently allowed to reset its password. To issue a new code, revoke and allow again.'
                           : 'This account is not currently allowed to reset its password.'}
                     </p>
+                  )}
+
+                  {issuedResetCode && (
+                    <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', padding: '12px 14px' }}>
+                      <span className="info-label" style={{ color: '#15803d', marginBottom: '4px' }}>One-time reset code</span>
+                      <div style={{ fontFamily: 'monospace', fontSize: '22px', fontWeight: 800, letterSpacing: '3px', color: '#14532d' }}>
+                        {issuedResetCode}
+                      </div>
+                      <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#166534', lineHeight: 1.5 }}>
+                        Give this code to the account owner in person or by phone. It will not be shown again.
+                      </p>
+                    </div>
                   )}
 
                   <button

@@ -1,5 +1,6 @@
 'use client'
 import { createClient } from '@/lib/supabase/client'
+import { teachesDrivingClass } from '@/lib/driving-classes'
 import { useRouter } from 'next/navigation' //
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 const supabase = createClient()
@@ -45,6 +46,7 @@ type Booking = {
     first_name: string
     surname: string
     phone_number: string
+    driving_class?: string | null
   }
   instructor?: {
     first_name: string
@@ -109,7 +111,7 @@ function StatusBadge({ status }: { status: string }) {
 export default function LessonsPage() {
   const [slots, setSlots] = useState<Slot[]>([])
   const [bookings, setBookings] = useState<Booking[]>([])
-  const [approvedInstructors, setApprovedInstructors] = useState<{user_id: string, first_name: string, surname: string}[]>([])
+  const [approvedInstructors, setApprovedInstructors] = useState<{user_id: string, first_name: string, surname: string, instructor_driving_classes?: unknown}[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('slots') 
   const [search, setSearch] = useState('')
@@ -197,11 +199,11 @@ function first<T>(val: T | T[] | undefined | null): T | null {
       supabase.from('lesson_slots').select('*').order('slot_date', { ascending: false }),
       supabase.from('lesson_bookings').select(`
         *,
-        learner:users!lesson_bookings_learner_id_fkey (first_name, surname, phone_number),
+        learner:users!lesson_bookings_learner_id_fkey (first_name, surname, phone_number, driving_class),
         instructor:users!lesson_bookings_instructor_id_fkey (first_name, surname),
         lesson_slots (slot_date, slot_time)
       `).order('created_at', { ascending: false }),
-      supabase.from('users').select('user_id, first_name, surname').eq('role', 'instructor').eq('status', 'approved')
+      supabase.from('users').select('user_id, first_name, surname, instructor_driving_classes').eq('role', 'instructor').eq('status', 'approved')
     ])
 
     setSlots(slotsRes.data || [])
@@ -255,8 +257,10 @@ function first<T>(val: T | T[] | undefined | null): T | null {
   async function cancelBooking() {
     if (!cancelReason.trim() || !selectedBooking) return showToast('Reason required', 'error')
     setActionLoading(true)
-    const { error } = await supabase.from('lesson_bookings').update({ status: 'cancelled', cancellation_reason: cancelReason }).eq('booking_id', selectedBooking.booking_id)
-    if (!error) {
+    const { data: saved, error } = await supabase.from('lesson_bookings').update({ status: 'cancelled', cancellation_reason: cancelReason }).eq('booking_id', selectedBooking.booking_id).select('booking_id').maybeSingle()
+    if (error || !saved) {
+      showToast(error?.message || 'The cancellation was not saved. The database did not allow this change.', 'error')
+    } else {
       showToast('Booking cancelled'); setShowCancelModal(false); loadData()
     }
     setActionLoading(false)
@@ -265,8 +269,12 @@ function first<T>(val: T | T[] | undefined | null): T | null {
   async function assignInstructor(instructorId: string) {
     if (!selectedBooking) return
     setActionLoading(true)
-    const { error } = await supabase.from('lesson_bookings').update({ instructor_id: instructorId }).eq('booking_id', selectedBooking.booking_id)
-    if (!error) { showToast('Instructor assigned'); setShowAssignModal(false); loadData() }
+    const { data: saved, error } = await supabase.from('lesson_bookings').update({ instructor_id: instructorId }).eq('booking_id', selectedBooking.booking_id).select('booking_id').maybeSingle()
+    if (error || !saved) {
+      showToast(error?.message || 'The instructor was not saved. The database did not allow this change.', 'error')
+    } else {
+      showToast('Instructor assigned'); setShowAssignModal(false); loadData()
+    }
     setActionLoading(false)
   }
 
@@ -293,9 +301,18 @@ function first<T>(val: T | T[] | undefined | null): T | null {
 
   const today = new Date().toISOString().split('T')[0]
 
+  const assignLearnerClass = selectedBooking ? first(selectedBooking.learner)?.driving_class?.trim() || '' : ''
+  const classInstructors = approvedInstructors.filter(inst =>
+    teachesDrivingClass(inst.instructor_driving_classes, assignLearnerClass)
+  )
+
   const computedSlots = slots.map(slot => {
-    const hasScheduledBooking = bookings.some(b => b.slot_id === slot.slot_id && b.status === 'scheduled')
-    const actual_status = slot.status === 'booked' || hasScheduledBooking ? 'booked' : slot.status
+    const slotBookings = bookings.filter(b => b.slot_id === slot.slot_id)
+    const actual_status = slotBookings.some(b => b.status === 'scheduled')
+      ? 'booked'
+      : slotBookings.some(b => b.status === 'completed')
+        ? 'completed'
+        : slot.status
     return { ...slot, actual_status }
   })
 
@@ -509,7 +526,7 @@ function first<T>(val: T | T[] | undefined | null): T | null {
             >
               <option value="all">All Statuses</option>
               {activeTab === 'slots' 
-                ? ['available', 'booked', 'blocked'].map(o => <option key={o} value={o}>{o.toUpperCase()}</option>) 
+                ? ['available', 'booked', 'completed', 'blocked'].map(o => <option key={o} value={o}>{o.toUpperCase()}</option>) 
                 : ['scheduled', 'completed', 'cancelled'].map(o => <option key={o} value={o}>{o.toUpperCase()}</option>)
               }
             </select>
@@ -540,7 +557,7 @@ function first<T>(val: T | T[] | undefined | null): T | null {
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
                     <StatusBadge status={slot.actual_status} />
                     <div style={{ fontSize: '11px', color: '#64748b' }}>
-                      {slot.actual_status === 'available' ? '0 / 1 booked' : slot.actual_status === 'booked' ? '1 / 1 booked' : 'Unavailable'}
+                      {slot.actual_status === 'available' ? '0 / 1 booked' : slot.actual_status === 'booked' ? '1 / 1 booked' : slot.actual_status === 'completed' ? 'Lesson done' : 'Unavailable'}
                     </div>
                   </div>
                   
@@ -854,10 +871,16 @@ function first<T>(val: T | T[] | undefined | null): T | null {
         <div className="modal-overlay">
           <div className="modal-card">
             <h2 style={{ margin: '0 0 5px', fontSize: '20px', fontWeight: '800' }}>Assign Instructor</h2>
-            <p style={{ margin: '0 0 20px', fontSize: '13px', color: '#64748b' }}>Select instructor for {selectedBooking.learner?.first_name || 'James'}</p>
+            <p style={{ margin: '0 0 20px', fontSize: '13px', color: '#64748b' }}>
+              Select a {assignLearnerClass || 'class'} instructor for {first(selectedBooking.learner)?.first_name || 'this learner'}
+            </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
-              {approvedInstructors.map(inst => (
-                <button key={inst.user_id} onClick={() => assignInstructor(inst.user_id)} style={{ padding: '15px', borderRadius: '12px', border: '1px solid #e2e8f0', background: 'white', textAlign: 'left', cursor: 'pointer', fontWeight: '700', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              {!assignLearnerClass ? (
+                <p style={{ margin: 0, fontSize: '13px', color: '#dc2626' }}>This learner has no driving class set. Set it on the Learners page first.</p>
+              ) : classInstructors.length === 0 ? (
+                <p style={{ margin: 0, fontSize: '13px', color: '#dc2626' }}>No approved instructor teaches {assignLearnerClass}.</p>
+              ) : classInstructors.map(inst => (
+                <button key={inst.user_id} onClick={() => assignInstructor(inst.user_id)} disabled={actionLoading} style={{ padding: '15px', borderRadius: '12px', border: '1px solid #e2e8f0', background: 'white', textAlign: 'left', cursor: 'pointer', fontWeight: '700', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   {inst.first_name} {inst.surname}
                   <ChevronRight size={18} color="#cbd5e1" />
                 </button>

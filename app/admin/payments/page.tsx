@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { amountDue, invoicedTotal, lessonFeesTotal, paidTotal } from '@/lib/fees'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-interface Learner { user_id: string; first_name: string; surname: string; email: string; phone_number?: string }
+interface Learner { user_id: string; first_name: string; surname: string; email: string; phone_number?: string; driving_class?: string | null }
+interface LessonCharge { learner_id: string; status: string; lesson_fee: number | null }
 interface Payment { payment_id: string; learner_id: string; amount: number; payment_method: string; transaction_ref: string | null; payment_date: string; purpose: string; notes: string; learner?: Learner }
 interface BillingItem { quotation_id: string; learner_id: string | null; learner_name?: string | null; training_type: string; total_amount: number; number_of_lessons: number; created_at: string; document_type: 'quotation' | 'invoice'; learner?: Learner }
 interface PriceItem { price_id: string; item_name: string; amount: number }
@@ -50,10 +52,10 @@ export default function PaymentsPage() {
   const [billings, setBillings] = useState<BillingItem[]>([])
   const [learners, setLearners] = useState<Learner[]>([])
   const [prices, setPrices] = useState<PriceItem[]>([])
+  const [lessonCharges, setLessonCharges] = useState<LessonCharge[]>([])
+  const [chargesError, setChargesError] = useState('')
 
-  const [showQuoteModal, setShowQuoteModal] = useState(false)
   const [showPriceModal, setShowPriceModal] = useState(false)
-  const [selectedItem, setSelectedItem] = useState<BillingItem | null>(null)
   const [editingPrice, setEditingPrice] = useState<PriceItem | null>(null)
   
 
@@ -71,6 +73,8 @@ export default function PaymentsPage() {
   const [numLessons, setNumLessons] = useState('5')
   const [includeRegFee, setIncludeRegFee] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
+  const [actionError, setActionError] = useState('')
+  const [quoteNotice, setQuoteNotice] = useState('')
 
   const calculatedTotal = useMemo(() => {
     const selectedPriceObj = prices.find(p => p.item_name === trainingType);
@@ -84,7 +88,7 @@ export default function PaymentsPage() {
 const loadData = useCallback(async () => {
     setLoading(true)
     try {
-      const [payRes, billRes, learnRes, priceRes] = await Promise.all([
+      const [payRes, billRes, learnRes, priceRes, chargeRes] = await Promise.all([
         // 1. Get Payments + Learner info
         supabase.from('payments').select('*, learner:users!payments_learner_id_fkey(*)').order('payment_date', { ascending: false }),
         // 2. Get Quotations + Learner info
@@ -92,9 +96,13 @@ const loadData = useCallback(async () => {
         // 3. Get all approved learners for the dropdowns
         supabase.from('users').select('*').eq('role', 'learner').eq('status', 'approved'),
         // 4. Get the real prices from your PRICE_LIST table
-        supabase.from('price_list').select('*').order('training_type', { ascending: true })
+        supabase.from('price_list').select('*').order('training_type', { ascending: true }),
+        // 5. Get the fee recorded on every booked lesson
+        supabase.from('lesson_bookings').select('learner_id, status, lesson_fee').neq('status', 'cancelled')
       ])
-      
+
+      setLessonCharges(chargeRes.data || [])
+      setChargesError(chargeRes.error ? 'Lesson fees are not set up yet. Apply supabase/migrations/20261126000000_approval_assignment_and_fees.sql in the Supabase SQL Editor.' : '')
       setPayments(payRes.data || [])
       setBillings(billRes.data || [])
       setLearners(learnRes.data || [])
@@ -146,7 +154,10 @@ const loadData = useCallback(async () => {
       error = insertError
     }
 
-    if (!error) {
+    if (error) {
+      setActionError(`Price was not saved: ${error.message}`)
+    } else {
+      setActionError('')
       dismissPriceModal()
       await loadData()
     }
@@ -167,11 +178,12 @@ const loadData = useCallback(async () => {
       if (pErr) throw pErr
 
       setPayAmount('')
+      setActionError('')
       await loadData() 
       setActiveTab('payments') 
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'An error occurred'
-      console.error("Payment Error:", msg) 
+      setActionError(`Payment was not recorded: ${msg}`)
     } finally {
       setActionLoading(false)
     }
@@ -188,19 +200,35 @@ const loadData = useCallback(async () => {
       number_of_lessons: parseInt(numLessons) || 0,
       document_type: asInvoice ? 'invoice' : 'quotation'
     }
-    const { error } = selectedItem 
-        ? await supabase.from('quotations').update(payload).eq('quotation_id', selectedItem.quotation_id)
-        : await supabase.from('quotations').insert(payload)
+    const { error } = await supabase.from('quotations').insert(payload)
 
-    if (!error) { setShowQuoteModal(false); loadData(); setActiveTab(asInvoice ? 'invoices' : 'quotations'); }
+    if (error) {
+      setQuoteNotice('')
+      setActionError(`${asInvoice ? 'Invoice' : 'Quotation'} was not saved: ${error.message}`)
+    } else {
+      setActionError('')
+      setQuoteNotice(`${asInvoice ? 'Invoice' : 'Quotation'} saved for $${calculatedTotal.toFixed(2)}.`)
+      await loadData()
+      setActiveTab('invoices & quotes')
+    }
     setActionLoading(false)
   }
+
+  const feesDue = learners.map(l => {
+    const lessons = lessonCharges.filter(c => c.learner_id === l.user_id)
+    const lessonFees = lessonFeesTotal(lessons)
+    const invoiced = invoicedTotal(billings.filter(b => b.learner_id === l.user_id))
+    const paid = paidTotal(payments.filter(p => p.learner_id === l.user_id))
+    return { learner: l, lessons: lessons.length, lessonFees, invoiced, paid, due: amountDue(lessonFees, invoiced, paid) }
+  }).sort((a, b) => b.due - a.due)
+  const totalDue = feesDue.reduce((sum, row) => sum + row.due, 0)
 
   // Closes modal explicitly resetting dynamic variables
   function dismissPriceModal() {
     setPriceItemName('')
     setPriceAmount('')
     setEditingPrice(null)
+    setActionError('')
     setShowPriceModal(false)
   }
 
@@ -319,9 +347,17 @@ const loadData = useCallback(async () => {
           <h1 className="h1-title">Finance Ledger</h1>
           <p className="p-subtitle">System billing, real-time invoice generation, and cost item configuration.</p>
         </div>
+
+        {loading && <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#64748b' }}>Loading finance records…</p>}
+        {actionError && (
+          <div style={{ margin: '0 0 16px', padding: '10px 14px', borderRadius: '8px', background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', fontSize: '13px', display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+            <span>{actionError}</span>
+            <button onClick={() => setActionError('')} style={{ background: 'none', border: 'none', color: '#b91c1c', cursor: 'pointer', fontWeight: 700 }}>Dismiss</button>
+          </div>
+        )}
         
         <div className="tab-bar-container">
-  {['overview', 'calculator', 'prices', 'payments'].map(t => (
+  {['overview', 'fees due', 'invoices & quotes', 'calculator', 'prices', 'payments'].map(t => (
     <button 
       key={t} 
       className={`tab-btn ${activeTab === t ? 'active' : ''}`} 
@@ -337,9 +373,9 @@ const loadData = useCallback(async () => {
             <div className="dashboard-grid">
               {[
                 { label: 'Total Revenue', val: `$${payments.reduce((a, b) => a + Number(b.amount), 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, desc: `${payments.length} completions`, icon: <Icons.DollarSign />, bg: '#fff7ed', color: '#ea580c', target: 'payments' },
-                { label: 'Active Invoices', val: billings.filter(b => b.document_type === 'invoice').length.toString(), desc: 'Awaiting collections', icon: <Icons.FileText />, bg: '#eff6ff', color: '#2563eb', target: 'invoices' },
-                { label: 'Pending Quotes', val: billings.filter(b => b.document_type === 'quotation').length.toString(), desc: 'Awaiting conversion', icon: <Icons.Layers />, bg: '#f5f3ff', color: '#7c3aed', target: 'quotations' },
-                { label: 'Inventory Items', val: prices.length.toString(), desc: 'Rate structures', icon: <Icons.TrendingUp />, bg: '#f0fdf4', color: '#16a34a', target: 'prices' }
+                { label: 'Active Invoices', val: billings.filter(b => b.document_type === 'invoice').length.toString(), desc: 'Awaiting collections', icon: <Icons.FileText />, bg: '#eff6ff', color: '#2563eb', target: 'invoices & quotes' },
+                { label: 'Pending Quotes', val: billings.filter(b => b.document_type === 'quotation').length.toString(), desc: 'Awaiting conversion', icon: <Icons.Layers />, bg: '#f5f3ff', color: '#7c3aed', target: 'invoices & quotes' },
+                { label: 'Amount Due', val: `$${totalDue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, desc: `${feesDue.filter(r => r.due > 0).length} learners owing`, icon: <Icons.TrendingUp />, bg: '#fef2f2', color: '#dc2626', target: 'fees due' }
               ].map((s, i) => (
                 <div key={i} className="dashboard-card" onClick={() => setActiveTab(s.target)}>
                   <div className="card-left">
@@ -490,10 +526,89 @@ const loadData = useCallback(async () => {
           {includeRegFee ? ' + Registration Fee' : ''}
         </p>
 
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <button className="btn-action-secondary" onClick={() => handleSaveQuotation(false)} disabled={actionLoading || (!quoteLearner && !walkInName) || !trainingType}>
+            Save as Quotation
+          </button>
+          <button className="btn-brand-action" onClick={() => handleSaveQuotation(true)} disabled={actionLoading || (!quoteLearner && !walkInName) || !trainingType}>
+            Issue Invoice
+          </button>
+        </div>
+        {(!quoteLearner && !walkInName) || !trainingType ? (
+          <p style={{ fontSize: '12px', color: '#64748b', margin: '10px 0 0', textAlign: 'center' }}>Choose a learner (or enter a name) and a price item to save.</p>
+        ) : null}
+
       </div>
     </div>
       </div>
 )}
+
+        {activeTab === 'invoices & quotes' && (
+          <div className="content-panel">
+            <div className="panel-header">
+              <h3 className="panel-title">Invoices &amp; Quotations</h3>
+              <button className="btn-brand-action" onClick={() => setActiveTab('calculator')}>
+                <Icons.PlusCircle /> New
+              </button>
+            </div>
+            {quoteNotice && <p style={{ margin: '-8px 0 16px', fontSize: '13px', color: '#16a34a', fontWeight: 600 }}>{quoteNotice}</p>}
+            <div style={{ overflowX: 'auto' }}>
+              <table className="dense-table">
+                <thead><tr><th>Date</th><th>Learner</th><th>Item</th><th>Lessons</th><th>Total</th><th>Type</th></tr></thead>
+                <tbody>
+                  {billings.length === 0 ? (
+                    <tr><td colSpan={6} style={{ textAlign: 'center', color: '#94a3b8' }}>No invoices or quotations yet. Create one from the fee calculator.</td></tr>
+                  ) : billings.map(b => {
+                    const l = first(b.learner)
+                    return (
+                      <tr key={b.quotation_id}>
+                        <td style={{ color: '#64748b', fontSize: '12px' }}>{new Date(b.created_at).toLocaleDateString()}</td>
+                        <td style={{ fontWeight: '600', color: '#0f172a' }}>{l ? `${l.first_name} ${l.surname}` : b.learner_name || 'Walk-in'}</td>
+                        <td>{b.training_type}</td>
+                        <td>{b.number_of_lessons}</td>
+                        <td style={{ fontWeight: '700', color: '#0f172a' }}>${Number(b.total_amount).toFixed(2)}</td>
+                        <td><StatusBadge status={b.document_type} /></td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'fees due' && (
+          <div className="content-panel">
+            <div className="panel-header">
+              <h3 className="panel-title">Lesson Fees Due</h3>
+              <span style={{ fontSize: '13px', fontWeight: '700', color: '#dc2626' }}>Total due: ${totalDue.toFixed(2)}</span>
+            </div>
+            <p style={{ margin: '-12px 0 20px', fontSize: '12px', color: '#64748b' }}>
+              Fees are calculated automatically when a learner books lessons (lessons booked x price per lesson for their class). Amount due = lesson fees + invoices - payments.
+            </p>
+            {chargesError && <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#dc2626' }}>{chargesError}</p>}
+            <div style={{ overflowX: 'auto' }}>
+              <table className="dense-table">
+                <thead><tr><th>Learner</th><th>Class</th><th>Lessons</th><th>Lesson Fees</th><th>Invoiced</th><th>Paid</th><th>Amount Due</th></tr></thead>
+                <tbody>
+                  {feesDue.length === 0 ? (
+                    <tr><td colSpan={7} style={{ textAlign: 'center', color: '#94a3b8' }}>No approved learners yet.</td></tr>
+                  ) : feesDue.map(row => (
+                    <tr key={row.learner.user_id}>
+                      <td style={{ fontWeight: '600', color: '#0f172a' }}>{row.learner.first_name} {row.learner.surname}</td>
+                      <td>{row.learner.driving_class || '—'}</td>
+                      <td>{row.lessons}</td>
+                      <td>${row.lessonFees.toFixed(2)}</td>
+                      <td>${row.invoiced.toFixed(2)}</td>
+                      <td style={{ color: '#16a34a' }}>${row.paid.toFixed(2)}</td>
+                      <td style={{ fontWeight: '700', color: row.due > 0 ? '#dc2626' : '#16a34a' }}>${row.due.toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         {activeTab === 'payments' && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: '24px' }}>
@@ -561,6 +676,7 @@ const loadData = useCallback(async () => {
             <input className="native-input" value={priceItemName} onChange={e => setPriceItemName(e.target.value)} placeholder="e.g. Class 2 Practical Unit" />
             <label className="group-label">Base Rate Fee (USD)</label>
             <input className="native-input" type="number" value={priceAmount} onChange={e => setPriceAmount(e.target.value)} placeholder="0.00" />
+            {actionError && <p style={{ margin: '-6px 0 14px', fontSize: '12px', color: '#b91c1c' }}>{actionError}</p>}
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <button className="btn-action-secondary" onClick={dismissPriceModal}>Dismiss</button>
               {/* Correctly fires the integrated handler state now */}
@@ -572,48 +688,6 @@ const loadData = useCallback(async () => {
         </div>
       )}
 
-      {showQuoteModal && (
-        <div className="window-overlay">
-          <div className="window-box">
-            <h2 className="panel-title" style={{ fontSize: '16px', marginBottom: '25px' }}>Generate Inbound Statements</h2>
-            <div style={{ padding: '16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', marginBottom: '20px' }}>
-              <label className="group-label">System Member Profile</label>
-              <select className="native-input" value={quoteLearner} onChange={e => { setQuoteLearner(e.target.value); setWalkInName(''); }} style={{ marginBottom: '12px' }}>
-                <option value="">-- Associate Database Member --</option>
-                {learners.map(l => <option key={l.user_id} value={l.user_id}>{l.first_name} {l.surname}</option>)}
-              </select>
-              <label className="group-label">Or Assign Non-Profile Account</label>
-              <input className="native-input" value={walkInName} onChange={e => { setWalkInName(e.target.value); setQuoteLearner(''); }} placeholder="Manually input profile title" style={{ marginBottom: 0 }} />
-            </div>
-
-            <label className="group-label">Product / Service Definition</label>
-            <select className="native-input" value={trainingType} onChange={e => setTrainingType(e.target.value)}>
-              <option value="">Select target pricing structure...</option>
-              {prices.map(p => <option key={p.price_id} value={p.item_name}>{p.item_name}</option>)}
-            </select>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <div><label className="group-label">Quantity Scale</label><input className="native-input" type="number" value={numLessons} onChange={e => setNumLessons(e.target.value)} /></div>
-              <div style={{ paddingTop: '24px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: '600', color: '#475569', cursor: 'pointer' }}>
-                  <input type="checkbox" checked={includeRegFee} onChange={e => setIncludeRegFee(e.target.checked)} style={{ width: 'auto', margin: 0 }} />
-                  Apply Reg Fee
-                </label>
-              </div>
-            </div>
-
-            <div className="calculation-summary-box">
-              <div style={{ fontSize: '10px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Calculated Net Line Sum</div>
-              <div className="calculation-amount">${calculatedTotal.toFixed(2)}</div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-              <button className="btn-action-secondary" onClick={() => setShowQuoteModal(false)}>Cancel</button>
-              <button className="btn-brand-action" onClick={() => handleSaveQuotation(true)} disabled={actionLoading}>Process Statement</button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   )
 }

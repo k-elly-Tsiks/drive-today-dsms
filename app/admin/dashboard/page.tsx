@@ -219,7 +219,17 @@ export default function AdminDashboard() {
     const n = parseInt(slotCount)
     if (!slotCount || isNaN(n) || n < 1) { setModalError('Please enter a valid number of slots (minimum 1).'); return }
     setApproving(true); setModalError('')
-    await supabase.from('users').update({ status: 'approved', allowed_slots: n, slots_allocated: n }).eq('user_id', approvingUser.user_id)
+    const { data: approved, error: approveError } = await supabase
+      .from('users')
+      .update({ status: 'approved', allowed_slots: n, slots_allocated: n })
+      .eq('user_id', approvingUser.user_id)
+      .select('user_id')
+      .maybeSingle()
+    if (approveError || !approved) {
+      setModalError(approveError?.message || 'The approval was not saved. The database did not allow this change.')
+      setApproving(false)
+      return
+    }
     await supabase.from('notifications').insert({
       recipient_id: approvingUser.user_id,
       message: `Your registration has been approved! You have been allocated ${n} lesson slot${n > 1 ? 's' : ''}. Please log in to select your preferred slots.`,
@@ -228,10 +238,23 @@ export default function AdminDashboard() {
     setApprovingUser(null); setSlotCount(''); setApproving(false); loadData()
   }
 
+  // Returns an error message when the status change was not saved.
+  async function saveAccountStatus(userId: string, status: 'approved' | 'rejected') {
+    const { data, error } = await supabase
+      .from('users')
+      .update({ status })
+      .eq('user_id', userId)
+      .select('user_id')
+      .maybeSingle()
+    if (error) return error.message
+    return data ? null : 'The change was not saved. The database did not allow this change.'
+  }
+
   async function confirmApproveInstructorAction() {
     if (!confirmApproveInstructor) return
-    setApproving(true)
-    await supabase.from('users').update({ status: 'approved' }).eq('user_id', confirmApproveInstructor.user_id)
+    setApproving(true); setModalError('')
+    const failure = await saveAccountStatus(confirmApproveInstructor.user_id, 'approved')
+    if (failure) { setModalError(failure); setApproving(false); return }
     await supabase.from('notifications').insert({
       recipient_id: confirmApproveInstructor.user_id,
       message: `Your instructor registration has been approved! You can now log in and set up your teaching classes.`,
@@ -242,8 +265,9 @@ export default function AdminDashboard() {
 
   async function confirmDecline() {
     if (!decliningUser) return
-    setDeclining(true)
-    await supabase.from('users').update({ status: 'rejected' }).eq('user_id', decliningUser.user_id)
+    setDeclining(true); setModalError('')
+    const failure = await saveAccountStatus(decliningUser.user_id, 'rejected')
+    if (failure) { setModalError(failure); setDeclining(false); return }
     await supabase.from('notifications').insert({
       recipient_id: decliningUser.user_id,
       message: `Your registration request has been declined. Please contact support or the administrator for details.`,
@@ -253,6 +277,7 @@ export default function AdminDashboard() {
   }
 
   function handleApproveClick(user: PendingUser) {
+    setModalError('')
     if (user.role === 'learner') {
       setApprovingUser(user)
       setSlotCount('')
@@ -262,6 +287,7 @@ export default function AdminDashboard() {
   }
 
   function handleDeclineClick(user: PendingUser) {
+    setModalError('')
     setDecliningUser(user)
   }
 
@@ -362,6 +388,9 @@ export default function AdminDashboard() {
             <p style={{ fontSize: '14px', color: theme.textMain, marginBottom: '24px', lineHeight: '1.5' }}>
               Are you sure you want to approve this instructors registration? They will be granted active teaching access.
             </p>
+            {modalError && (
+              <p style={{ margin: '0 0 14px', fontSize: '12px', color: '#ef4444', background: 'rgba(239,68,68,0.1)', padding: '10px 14px', borderRadius: '10px' }}>{modalError}</p>
+            )}
             <div style={{ display: 'flex', gap: '12px' }}>
               <button
                 onClick={() => setConfirmApproveInstructor(null)}
@@ -392,6 +421,9 @@ export default function AdminDashboard() {
             <p style={{ fontSize: '14px', color: theme.textMain, marginBottom: '24px', lineHeight: '1.5' }}>
               Are you sure you want to decline this registration request? The profile will be marked as rejected.
             </p>
+            {modalError && (
+              <p style={{ margin: '0 0 14px', fontSize: '12px', color: '#ef4444', background: 'rgba(239,68,68,0.1)', padding: '10px 14px', borderRadius: '10px' }}>{modalError}</p>
+            )}
             <div style={{ display: 'flex', gap: '12px' }}>
               <button
                 onClick={() => setDecliningUser(null)}

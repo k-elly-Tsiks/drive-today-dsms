@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, BookOpen, Car, Download, FileText, NotebookTabs, ShieldCheck, TrafficCone } from 'lucide-react'
+import { BookOpen, Car, Download, FileText, NotebookTabs, ShieldCheck, TrafficCone } from 'lucide-react'
 
 type Material = {
   material_id: string

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle, CheckCircle, ClipboardList, CreditCard, FileText, Receipt, Wallet } from 'lucide-react'
+import { amountDue, invoicedTotal, lessonFeesTotal, paidTotal } from '@/lib/fees'
 
 type Payment = {
   payment_id: string
@@ -20,6 +21,14 @@ type Quotation = {
   number_of_lessons: number
   total_amount: number
   created_at: string
+  document_type?: string | null
+}
+
+type LessonCharge = {
+  booking_id: string
+  status: string
+  lesson_fee: number | null
+  lesson_slots?: { slot_date: string; slot_time: string } | null
 }
 
 // 1. Shimmer Skeleton Component
@@ -41,8 +50,10 @@ const supabase = createClient()
 export default function LearnerPaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([])
   const [quotations, setQuotations] = useState<Quotation[]>([])
+  const [lessonCharges, setLessonCharges] = useState<LessonCharge[]>([])
+  const [chargesError, setChargesError] = useState('')
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('statement')
+  const [activeTab, setActiveTab] = useState('charges')
 
   const router = useRouter()
   const routerRef = useRef(router)
@@ -90,8 +101,17 @@ export default function LearnerPaymentsPage() {
       .eq('learner_id', user.id)
       .order('created_at', { ascending: false })
 
+    const { data: chargesData, error: chargesLoadError } = await supabase
+      .from('lesson_bookings')
+      .select('booking_id, status, lesson_fee, lesson_slots (slot_date, slot_time)')
+      .eq('learner_id', user.id)
+      .neq('status', 'cancelled')
+      .order('created_at', { ascending: false })
+
     setPayments(paymentsData || [])
     setQuotations(quotationsData || [])
+    setLessonCharges((chargesData || []) as unknown as LessonCharge[])
+    setChargesError(chargesLoadError ? 'Lesson fees are not available yet. Ask the administrator to finish the fees setup.' : '')
     setLoading(false)
   }, [])
 
@@ -106,9 +126,10 @@ export default function LearnerPaymentsPage() {
 
   // ─── Derived values ───────────────────────────────────────────────────────────
 
-  const totalPaid = payments.reduce((s, p) => s + Number(p.amount), 0)
-  const totalQuoted = quotations.reduce((s, q) => s + Number(q.total_amount), 0)
-  const outstanding = Math.max(0, totalQuoted - totalPaid)
+  const totalPaid = paidTotal(payments)
+  const totalLessonFees = lessonFeesTotal(lessonCharges)
+  const totalInvoiced = invoicedTotal(quotations)
+  const outstanding = amountDue(totalLessonFees, totalInvoiced, totalPaid)
 
   // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -138,7 +159,7 @@ export default function LearnerPaymentsPage() {
       <div className="learner-page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
         <div>
           <h1 style={{ color: blue, fontSize: '22px', fontWeight: '800', margin: 0 }}>My Payments</h1>
-          <p style={{ color: '#6b7280', fontSize: '13px', margin: '4px 0 0' }}>View your payment history and quotations</p>
+          <p style={{ color: '#6b7280', fontSize: '13px', margin: '4px 0 0' }}>Your lesson fees, payments and amount due</p>
         </div>
       </div>
 
@@ -158,9 +179,9 @@ export default function LearnerPaymentsPage() {
           ))
         ) : (
           [
-            { label: 'Total Quoted',        value: `$${totalQuoted.toFixed(2)}`,  icon: <ClipboardList size={18} color="#2563eb" />, colour: '#2563eb', badgeBg: '#eff6ff' },
+            { label: 'Lesson Fees',         value: `$${totalLessonFees.toFixed(2)}`, icon: <ClipboardList size={18} color="#2563eb" />, colour: '#2563eb', badgeBg: '#eff6ff' },
             { label: 'Total Paid',          value: `$${totalPaid.toFixed(2)}`,    icon: <Wallet size={18} color="#059669" />, colour: '#059669', badgeBg: '#f0fdf4' },
-            { label: 'Outstanding Balance', value: `$${outstanding.toFixed(2)}`,  icon: <Receipt size={18} color={outstanding > 0 ? '#dc2626' : '#059669'} />, colour: outstanding > 0 ? '#dc2626' : '#059669', badgeBg: outstanding > 0 ? '#fff1f2' : '#f0fdf4' },
+            { label: 'Amount Due',          value: `$${outstanding.toFixed(2)}`,  icon: <Receipt size={18} color={outstanding > 0 ? '#dc2626' : '#059669'} />, colour: outstanding > 0 ? '#dc2626' : '#059669', badgeBg: outstanding > 0 ? '#fff1f2' : '#f0fdf4' },
             { label: 'Total Payments',      value: payments.length,               icon: <CreditCard size={18} color={orange} />, colour: orange, badgeBg: '#fff2eb' },
           ].map((stat, i) => (
             <div key={i} style={{ background: 'white', borderRadius: '16px', padding: '20px', boxShadow: '0 4px 18px rgba(0,0,0,0.02)', border: '1px solid #e2e8f0' }}>
@@ -195,6 +216,7 @@ export default function LearnerPaymentsPage() {
       {/* Tabs */}
       <div style={{ display: 'flex', gap: '4px', background: 'white', borderRadius: '12px', padding: '4px', marginBottom: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', width: 'fit-content' }}>
         {[
+          { id: 'charges',    label: 'Lesson Charges', icon: <Receipt size={15} /> },
           { id: 'statement',  label: 'Payment History', icon: <CreditCard size={15} /> },
           { id: 'quotations', label: 'Quotations', icon: <ClipboardList size={15} /> },
         ].map(tab => (
@@ -218,6 +240,47 @@ export default function LearnerPaymentsPage() {
         </div>
       ) : (
         <>
+          {/* ── LESSON CHARGES TAB ── */}
+          {activeTab === 'charges' && (
+            <div style={{ background: 'white', borderRadius: '14px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', padding: '12px 20px', background: lightBlue, borderBottom: '1px solid #e5e7eb' }}>
+                {['Lesson', 'Status', 'Fee'].map((h, i) => (
+                  <p key={i} style={{ margin: 0, fontSize: '11px', fontWeight: '700', color: blue, textTransform: 'uppercase' }}>{h}</p>
+                ))}
+              </div>
+
+              {chargesError ? (
+                <p style={{ margin: 0, padding: '24px 20px', fontSize: '13px', color: '#991b1b' }}>{chargesError}</p>
+              ) : lessonCharges.length === 0 ? (
+                <div style={{ padding: '40px', textAlign: 'center' }}>
+                  <Receipt size={32} color="#94a3b8" style={{ marginBottom: '8px' }} />
+                  <p style={{ color: '#9ca3af', fontSize: '14px' }}>No lessons booked yet</p>
+                </div>
+              ) : (
+                <>
+                  {lessonCharges.map((charge, index) => (
+                    <div key={charge.booking_id} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', padding: '14px 20px', borderBottom: '1px solid #f3f4f6', background: index % 2 === 0 ? 'white' : '#fafafa', alignItems: 'center' }}>
+                      <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#111827' }}>
+                        {charge.lesson_slots?.slot_date
+                          ? `${new Date(charge.lesson_slots.slot_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} at ${charge.lesson_slots.slot_time?.slice(0, 5)}`
+                          : 'Lesson'}
+                      </p>
+                      <p style={{ margin: 0, fontSize: '12px', color: '#6b7280', textTransform: 'capitalize' }}>{charge.status}</p>
+                      <p style={{ margin: 0, fontSize: '14px', fontWeight: '800', color: blue }}>
+                        {charge.lesson_fee === null ? 'To be confirmed' : `$${Number(charge.lesson_fee).toFixed(2)}`}
+                      </p>
+                    </div>
+                  ))}
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', padding: '14px 20px', background: lightBlue, borderTop: '2px solid #e5e7eb' }}>
+                    <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: blue }}>TOTAL LESSON FEES ({lessonCharges.length} lesson{lessonCharges.length === 1 ? '' : 's'})</p>
+                    <p style={{ margin: 0 }} />
+                    <p style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: blue }}>${totalLessonFees.toFixed(2)}</p>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
           {/* ── PAYMENT HISTORY TAB ── */}
           {activeTab === 'statement' && (
             <div style={{ background: 'white', borderRadius: '14px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', overflow: 'hidden' }}>

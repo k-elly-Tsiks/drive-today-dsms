@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { feedbackMessage } from '@/app/instructor/_lib/feedback-message'
 import { 
   Layers, CalendarCheck, CheckCircle2, AlertCircle, 
   MoreVertical, Clock, Star, Save, X, Phone, Mail 
@@ -206,12 +207,19 @@ export default function InstructorLessonsPage() {
   async function markLessonComplete() {
     if (!selectedBooking) return
     setActionError('')
-    const { error } = await supabase
-      .from('lesson_bookings')
-      .update({ status: 'completed' })
-      .eq('booking_id', selectedBooking.booking_id)
+    // The database function checks ownership and returns the saved status, so a
+    // completion that was not persisted can never look successful here.
+    const { data: savedStatus, error } = await supabase.rpc('complete_lesson_booking', {
+      p_booking_id: selectedBooking.booking_id,
+    })
 
-    if (!error) {
+    if (error?.code === 'PGRST202') {
+      setActionError(
+        'Lesson completion is not set up in Supabase yet. Apply supabase/migrations/20261125000000_complete_lesson_booking.sql in the Supabase SQL Editor, then try again.'
+      )
+    } else if (!error && savedStatus !== 'completed') {
+      setActionError('The lesson could not be saved as completed. Please reload and try again.')
+    } else if (!error) {
       setBookings(prev => prev.map(b => b.booking_id === selectedBooking.booking_id ? { ...b, status: 'completed' } : b))
       setSelectedBooking({ ...selectedBooking, status: 'completed' })
       updatePerformanceDraft({})
@@ -250,6 +258,19 @@ export default function InstructorLessonsPage() {
       })
 
     if (!error) {
+      await supabase.from('notifications').insert({
+        recipient_id: selectedBooking.learner_id,
+        message: feedbackMessage({
+          lessonDate: selectedBooking.lesson_slots?.slot_date,
+          steering: steeringRating,
+          parking: parkingRating,
+          reversing: reversingRating,
+          roadAwareness: roadAwarenessRating,
+          comments: performanceNotes,
+        }),
+        type: 'lesson_reminder',
+      })
+
       if (performanceDraftKey) {
         try {
           sessionStorage.removeItem(performanceDraftKey)
@@ -283,12 +304,16 @@ export default function InstructorLessonsPage() {
   async function cancelLesson() {
     if (!selectedBooking) return
     const reason = cancelReasonOption === 'Other' ? cancelOtherDetails : cancelReasonOption
-    const { error } = await supabase
+    const { data: cancelled, error } = await supabase
       .from('lesson_bookings')
       .update({ status: 'cancelled', cancellation_reason: reason })
       .eq('booking_id', selectedBooking.booking_id)
+      .select('booking_id')
+      .maybeSingle()
 
-    if (!error) {
+    if (!error && !cancelled) {
+      setActionError('The cancellation was not saved. The database did not allow this change.')
+    } else if (!error) {
       setBookings(prev => prev.map(b => b.booking_id === selectedBooking.booking_id ? { ...b, status: 'cancelled' } : b))
       setShowCancelDialog(false)
       setMessage('Lesson marked as cancelled.')
