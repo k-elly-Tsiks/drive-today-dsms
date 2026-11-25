@@ -44,6 +44,7 @@ function StatCard({
 }) {
   return (
     <div
+      className="instructor-card"
       onClick={onClick}
       style={{
         background: 'white',
@@ -97,25 +98,29 @@ export default function InstructorDashboard() {
 
     const today = new Date().toISOString().split('T')[0]
 
-    const [ins, todayData, upcomingData, counts, progress] = await Promise.all([
-      supabase.from('users').select('*').eq('user_id', user.id).single(),
+    const [ins, todayData, upcomingData, totalCount, completedCount, scheduledCount, learnerIds, progress] = await Promise.all([
+      supabase.from('users').select('first_name, surname').eq('user_id', user.id).single(),
       supabase
         .from('lesson_bookings')
-        .select(`*, lesson_slots (slot_date, slot_time), learner:users!lesson_bookings_learner_id_fkey (first_name, surname, phone_number)`)
+        .select(`booking_id, learner_id, lesson_slots (slot_date, slot_time), learner:users!lesson_bookings_learner_id_fkey (first_name, surname, phone_number)`)
         .eq('instructor_id', user.id)
         .eq('status', 'scheduled')
         .eq('lesson_slots.slot_date', today),
       supabase
         .from('lesson_bookings')
-        .select(`*, lesson_slots (slot_date, slot_time), learner:users!lesson_bookings_learner_id_fkey (first_name, surname)`)
+        .select(`booking_id, learner_id, lesson_slots (slot_date, slot_time), learner:users!lesson_bookings_learner_id_fkey (first_name, surname)`)
         .eq('instructor_id', user.id)
         .eq('status', 'scheduled')
         .gt('lesson_slots.slot_date', today)
+        .order('created_at', { ascending: true })
         .limit(5),
-      supabase.from('lesson_bookings').select('status, learner_id').eq('instructor_id', user.id),
+      supabase.from('lesson_bookings').select('booking_id', { count: 'exact', head: true }).eq('instructor_id', user.id),
+      supabase.from('lesson_bookings').select('booking_id', { count: 'exact', head: true }).eq('instructor_id', user.id).eq('status', 'completed'),
+      supabase.from('lesson_bookings').select('booking_id', { count: 'exact', head: true }).eq('instructor_id', user.id).eq('status', 'scheduled'),
+      supabase.from('lesson_bookings').select('learner_id').eq('instructor_id', user.id),
       supabase
         .from('progress_tracking')
-        .select(`*, learner:users!progress_tracking_learner_id_fkey (first_name, surname)`)
+        .select(`progress_id, recorded_at, learner:users!progress_tracking_learner_id_fkey (first_name, surname)`)
         .eq('instructor_id', user.id)
         .order('recorded_at', { ascending: false })
         .limit(3),
@@ -126,12 +131,11 @@ export default function InstructorDashboard() {
     setUpcomingLessons(upcomingData.data || [])
     setRecentProgress(progress.data || [])
 
-    const bookings = counts.data || []
     setStats({
-      totalLessons: bookings.length,
-      completedLessons: bookings.filter((b: { status: string }) => b.status === 'completed').length,
-      upcomingCount: bookings.filter((b: { status: string }) => b.status === 'scheduled').length,
-      totalLearners: new Set(bookings.map((b: { learner_id: string }) => b.learner_id)).size,
+      totalLessons: totalCount.count ?? 0,
+      completedLessons: completedCount.count ?? 0,
+      upcomingCount: scheduledCount.count ?? 0,
+      totalLearners: new Set((learnerIds.data || []).map((booking: { learner_id: string }) => booking.learner_id)).size,
 
     })
     setLoading(false)
@@ -150,19 +154,20 @@ export default function InstructorDashboard() {
 
   if (loading) {
     return (
-      <div style={{ padding: 24 }}>
+      <div className="instructor-page instructor-dashboard">
         <style>{`@keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
-        <div style={{ marginBottom: 32 }}>
+        <div className="instructor-page-header" style={{ marginBottom: 32 }}>
           <DTSkeleton w="260px" h="32px" r="8px" />
           <div style={{ marginTop: 10 }}>
             <DTSkeleton w="420px" h="16px" r="5px" />
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20, marginBottom: 24 }}>
+        <div className="instructor-grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20, marginBottom: 24 }}>
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
+              className="instructor-card"
               style={{
                 background: 'white',
                 borderRadius: 16,
@@ -187,9 +192,9 @@ export default function InstructorDashboard() {
           ))}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+        <div className="instructor-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} style={{ background: 'white', borderRadius: 16, padding: 24, border: '1px solid #e2e8f0' }}>
+            <div key={i} className="instructor-card" style={{ background: 'white', borderRadius: 16, padding: 24, border: '1px solid #e2e8f0' }}>
               <DTSkeleton w="150px" h="18px" r="5px" />
               {Array.from({ length: 3 }).map((__, j) => (
                 <div key={j} style={{ padding: '16px 0', borderBottom: '1px solid #f1f5f9' }}>
@@ -207,13 +212,13 @@ export default function InstructorDashboard() {
   }
 
   return (
-    <div style={{ padding: 24 }}>
-      <div style={{ marginBottom: 32 }}>
+    <div className="instructor-page instructor-dashboard">
+      <div className="instructor-page-header" style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 28, fontWeight: 700, color: '#111827', margin: '0 0 8px' }}>Welcome back, {instructor?.first_name}!</h2>
         <p style={{ color: '#64748b', fontSize: 16, margin: 0 }}>Here is a summary review of your driving academy operations today.</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20, marginBottom: 24 }}>
+      <div className="instructor-grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20, marginBottom: 24 }}>
         <StatCard
           label="Total Learners"
           value={stats.totalLearners}
@@ -252,8 +257,8 @@ export default function InstructorDashboard() {
         />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
-        <div style={{ background: 'white', borderRadius: 16, padding: 24, border: '1px solid #e2e8f0' }}>
+      <div className="instructor-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+        <div className="instructor-card" style={{ background: 'white', borderRadius: 16, padding: 24, border: '1px solid #e2e8f0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
             <Calendar size={18} color="#64748b" />
             <h3 style={{ fontSize: 16, margin: 0 }}>Todays Lessons</h3>
@@ -266,7 +271,7 @@ export default function InstructorDashboard() {
           ))}
         </div>
 
-        <div style={{ background: 'white', borderRadius: 16, padding: 24, border: '1px solid #e2e8f0' }}>
+        <div className="instructor-card" style={{ background: 'white', borderRadius: 16, padding: 24, border: '1px solid #e2e8f0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
             <Clock size={18} color="#64748b" />
             <h3 style={{ fontSize: 16, margin: 0 }}>Upcoming</h3>
@@ -279,7 +284,7 @@ export default function InstructorDashboard() {
           ))}
         </div>
 
-        <div style={{ background: 'white', borderRadius: 16, padding: 24, border: '1px solid #e2e8f0' }}>
+        <div className="instructor-card" style={{ background: 'white', borderRadius: 16, padding: 24, border: '1px solid #e2e8f0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
             <TrendingUp size={18} color="#64748b" />
             <h3 style={{ fontSize: 16, margin: 0 }}>Recent Progress</h3>
@@ -295,4 +300,3 @@ export default function InstructorDashboard() {
     </div>
   )
 }
-

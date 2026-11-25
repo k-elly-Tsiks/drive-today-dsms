@@ -13,12 +13,39 @@ import {
   CheckCircle, 
   XCircle, 
   ShieldCheck, 
+  KeyRound,
   Phone, 
   Mail, 
   MapPin, 
   Server,
   Info
 } from 'lucide-react'
+
+type PasswordResetRecipient = {
+  user_id: string
+  first_name: string
+  surname: string
+  email: string
+  role: 'learner' | 'instructor'
+}
+
+function isPasswordResetRecipient(value: unknown): value is PasswordResetRecipient {
+  if (typeof value !== 'object' || value === null) return false
+  const recipient = value as {
+    user_id?: unknown
+    first_name?: unknown
+    surname?: unknown
+    email?: unknown
+    role?: unknown
+  }
+  return (
+    typeof recipient.user_id === 'string' &&
+    typeof recipient.first_name === 'string' &&
+    typeof recipient.surname === 'string' &&
+    typeof recipient.email === 'string' &&
+    (recipient.role === 'learner' || recipient.role === 'instructor')
+  )
+}
 
 const supabase = createClient()
 
@@ -52,6 +79,12 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState('')
   const [confirmNewPassword, setConfirmNewPassword] = useState('')
   const [changingPassword, setChangingPassword] = useState(false)
+  const [resetRecipients, setResetRecipients] = useState<PasswordResetRecipient[]>([])
+  const [selectedResetRecipient, setSelectedResetRecipient] = useState('')
+  const [updatingResetPermission, setUpdatingResetPermission] = useState(false)
+  const [resetPermissionEnabled, setResetPermissionEnabled] = useState(false)
+  const [loadingResetPermission, setLoadingResetPermission] = useState(false)
+  const [resetEmailWarning, setResetEmailWarning] = useState('')
 
   const router = useRouter()
 
@@ -73,6 +106,19 @@ export default function SettingsPage() {
     if (data?.role !== 'admin') { router.push('/login'); return }
     if (data?.email) setSchoolEmail(data.email)
     if (data?.phone_number) setSchoolPhone(data.phone_number)
+
+    const { data: recipients, error: recipientsError } = await supabase
+      .from('users')
+      .select('user_id, first_name, surname, email, role')
+      .in('role', ['learner', 'instructor'])
+      .order('first_name', { ascending: true })
+
+    if (recipientsError) {
+      console.error('Failed to load password reset recipients:', recipientsError)
+      setToast({ msg: 'Unable to load learner and instructor accounts.', type: 'error' })
+    } else {
+      setResetRecipients((recipients ?? []).filter(isPasswordResetRecipient))
+    }
     setLoading(false)
   }, [router])
 
@@ -91,6 +137,45 @@ export default function SettingsPage() {
     mounted = false
   }
 }, [checkAdmin])
+
+  useEffect(() => {
+    if (!selectedResetRecipient) {
+      setResetPermissionEnabled(false)
+      setResetEmailWarning('')
+      return
+    }
+
+    let active = true
+    setLoadingResetPermission(true)
+    setResetEmailWarning('')
+
+    async function loadResetPermission() {
+      try {
+        const response = await fetch(
+          `/api/admin/password-reset-permission?userId=${encodeURIComponent(selectedResetRecipient)}`
+        )
+        const result: { allowed?: boolean; error?: string } = await response.json()
+        if (!response.ok) throw new Error(result.error ?? 'Unable to load reset permission.')
+        if (active) setResetPermissionEnabled(result.allowed === true)
+      } catch (error) {
+        console.error('Unable to load password reset permission:', error)
+        if (active) {
+          setResetPermissionEnabled(false)
+          setResetEmailWarning(
+            error instanceof Error ? error.message : 'Unable to load reset permission.'
+          )
+        }
+      } finally {
+        if (active) setLoadingResetPermission(false)
+      }
+    }
+
+    void loadResetPermission()
+    return () => {
+      active = false
+    }
+  }, [selectedResetRecipient])
+
   // ─── Actions ─────────────────────────────────────────────────────────────────
 
   async function saveSchoolInfo() {
@@ -119,6 +204,45 @@ export default function SettingsPage() {
       setNewPassword(''); setConfirmNewPassword('')
     }
     setChangingPassword(false)
+  }
+
+  async function updatePasswordResetPermission() {
+    if (!selectedResetRecipient) {
+      showToast('Select a learner or instructor first.', 'error')
+      return
+    }
+
+    setResetEmailWarning('')
+    setUpdatingResetPermission(true)
+    try {
+      const response = await fetch('/api/admin/password-reset-permission', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: selectedResetRecipient,
+          allowed: !resetPermissionEnabled,
+        }),
+      })
+      const result: { allowed?: boolean; error?: string } = await response.json()
+      if (!response.ok) throw new Error(result.error ?? 'Unable to update reset permission.')
+
+      setResetPermissionEnabled(result.allowed === true)
+      const recipient = resetRecipients.find(
+        (candidate) => candidate.user_id === selectedResetRecipient
+      )
+      showToast(
+        result.allowed
+          ? `Password reset allowed for ${recipient?.email}. It can be used once within 24 hours.`
+          : 'Password reset permission revoked.'
+      )
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to update reset permission.'
+      console.error('Unable to update password reset permission:', error)
+      setResetEmailWarning(message)
+      showToast(message, 'error')
+    } finally {
+      setUpdatingResetPermission(false)
+    }
   }
 
   return (
@@ -252,6 +376,88 @@ export default function SettingsPage() {
                 <button onClick={() => showToast('Rules updated.')} className="btn-secondary" style={{ width: '100%', justifyContent: 'center', marginTop: '20px' }}>
                   Update Rule
                 </button>
+              </div>
+
+              {/* Learner and Instructor Password Reset */}
+              <div className="settings-card">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <KeyRound size={20} />
+                    </div>
+                    <h2 style={{ color: '#1e293b', fontSize: '18px', fontWeight: '800', margin: 0 }}>Account Password Reset</h2>
+                </div>
+
+                <p style={{ margin: '0 0 16px', color: '#64748b', fontSize: '13px', lineHeight: 1.5 }}>
+                  Select an account to allow one password reset. No email will be sent. The approval expires after 24 hours if unused.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div>
+                    <label className="info-label" htmlFor="password-reset-recipient">Learner or Instructor</label>
+                    <select
+                      id="password-reset-recipient"
+                      value={selectedResetRecipient}
+                      onChange={(event) => {
+                        setSelectedResetRecipient(event.target.value)
+                      }}
+                      className="dashboard-control"
+                      disabled={resetRecipients.length === 0}
+                    >
+                      <option value="">
+                        {resetRecipients.length === 0 ? 'No accounts available' : 'Select an account'}
+                      </option>
+                      {resetRecipients.map((recipient) => (
+                        <option key={recipient.user_id} value={recipient.user_id}>
+                          {recipient.first_name} {recipient.surname} — {recipient.email} ({recipient.role})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {resetEmailWarning && (
+                    <div
+                      style={{
+                        background: '#fff7ed',
+                        border: '1px solid #fed7aa',
+                        color: '#9a4d00',
+                        borderRadius: '10px',
+                        padding: '10px 12px',
+                        fontSize: '12.5px',
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {resetEmailWarning}
+                    </div>
+                  )}
+
+                  {selectedResetRecipient && !resetEmailWarning && (
+                    <p style={{ margin: 0, color: resetPermissionEnabled ? '#15803d' : '#64748b', fontSize: '12.5px' }}>
+                      {loadingResetPermission
+                        ? 'Checking reset permission...'
+                        : resetPermissionEnabled
+                          ? 'This account is currently allowed to reset its password.'
+                          : 'This account is not currently allowed to reset its password.'}
+                    </p>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={updatePasswordResetPermission}
+                    disabled={updatingResetPermission || loadingResetPermission || !selectedResetRecipient}
+                    className="btn-primary"
+                    style={{
+                      width: '100%',
+                      justifyContent: 'center',
+                      background: resetPermissionEnabled ? '#b91c1c' : '#ff5a00',
+                    }}
+                  >
+                    <KeyRound size={18} />
+                    {updatingResetPermission
+                      ? 'Updating permission...'
+                      : resetPermissionEnabled
+                        ? 'Revoke Password Reset'
+                        : 'Allow Password Reset'}
+                  </button>
+                </div>
               </div>
 
               {/* Change Password */}

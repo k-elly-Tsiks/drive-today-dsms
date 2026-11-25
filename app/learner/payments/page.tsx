@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { AlertTriangle, ArrowLeft, CheckCircle, ClipboardList, CreditCard, FileText, Receipt, Wallet } from 'lucide-react'
+import { AlertTriangle, CheckCircle, ClipboardList, CreditCard, FileText, Receipt, Wallet } from 'lucide-react'
 
 type Payment = {
   payment_id: string
@@ -135,17 +135,11 @@ export default function LearnerPaymentsPage() {
     <div>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+      <div className="learner-page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
         <div>
           <h1 style={{ color: blue, fontSize: '22px', fontWeight: '800', margin: 0 }}>My Payments</h1>
           <p style={{ color: '#6b7280', fontSize: '13px', margin: '4px 0 0' }}>View your payment history and quotations</p>
         </div>
-        <button
-          onClick={() => router.push('/learner/dashboard')}
-          style={{ padding: '10px 18px', borderRadius: '10px', border: 'none', background: orange, color: 'white', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
-        >
-          <ArrowLeft size={16} /> Dashboard
-        </button>
       </div>
 
       {/* Summary Cards */}

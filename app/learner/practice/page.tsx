@@ -188,7 +188,7 @@ export default function LearnerPracticePage() {
         <div>
 
           {/* Header with dashboard button */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+          <div className="learner-page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
             <div>
               <h1 style={{ color: blue, fontSize: '22px', fontWeight: '800', margin: 0 }}>Practice Tests</h1>
               <p style={{ color: '#6b7280', fontSize: '13px', margin: '4px 0 0' }}>Test your knowledge before your driving test</p>
@@ -409,7 +409,7 @@ export default function LearnerPracticePage() {
       {/* ── REVIEW TAB ── */}
       {activeTab === 'review' && (
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <div className="learner-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <h2 style={{ color: blue, fontSize: '18px', fontWeight: '800', margin: 0 }}>Answer Review</h2>
             <button onClick={resetTest} style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: orange, color: 'white', fontSize: '13px', fontWeight: '700', cursor: 'pointer' }}>New Test</button>
           </div>

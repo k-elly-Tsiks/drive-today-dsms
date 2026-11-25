@@ -52,9 +52,10 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
 
         const { data } = await supabase
           .from('notifications')
-          .select('*')
+          .select('notification_id, type, message, is_read, created_at, recipient_id')
           .eq('recipient_id', user.id)
           .order('created_at', { ascending: false })
+          .limit(20)
 
         setNotifications((data || []) as Notification[])
       } finally {
@@ -187,6 +188,87 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
 
   return (
     <>
+      <style>{`
+        * { box-sizing: border-box; }
+        .instructor-shell { min-height: 100vh; }
+        .instructor-sidebar { box-shadow: 8px 0 28px rgba(11, 19, 41, 0.08); }
+        .instructor-canvas { min-height: 100vh; }
+        .instructor-topbar { backdrop-filter: blur(12px); }
+        .instructor-main { width: 100%; max-width: 100%; }
+        .instructor-page { width: 100%; max-width: 1440px; min-height: 0 !important; margin: 0 auto; padding: 0 !important; background: transparent !important; font-family: inherit !important; }
+        .instructor-page h1, .instructor-page h2, .instructor-page h3 { color: #0b1329 !important; letter-spacing: -0.025em; }
+        .instructor-page p { line-height: 1.55; }
+        .instructor-card { background: #fff !important; border: 1px solid #e2e8f0 !important; border-radius: 18px !important; box-shadow: 0 4px 18px rgba(11, 19, 41, 0.035) !important; }
+        .instructor-card:hover { border-color: #cbd5e1 !important; }
+        .instructor-page-header { margin-bottom: 26px !important; }
+        .instructor-page-header h1, .instructor-page-header h2 { color: #0b1329 !important; font-size: 25px !important; font-weight: 800 !important; }
+        .instructor-page-header p { color: #64748b !important; }
+        .instructor-field { min-height: 44px; border: 1px solid #cbd5e1 !important; border-radius: 10px !important; background: #fff !important; color: #0b1329 !important; font: inherit; }
+        .instructor-field:focus { outline: 3px solid rgba(255, 90, 0, .15) !important; border-color: #ff5a00 !important; }
+        .instructor-tabs { border: 1px solid #e2e8f0 !important; border-radius: 12px !important; background: #fff !important; box-shadow: 0 2px 8px rgba(11, 19, 41, .04) !important; }
+        .instructor-tabs button { min-height: 40px; }
+        .instructor-primary-button { background: #ff5a00 !important; color: #fff !important; border: 1px solid #ff5a00 !important; border-radius: 10px !important; }
+        .instructor-primary-button:hover:not(:disabled) { background: #e94f00 !important; border-color: #e94f00 !important; }
+        .instructor-primary-button:disabled { background: #cbd5e1 !important; color: #64748b !important; border-color: #cbd5e1 !important; }
+        .instructor-secondary-button { border: 1px solid #e2e8f0 !important; border-radius: 10px !important; background: #fff !important; color: #0b1329 !important; }
+        .instructor-empty { border: 1px dashed #cbd5e1 !important; border-radius: 18px !important; background: #fff !important; }
+        .instructor-dashboard .instructor-card { padding: 22px !important; }
+        .instructor-lessons .instructor-page-header p, .instructor-notifications .instructor-page-header p, .instructor-profile .instructor-page-header p { margin-top: 5px !important; }
+        .instructor-lessons .instructor-card { transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+        .instructor-lessons .instructor-card:hover { box-shadow: 0 8px 22px rgba(11, 19, 41, .07) !important; }
+        .instructor-notifications .instructor-grid-4 { min-width: 0; }
+        .instructor-progress .instructor-history-grid > div { background: #f8fafc !important; }
+        @media (max-width: 760px) {
+          .instructor-sidebar { inset: auto 0 0 !important; width: 100% !important; height: 72px !important; overflow: visible !important; border-right: 0 !important; border-top: 1px solid #26314a !important; box-shadow: 0 -8px 28px rgba(11, 19, 41, .14); }
+          .instructor-sidebar > div:first-child, .instructor-sidebar > div:last-child { display: none !important; }
+          .instructor-sidebar nav { display: flex !important; align-items: stretch; justify-content: space-around; height: 100%; padding: 7px 8px max(7px, env(safe-area-inset-bottom)) !important; margin: 0 !important; }
+          .instructor-sidebar nav button { flex: 1; min-width: 0; height: 100%; margin: 0 2px !important; padding: 7px 3px !important; flex-direction: column; justify-content: center !important; gap: 4px !important; border-radius: 11px !important; font-size: 10px !important; }
+          .instructor-sidebar nav button > span { display: flex !important; }
+          .instructor-sidebar nav button > .instructor-nav-label { display: block !important; font-size: 10px; line-height: 1.15; }
+          .instructor-sidebar nav button > span svg { width: 19px; height: 19px; }
+          .instructor-canvas { margin-left: 0 !important; min-height: 100vh; padding-bottom: 72px; }
+          .instructor-topbar { height: 60px !important; padding: 0 16px !important; }
+          .instructor-topbar h1 { font-size: 17px !important; }
+          .instructor-topbar > div:last-child { gap: 8px !important; }
+          .instructor-topbar > div:last-child > div:first-child { display: none; }
+          .instructor-main { padding: 20px 16px 28px !important; }
+          .instructor-page-header { margin-bottom: 20px !important; }
+          .instructor-page-header h1, .instructor-page-header h2 { font-size: 22px !important; }
+          .instructor-grid-4, .instructor-grid-3, .instructor-grid-2 { grid-template-columns: minmax(0, 1fr) !important; }
+          .instructor-dashboard .instructor-grid-4, .instructor-lessons .instructor-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+          .instructor-grid-2 { gap: 14px !important; }
+          .instructor-history-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+          .instructor-notifications .instructor-page-header { align-items: flex-start !important; }
+          .instructor-notifications .instructor-page-header > div:last-child { width: 100%; }
+          .instructor-notifications .instructor-page-header > div:last-child button { flex: 1; padding-inline: 8px !important; }
+          .instructor-notifications .instructor-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+          .instructor-lessons .instructor-card { align-items: flex-start !important; }
+          .instructor-lessons .instructor-card > div:first-child { min-width: 0; }
+          .instructor-lessons .instructor-card > div:first-child > div:first-child { flex-wrap: wrap; gap: 8px 14px !important; }
+          .instructor-lessons .instructor-card > div:first-child > div:nth-child(2) > div { flex-wrap: wrap; gap: 6px 12px !important; overflow-wrap: anywhere; }
+          .instructor-lessons .instructor-card > div:nth-child(2) { gap: 6px !important; }
+          .instructor-lessons .instructor-tabs { width: 100%; }
+          .instructor-lessons .instructor-tabs button { flex: 1; padding-inline: 8px !important; }
+          .instructor-lessons input { min-width: 100%; }
+          .instructor-profile .instructor-card, .instructor-progress .instructor-card { padding: 20px !important; }
+          .instructor-empty { padding: 36px 20px !important; }
+          .instructor-card { border-radius: 15px !important; }
+          .instructor-dashboard .instructor-card { padding: 16px !important; }
+        }
+        @media (min-width: 761px) and (max-width: 1050px) {
+          .instructor-main { padding: 26px !important; }
+          .instructor-grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+        }
+        @media (max-width: 440px) {
+          .instructor-history-grid { grid-template-columns: minmax(0, 1fr) !important; }
+          .instructor-page-header { align-items: flex-start !important; }
+          .instructor-page button { max-width: 100%; }
+        }
+        html.dark .instructor-card, html.dark .instructor-tabs, html.dark .instructor-empty { background: #222836 !important; border-color: #2d3545 !important; }
+        html.dark .instructor-page h1, html.dark .instructor-page h2, html.dark .instructor-page h3 { color: #f1f5f9 !important; }
+        html.dark .instructor-page-header p { color: #94a3b8 !important; }
+        html.dark .instructor-field { background: #1a1f2c !important; color: #f1f5f9 !important; border-color: #3b465b !important; }
+      `}</style>
       {/* Notification Drawer Overlay (Instructor only) */}
       <div
         aria-hidden={!isNotifDrawerOpen}
@@ -353,8 +435,9 @@ You&apos;re all caught up
         </div>
       </div>
 
-      <div style={{ display: 'flex', minHeight: '100vh', background: theme.background, color: theme.textMain, fontFamily: "'Geist', 'Inter', sans-serif", transition: 'background 0.2s ease' }}>
+      <div className="instructor-shell" style={{ display: 'flex', minHeight: '100vh', background: theme.background, color: theme.textMain, fontFamily: "'Geist', 'Inter', sans-serif", transition: 'background 0.2s ease' }}>
         <div
+          className="instructor-sidebar"
           onMouseEnter={() => setIsSidebarHovered(true)}
           onMouseLeave={() => setIsSidebarHovered(false)}
           style={{
@@ -392,6 +475,7 @@ You&apos;re all caught up
                 <button
                   key={item.id}
                   onClick={() => router.push(item.path)}
+                  aria-label={item.label}
                   title={isSidebarCollapsed ? item.label : undefined}
                   style={{
                     width: '100%',
@@ -427,7 +511,7 @@ You&apos;re all caught up
                   <span style={{ display: 'flex', alignItems: 'center', opacity: isActive ? 1 : 0.8, flexShrink: 0 }}>
                     {item.icon}
                   </span>
-                  {!isSidebarCollapsed && item.label}
+                  <span className="instructor-nav-label" style={{ display: isSidebarCollapsed ? 'none' : 'inline' }}>{item.label}</span>
                 </button>
               )
             })}
@@ -462,8 +546,8 @@ You&apos;re all caught up
           </div>
         </div>
 
-        <div style={{ flex: 1, marginLeft: `${SIDEBAR_COLLAPSED}px`, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-          <div style={{ background: theme.topbarBg, padding: '0 32px', height: '68px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${theme.border}`, position: 'sticky', top: 0, zIndex: 50, transition: 'background 0.2s ease, border-color 0.2s ease' }}>
+        <div className="instructor-canvas" style={{ flex: 1, marginLeft: `${SIDEBAR_COLLAPSED}px`, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <div className="instructor-topbar" style={{ background: theme.topbarBg, padding: '0 32px', height: '68px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${theme.border}`, position: 'sticky', top: 0, zIndex: 50, transition: 'background 0.2s ease, border-color 0.2s ease' }}>
             <h1 style={{ color: theme.textMain, fontSize: '20px', fontWeight: '700', margin: 0, letterSpacing: '-0.2px' }}>
               {pageTitle}
             </h1>
@@ -523,7 +607,7 @@ You&apos;re all caught up
             </div>
           </div>
 
-          <div style={{ flex: 1, padding: '32px' }}>
+          <div className="instructor-main" style={{ flex: 1, padding: '32px' }}>
             {children}
           </div>
         </div>
@@ -531,4 +615,3 @@ You&apos;re all caught up
     </>
   )
 }
-

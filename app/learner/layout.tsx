@@ -52,9 +52,10 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
 
         const { data } = await supabase
           .from('notifications')
-          .select('*')
+          .select('notification_id, type, message, is_read, created_at, recipient_id')
           .eq('recipient_id', user.id)
           .order('created_at', { ascending: false })
+          .limit(20)
 
         setNotifications((data || []) as Notification[])
       } finally {
@@ -117,7 +118,6 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     { id: 'payments', label: 'Payments', path: '/learner/payments', icon: <CreditCard size={18} /> },
     { id: 'lessons', label: 'My Lessons', path: '/learner/lessons', icon: <Calendar size={18} /> },
     { id: 'progress', label: 'Progress', path: '/learner/progress', icon: <TrendingUp size={18} /> },
-    { id: 'notifications', label: 'Notifications', path: '/learner/notifications', icon: <Bell size={18} /> },
     { id: 'materials', label: 'Materials', path: '/learner/materials', icon: <BookOpen size={18} /> },
     { id: 'questions', label: 'Practice', path: '/learner/practice', icon: <HelpCircle size={18} /> },
     { id: 'profile', label: 'Profile', path: '/learner/profile', icon: <UserSquare2 size={18} /> },
@@ -304,9 +304,189 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
         </div>
       </div>
 
-      <div style={{ display: 'flex', minHeight: '100vh', background: theme.background, color: theme.textMain }}>
+      <style>{`
+        .learner-shell {
+          min-height: 100vh;
+          font-family: 'Geist', 'Inter', system-ui, sans-serif;
+          transition: background .2s ease;
+        }
+        .learner-sidebar {
+          border-right: 1px solid #141d31;
+          overflow: hidden;
+        }
+        .learner-topbar {
+          position: sticky;
+          top: 0;
+          z-index: 50;
+          flex-shrink: 0;
+        }
+        .learner-content {
+          min-width: 0;
+          flex: 1;
+          padding: 28px 32px !important;
+        }
+        .learner-page {
+          min-width: 0;
+          color: #1e293b;
+        }
+        .learner-page [style*="min-height: 100vh"] {
+          min-height: unset !important;
+          padding: 0 !important;
+          background: transparent !important;
+        }
+        .learner-page div[style*="background: white"][style*="border-radius"],
+        .learner-page div[style*="background: rgb(255, 255, 255)"][style*="border-radius"],
+        .learner-page div[style*="background: #ffffff"][style*="border-radius"] {
+          border: 1px solid #e2e8f0 !important;
+          border-radius: 16px !important;
+          box-shadow: 0 4px 18px rgba(11, 19, 41, .045) !important;
+        }
+        .learner-page-header {
+          gap: 16px;
+          flex-wrap: wrap;
+        }
+        .learner-page h1,
+        .learner-page h2,
+        .learner-page h3 {
+          color: #0b1329;
+          letter-spacing: -.025em;
+        }
+        .learner-page input,
+        .learner-page select,
+        .learner-page textarea {
+          box-sizing: border-box;
+          border-color: #cbd5e1 !important;
+          border-radius: 10px !important;
+          color: #0b1329;
+          font: inherit;
+        }
+        .learner-page input:focus,
+        .learner-page select:focus,
+        .learner-page textarea:focus {
+          outline: 3px solid rgba(255, 90, 0, .15);
+          border-color: #ff5a00 !important;
+        }
+        .learner-page button {
+          font-family: inherit;
+          transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease;
+        }
+        .learner-page button[style*="linear-gradient(135deg"] {
+          background: #0b1329 !important;
+        }
+        .learner-page button:not(:disabled):hover {
+          box-shadow: 0 5px 14px rgba(11, 19, 41, .12);
+        }
+        .learner-page [style*="width: fit-content"] {
+          max-width: 100%;
+          flex-wrap: wrap;
+        }
+        .learner-page [style*="grid-template-columns"] > * {
+          min-width: 0;
+          overflow-wrap: anywhere;
+        }
+        .learner-page [style*="grid-template-columns"] p {
+          overflow-wrap: anywhere;
+        }
+        .learner-page [style*="position: fixed"][style*="inset: 0"] {
+          padding: 16px;
+          overflow-y: auto;
+        }
+        .learner-page button:focus-visible,
+        .learner-page a:focus-visible {
+          outline: 3px solid rgba(255, 90, 0, .35);
+          outline-offset: 2px;
+        }
+        .learner-page [style*="grid-template-columns"] {
+          min-width: 0;
+        }
+        @media (max-width: 900px) {
+          .learner-content { padding: 24px !important; }
+          .learner-page [style*="grid-template-columns: 1fr 360px"],
+          .learner-page [style*="grid-template-columns: 1fr 1fr"],
+          .learner-page [style*="grid-template-columns: repeat(4,1fr)"] {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          }
+        }
+        @media (max-width: 640px) {
+          .learner-sidebar {
+            top: auto !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100% !important;
+            height: 66px !important;
+            flex-direction: row !important;
+            border-right: 0 !important;
+            border-top: 1px solid #1e293b;
+            z-index: 100;
+          }
+          .learner-sidebar > div:first-child,
+          .learner-sidebar-footer {
+            display: none !important;
+          }
+          .learner-sidebar nav {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            width: 100%;
+            overflow-x: auto;
+            padding: 7px 10px !important;
+            scrollbar-width: none;
+          }
+          .learner-sidebar nav::-webkit-scrollbar { display: none; }
+          .learner-sidebar nav button {
+            min-width: 48px;
+            width: 48px !important;
+            height: 48px;
+            justify-content: center;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          .learner-sidebar nav button > span:not(:first-child) { display: none; }
+          .learner-shell > div:last-child { margin-left: 0 !important; }
+          .learner-topbar {
+            height: 60px !important;
+            padding: 0 16px !important;
+          }
+          .learner-topbar h1 { font-size: 17px !important; }
+          .learner-date { display: none !important; }
+          .learner-content {
+            padding: 20px 16px 88px !important;
+          }
+          .learner-page [style*="grid-template-columns"] {
+            grid-template-columns: minmax(0, 1fr) !important;
+          }
+          .learner-page [style*="display: grid"][style*="grid-template-columns"] {
+            gap: 10px !important;
+          }
+          .learner-page [style*="display: flex"][style*="justify-content: space-between"] {
+            flex-wrap: wrap;
+          }
+          .learner-page [style*="width: fit-content"] {
+            width: 100% !important;
+          }
+          .learner-page [style*="width: fit-content"] button {
+            flex: 1;
+            padding-left: 10px !important;
+            padding-right: 10px !important;
+          }
+          .learner-page [style*="position: fixed"][style*="inset: 0"] > div {
+            max-width: 100%;
+            max-height: calc(100vh - 32px);
+            overflow-y: auto;
+          }
+          .learner-page [style*="padding: 60px"] {
+            padding: 32px 18px !important;
+          }
+          .learner-page [style*="padding: 32px"] {
+            padding: 20px !important;
+          }
+        }
+      `}</style>
+      <div className="learner-shell" style={{ display: 'flex', minHeight: '100vh', background: theme.background, color: theme.textMain }}>
         {/* Sidebar */}
         <div 
+          className="learner-sidebar"
           onMouseEnter={() => setIsSidebarHovered(true)} 
           onMouseLeave={() => setIsSidebarHovered(false)}
           style={{ width: isSidebarHovered ? 240 : 68, background: theme.sidebarBg, transition: 'width 0.25s', position: 'fixed', top: 0, bottom: 0, zIndex: 100, display: 'flex', flexDirection: 'column' }}
@@ -317,15 +497,15 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
           
           <nav style={{ padding: '0 8px', flex: 1 }}>
             {menuItems.map(item => (
-              <button key={item.id} onClick={() => router.push(item.path)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '11px', borderRadius: '12px', border: 'none', background: pathname === item.path ? theme.primaryAccent : 'transparent', color: pathname === item.path ? 'white' : '#8fa0c2', cursor: 'pointer', marginBottom: '4px' }}>
+              <button key={item.id} title={item.label} onClick={() => router.push(item.path)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '11px', borderRadius: '12px', border: 'none', background: pathname === item.path ? theme.primaryAccent : 'transparent', color: pathname === item.path ? 'white' : '#8fa0c2', cursor: 'pointer', marginBottom: '4px' }}>
                 {item.icon}
-                {isSidebarHovered && item.label}
+                {isSidebarHovered && <span>{item.label}</span>}
               </button>
             ))}
           </nav>
 
           {/* Sidebar Footer */}
-          <div style={{ padding: '16px' }}>
+          <div className="learner-sidebar-footer" style={{ padding: '16px' }}>
             <div style={{ 
               background: '#131b2e', 
               padding: '12px', 
@@ -356,10 +536,10 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
 
         {/* Main Content */}
         <div style={{ flex: 1, marginLeft: 68 }}>
-          <header style={{ background: theme.topbarBg, padding: '0 32px', height: '68px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${theme.border}` }}>
+          <header className="learner-topbar" style={{ background: theme.topbarBg, padding: '0 32px', height: '68px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${theme.border}` }}>
             <h1 style={{ fontSize: '18px', fontWeight: '700', margin: 0 }}>{menuItems.find(i => i.path === pathname)?.label || 'Dashboard'}</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <span style={{ fontSize: '13px', color: theme.textMuted, fontWeight: '500' }}>{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })}</span>
+              <span className="learner-date" style={{ fontSize: '13px', color: theme.textMuted, fontWeight: '500' }}>{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })}</span>
               <button
                 onClick={() => setIsDarkMode(!isDarkMode)}
                 style={topbarIconBtn}
@@ -412,7 +592,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
               </button>
             </div>
           </header>
-          <main style={{ padding: '32px' }}>{children}</main>
+          <main className="learner-content" style={{ padding: '32px' }}><div className="learner-page">{children}</div></main>
         </div>
       </div>
     </>

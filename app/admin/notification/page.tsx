@@ -19,23 +19,11 @@ import {
   X,
 } from 'lucide-react'
 
-type Notification = {
-  notification_id: string
-  type: string
-  message: string
-  is_read: boolean
-  created_at: string
-  recipient_id: string
-  recipient?: {
-    first_name: string
-    surname: string
-    role: string
-  }
-}
+import { type Notification } from '../types'
 
-const supabase = createClient()
 
 export default function NotificationsPage() {
+  const supabase = createClient()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')

@@ -23,7 +23,6 @@ type Booking = {
 }
 
 type Payment = { amount: number }
-type ProgressRecord = { progress_id: string }
 
 const supabase = createClient()
 
@@ -73,7 +72,10 @@ export default function LearnerDashboard() {
       { data: profile },
       { data: lessonData },
       { data: paymentData },
-      { data: progressData },
+      { count: progressCount = 0 },
+      { count: scheduledLessonsCount = 0 },
+      { count: completedLessonsCount = 0 },
+      { count: activeBookingCount = 0 },
     ] = await Promise.all([
       supabase.from('users').select('first_name, surname, allowed_slots, slots_allocated').eq('user_id', user.id).single(),
       supabase.from('lesson_bookings').select(`
@@ -82,24 +84,28 @@ export default function LearnerDashboard() {
         instructor:users!lesson_bookings_instructor_id_fkey (first_name, surname)
       `).eq('learner_id', user.id).order('created_at', { ascending: false }).limit(6),
       supabase.from('payments').select('amount').eq('learner_id', user.id),
-      supabase.from('progress_tracking').select('progress_id').eq('learner_id', user.id),
+      supabase.from('progress_tracking').select('progress_id', { count: 'exact', head: true }).eq('learner_id', user.id),
+      supabase.from('lesson_bookings').select('booking_id', { count: 'exact', head: true }).eq('learner_id', user.id).eq('status', 'scheduled'),
+      supabase.from('lesson_bookings').select('booking_id', { count: 'exact', head: true }).eq('learner_id', user.id).eq('status', 'completed'),
+      supabase.from('lesson_bookings').select('booking_id', { count: 'exact', head: true }).eq('learner_id', user.id).neq('status', 'cancelled'),
     ])
 
     const lessons = (lessonData || []) as unknown as Booking[]
 
     const payments = (paymentData || []) as Payment[]
-    const progress = (progressData || []) as ProgressRecord[]
-    const allocated = Number(profile?.allowed_slots ?? profile?.slots_allocated ?? 0)
-    const used = lessons.filter(lesson => lesson.status !== 'cancelled').length
+    const allocated = Math.max(
+      Number(profile?.slots_allocated) || 0,
+      Number(profile?.allowed_slots) || 0,
+    )
 
     setLearner(profile)
     setBookings(lessons)
     setStats({
-      scheduledLessons: lessons.filter(lesson => lesson.status === 'scheduled').length,
-      completedLessons: lessons.filter(lesson => lesson.status === 'completed').length,
-      remainingSlots: Math.max(allocated - used, 0),
+      scheduledLessons: scheduledLessonsCount,
+      completedLessons: completedLessonsCount,
+      remainingSlots: Math.max(allocated - activeBookingCount, 0),
       totalPaid: payments.reduce((sum, payment) => sum + Number(payment.amount), 0),
-      progressRecords: progress.length,
+      progressRecords: progressCount,
     })
     setLoading(false)
   }, [])
@@ -157,7 +163,7 @@ export default function LearnerDashboard() {
         }
       `}</style>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+      <div className="learner-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
         <div>
           <h2 style={{ margin: '0 0 4px', fontSize: '24px', fontWeight: '700', color: theme.textMain, letterSpacing: '-0.4px' }}>
             Welcome back, {learner?.first_name || 'Learner'}!

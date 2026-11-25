@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { 
   Search, 
   Filter, 
@@ -150,6 +150,8 @@ export default function InstructorsPage() {
   const [toast, setToast]                         = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
 
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const selectedInstructorId = searchParams.get('selected')
   const supabase = createClient()
   const menuRef = useRef<HTMLDivElement | null>(null)
 
@@ -170,6 +172,13 @@ export default function InstructorsPage() {
     document.addEventListener('mousedown', handleOutsideClick)
     return () => document.removeEventListener('mousedown', handleOutsideClick)
   }, [])
+
+  useEffect(() => {
+    if (!loading && selectedInstructorId && instructors.length > 0) {
+      const instructor = instructors.find(i => i.user_id === selectedInstructorId)
+      if (instructor) setViewInstructor(instructor)
+    }
+  }, [loading, selectedInstructorId, instructors])
 
   // ── Data Loading ──────────────────────────────────────────────────────────
 

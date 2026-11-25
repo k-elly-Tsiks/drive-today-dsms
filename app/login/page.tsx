@@ -11,8 +11,86 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showResetDialog, setShowResetDialog] = useState(false)
+  const [resetStep, setResetStep] = useState<'email' | 'password' | 'complete'>('email')
+  const [resetEmail, setResetEmail] = useState('')
+  const [resetPassword, setResetPassword] = useState('')
+  const [confirmResetPassword, setConfirmResetPassword] = useState('')
+  const [resetError, setResetError] = useState('')
+  const [resetLoading, setResetLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+
+  async function handleResetEmailNext(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setResetError('')
+    setResetLoading(true)
+    try {
+      const response = await fetch('/api/password-reset/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resetEmail.trim().toLowerCase() }),
+      })
+      const result: { allowed?: boolean; error?: string } = await response.json()
+
+      if (!response.ok) throw new Error(result.error ?? 'Unable to check reset permission.')
+      if (!result.allowed) {
+        setResetError('An administrator has not approved a password reset for this email.')
+        return
+      }
+
+      setResetStep('password')
+    } catch (resetError) {
+      console.error('Password reset permission check failed:', resetError)
+      setResetError(resetError instanceof Error ? resetError.message : 'Unable to check reset permission.')
+    } finally {
+      setResetLoading(false)
+    }
+  }
+
+  async function handleSetNewPassword(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setResetError('')
+
+    if (resetPassword.length < 8) {
+      setResetError('Your password must be at least 8 characters long.')
+      return
+    }
+    if (resetPassword !== confirmResetPassword) {
+      setResetError('The passwords do not match.')
+      return
+    }
+
+    setResetLoading(true)
+    const normalizedEmail = resetEmail.trim().toLowerCase()
+    try {
+      const response = await fetch('/api/password-reset/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: normalizedEmail, password: resetPassword }),
+      })
+      const result: { success?: boolean; error?: string } = await response.json()
+
+      if (!response.ok) throw new Error(result.error ?? 'Unable to update your password.')
+
+      setEmail(normalizedEmail)
+      setResetStep('complete')
+    } catch (resetError) {
+      console.error('Password reset failed:', resetError)
+      setResetError(resetError instanceof Error ? resetError.message : 'Unable to reset your password.')
+    } finally {
+      setResetLoading(false)
+    }
+  }
+
+  function openResetDialog() {
+    setResetEmail(email)
+    setResetStep('email')
+    setResetPassword('')
+    setConfirmResetPassword('')
+    setResetError('')
+    setShowResetDialog(true)
+  }
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -271,6 +349,24 @@ console.log("USER ERROR:", userError)
               </div>
             </div>
 
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-8px', marginBottom: '18px' }}>
+              <button
+                type="button"
+                onClick={openResetDialog}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  color: 'rgba(255,255,255,0.82)',
+                  fontSize: '13px',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                }}
+              >
+                Forgot password?
+              </button>
+            </div>
+
             {/* Remember Me */}
             <div className="flex items-center mb-6">
               <div
@@ -359,6 +455,200 @@ console.log("USER ERROR:", userError)
 
         </div>
       </div>
+
+      {showResetDialog && (
+        <div
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !resetLoading) {
+              setShowResetDialog(false)
+            }
+          }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 30,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+            background: 'rgba(2, 6, 23, 0.72)',
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="password-reset-title"
+            style={{
+              width: '100%',
+              maxWidth: '440px',
+              padding: '30px',
+              borderRadius: '20px',
+              background: '#fff',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+            }}
+          >
+            <h2 id="password-reset-title" style={{ margin: '0 0 8px', color: '#0f172a', fontSize: '23px', fontWeight: 800 }}>
+              {resetStep === 'email' ? 'Reset your password' : 'Choose a new password'}
+            </h2>
+            <p style={{ margin: '0 0 20px', color: '#64748b', fontSize: '14px', lineHeight: 1.5 }}>
+              {resetStep === 'email'
+                ? 'Enter the email selected by the administrator, then continue.'
+                : resetStep === 'password'
+                  ? `Set a new password for ${resetEmail.trim().toLowerCase()}.`
+                  : 'Your password has been updated. You can now sign in with your new password.'}
+            </p>
+
+            {resetError && (
+              <div
+                role="alert"
+                style={{
+                  marginBottom: '16px',
+                  padding: '11px 13px',
+                  borderRadius: '10px',
+                  border: '1px solid #fecaca',
+                  background: '#fef2f2',
+                  color: '#b91c1c',
+                  fontSize: '13px',
+                  lineHeight: 1.5,
+                }}
+              >
+                {resetError}
+              </div>
+            )}
+
+            {resetStep === 'email' ? (
+              <form onSubmit={handleResetEmailNext}>
+                <label htmlFor="reset-email" style={resetLabelStyle}>
+                  Email address
+                </label>
+                <input
+                  id="reset-email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={resetEmail}
+                  onChange={(event) => setResetEmail(event.target.value)}
+                  style={resetInputStyle}
+                />
+                <button type="submit" disabled={resetLoading} style={resetPrimaryButtonStyle}>
+                  {resetLoading ? 'Checking permission...' : 'Next'}
+                </button>
+              </form>
+            ) : resetStep === 'password' ? (
+              <form onSubmit={handleSetNewPassword}>
+                <label htmlFor="reset-new-password" style={resetLabelStyle}>
+                  New password
+                </label>
+                <input
+                  id="reset-new-password"
+                  type="password"
+                  autoComplete="new-password"
+                  minLength={8}
+                  required
+                  value={resetPassword}
+                  onChange={(event) => setResetPassword(event.target.value)}
+                  style={resetInputStyle}
+                />
+                <label htmlFor="reset-confirm-password" style={resetLabelStyle}>
+                  Confirm new password
+                </label>
+                <input
+                  id="reset-confirm-password"
+                  type="password"
+                  autoComplete="new-password"
+                  minLength={8}
+                  required
+                  value={confirmResetPassword}
+                  onChange={(event) => setConfirmResetPassword(event.target.value)}
+                  style={resetInputStyle}
+                />
+                <button type="submit" disabled={resetLoading} style={resetPrimaryButtonStyle}>
+                  {resetLoading ? 'Saving password...' : 'Save password and log in'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setResetStep('email')
+                    setResetError('')
+                  }}
+                  disabled={resetLoading}
+                  style={resetSecondaryButtonStyle}
+                >
+                  Back
+                </button>
+              </form>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowResetDialog(false)}
+                style={resetPrimaryButtonStyle}
+              >
+                Return to login
+              </button>
+            )}
+
+            {resetStep !== 'complete' && (
+              <button
+                type="button"
+                onClick={() => setShowResetDialog(false)}
+                disabled={resetLoading}
+                style={{ ...resetSecondaryButtonStyle, marginTop: '8px' }}
+              >
+                Cancel
+              </button>
+            )}
+          </section>
+        </div>
+      )}
     </div>
             )
+}
+
+const resetLabelStyle: React.CSSProperties = {
+  display: 'block',
+  marginBottom: '7px',
+  color: '#334155',
+  fontSize: '13px',
+  fontWeight: 700,
+}
+
+const resetInputStyle: React.CSSProperties = {
+  display: 'block',
+  width: '100%',
+  boxSizing: 'border-box',
+  height: '46px',
+  marginBottom: '16px',
+  padding: '0 13px',
+  border: '1px solid #cbd5e1',
+  borderRadius: '10px',
+  background: '#fff',
+  color: '#0f172a',
+  fontSize: '14px',
+  outlineColor: '#f97316',
+}
+
+const resetPrimaryButtonStyle: React.CSSProperties = {
+  width: '100%',
+  minHeight: '46px',
+  border: 'none',
+  borderRadius: '10px',
+  background: 'linear-gradient(135deg, #1e3a8a, #f97316)',
+  color: '#fff',
+  fontSize: '14px',
+  fontWeight: 700,
+  cursor: 'pointer',
+}
+
+const resetSecondaryButtonStyle: React.CSSProperties = {
+  width: '100%',
+  minHeight: '42px',
+  marginTop: '10px',
+  border: '1px solid #cbd5e1',
+  borderRadius: '10px',
+  background: '#fff',
+  color: '#334155',
+  fontSize: '14px',
+  fontWeight: 600,
+  cursor: 'pointer',
 }

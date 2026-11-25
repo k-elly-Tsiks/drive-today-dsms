@@ -1,9 +1,9 @@
 # Workspace Memory
 This file is maintained automatically by Code Janitor so Claude, Codex, Bob, and any other AI agent can reuse repo context without rescanning everything from scratch.
-Generated: 2026-07-23T11:35:23.004Z
+Generated: 2026-11-25T08:54:41.564Z
 Workspace: drive-today-dsms
 Workspace root: c:\Users\kelly\Desktop\drive-today-dsms
-Refresh reason: tracked-change
+Refresh reason: startup
 Output path: graphify-out/WORKSPACE_MEMORY.md
 Shared mirror: workspacememory.md
 Structured manifest: workspace.json
@@ -16,16 +16,16 @@ Structured manifest: workspace.json
 - Audience: any AI agent working in this repository can treat this file as the current handoff ledger.
 - Graphify report: not available yet
 - Graphify graph: not available yet
-- Last activity: 2026-07-23T11:35:20.875Z
+- Last activity: 2026-11-25T06:56:03.194Z
 ## Workspace Focus
-- Active file in focus: No active file detected
-- Hottest files right now: app/admin/learner/page.tsx (6), lib/supabase/client.ts (6), lib/supabase/server.ts (5), app/login/page.tsx (4)
-- Suggested starting points: app/admin/learner/page.tsx, lib/supabase/client.ts, lib/supabase/server.ts, app/login/page.tsx, app/admin/dashboard/page.tsx, app/admin/lessons/page.tsx
+- Active file in focus: app/instructor/progress/page.tsx
+- Hottest files right now: app/admin/lessons/page.tsx (10), app/learner/lessons/page.tsx (6), app/instructor/progress/page.tsx (4), app/admin/instructor/page.tsx (3)
+- Suggested starting points: app/instructor/progress/page.tsx, app/admin/lessons/page.tsx, app/learner/lessons/page.tsx, app/admin/instructor/page.tsx, app/learner/practice/page.tsx, app/admin/dashboard/page.tsx
 ## Current Workspace
-- Active file: No active file detected
-- Tracked files in snapshot: 70
-- Top-level areas: app (44), [root] (17), public (6), lib (2), .github (1)
-- Primary file types: .tsx (40), .ts (6), .md (5), .svg (5), .json (4), .mjs (2), [no extension] (2), .css (1)
+- Active file: app/instructor/progress/page.tsx
+- Tracked files in snapshot: 116
+- Top-level areas: app (48), birthday_cards (36), [root] (18), public (6), lib (5), supabase (2), .github (1)
+- Primary file types: .tsx (40), .jpg (34), .ts (14), .md (5), .svg (5), .json (4), .html (2), .mjs (2)
 - Key files: .github/modernize/code-migration/.gitignore, .gitignore, AGENTS.md, README.md, package-lock.json, package.json, pnpm-lock.yaml, tsconfig.json
 ## Package Snapshot
 - Package: drive-today-dsms v0.1.0
@@ -35,103 +35,123 @@ Structured manifest: workspace.json
 - Dev dependencies: @tailwindcss/postcss, @types/node, @types/react, @types/react-dom, eslint, eslint-config-next, html2canvas, jspdf, tailwindcss, typescript
 ## Current Stack
 - Logged change events: 40
-- Change mix: save (40)
-- Remembered file snapshots: 11
-- Working tree summary: 10 modifieds
+- Change mix: save (38), create (1), delete (1)
+- Remembered file snapshots: 17
+- Working tree summary: 27 modifieds, 1 deleted, 9 untrackeds
 ## Tracked Snapshots
-- lib/supabase/server.ts | 33 lines | 994 chars | hash a9b5d16a9eff
-  Last snapshot: 2026-07-23T11:35:20.875Z
-  Preview: "import { createServerClient } from '@supabase/ssr' / import { cookies } from 'next/headers' / const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL / const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KE..."
-- lib/supabase/client.ts | 20 lines | 642 chars | hash 366fb8254cb3
-  Last snapshot: 2026-07-23T11:33:43.918Z
-  Preview: "import { createBrowserClient } from '@supabase/ssr' / const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL / const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY / if (!supabaseUrl || !supabaseAnonKey..."
-- app/login/page.tsx | 348 lines | 12296 chars | hash 7bdd234e5400
-  Last snapshot: 2026-07-23T11:07:41.423Z
-  Preview: "'use client' / import { useState } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / export default function LoginPage() { / const [email, setEmail] =..."
-- .env.local | 3 lines | 307 chars | hash 3f4070709ed4
-  Last snapshot: 2026-07-23T11:05:29.525Z
+- app/instructor/progress/page.tsx | 428 lines | 21723 chars | hash 0dbc90eadf67
+  Last snapshot: 2026-11-25T06:56:03.194Z
+  Preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { CheckCircle2, Star } from..."
+- app/learner/practice/page.tsx | 481 lines | 27190 chars | hash 51792253f91e
+  Last snapshot: 2026-11-19T10:40:39.963Z
+  Preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci..."
+- app/learner/payments/page.tsx | 295 lines | 14373 chars | hash 4eb1ffdb93a6
+  Last snapshot: 2026-11-19T10:11:05.640Z
+  Preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { AlertTriangle, CheckCircl..."
+- app/learner/layout.tsx | 600 lines | 24413 chars | hash 6e38d47e9b59
+  Last snapshot: 2026-11-01T10:43:20.039Z
+  Preview: "'use client' / import { useState, useEffect, useMemo, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter, usePathname } from 'next/navigation' / import { / LayoutDashboar..."
+- .env.local | 3 lines | 552 chars | hash 9b1ebc038d41
+  Last snapshot: 2026-11-01T08:56:42.023Z
   Preview: "NEXT_PUBLIC_SUPABASE_URL=https://zbwiumbwdjwnnhbccxdq.supabase.co / NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpid2l1bWJ3ZGp3bm5oYmNjeGRxIiwicm9sZSI6ImFub24iLC..."
-- app/instructor/lessons/page.tsx | 443 lines | 23665 chars | hash 1f0361923609
-  Last snapshot: 2026-07-22T08:32:18.378Z
-  Preview: "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Layers, CalendarCheck, CheckCir..."
-- app/admin/reports/page.tsx | 898 lines | 46337 chars | hash 0114f9f5d49b
-  Last snapshot: 2026-07-22T08:31:46.937Z
-  Preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / TrendingUp, / TrendingD..."
-- app/admin/dashboard/page.tsx | 617 lines | 34933 chars | hash 99c08fbe9aaa
-  Last snapshot: 2026-07-22T08:29:59.712Z
-  Preview: "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Users, UserCheck, Calendar, Dolla..."
-- app/instructor/dashboard/page.tsx | 299 lines | 11183 chars | hash 90a106cf66a1
-  Last snapshot: 2026-07-22T08:29:21.448Z
-  Preview: "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Calendar, CheckCircle, Clock, Use..."
+- app/admin/settings/page.tsx | 448 lines | 21548 chars | hash 05b83ccc44f2
+  Last snapshot: 2026-11-01T07:24:30.921Z
+  Preview: "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Settings, / School, / Clock, /..."
+- app/learner/lessons/page.tsx | 741 lines | 31969 chars | hash 7fc8c7d9fc5d
+  Last snapshot: 2026-07-30T12:55:55.771Z
+  Preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { CalendarDays, Clock4, AlertTriangle, Phone, ListChecks, ArrowLeft } from 'lucide-react' / import { createClient } from '@/lib/..."
+- app/admin/lessons/page.tsx | 953 lines | 52284 chars | hash 3d1fb66d7470
+  Last snapshot: 2026-07-30T07:55:33.297Z
+  Preview: "'use client' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' // / import React, { useState, useEffect, useCallback, useRef } from 'react' / const supabase = createC..."
 
 ## Recent Changes
-### 2026-07-23T11:35:20.875Z | saved | lib/supabase/server.ts
+### 2026-11-25T06:56:03.194Z | saved | app/instructor/progress/page.tsx
 - Summary: Saved without a textual diff.
-- Before: 33 lines | 994 chars | hash a9b5d16a9eff | preview: "import { createServerClient } from '@supabase/ssr' / import { cookies } from 'next/headers' / const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL / const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KE..."
-- After: 33 lines | 994 chars | hash a9b5d16a9eff | preview: "import { createServerClient } from '@supabase/ssr' / import { cookies } from 'next/headers' / const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL / const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KE..."
+- Before: 428 lines | 21,723 chars | hash 0dbc90eadf67 | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { CheckCircle2, Star } from..."
+- After: 428 lines | 21,723 chars | hash 0dbc90eadf67 | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { CheckCircle2, Star } from..."
 
-### 2026-07-23T11:34:21.403Z | saved | lib/supabase/server.ts
+### 2026-11-25T06:55:43.116Z | saved | app/instructor/progress/page.tsx
+- Summary: Line 6: replaced 279 lines with 423 lines.
+- Before: 284 lines | 16,871 chars | hash 28f206accb78 | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / type Booking = { / booking_id: str..."
+- After: 428 lines | 21,723 chars | hash 0dbc90eadf67 | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { CheckCircle2, Star } from..."
+- Previous fragment: "type Booking = { / booking_id: string / learner_id: string / lesson_slots?: { slot_date: string; slot_time: string } / learner?: { first_name: string; surname: string; user_id?:..."
+- Current fragment: "import { CheckCircle2, Star } from 'lucide-react' / type Booking = { / booking_id: string / learner_id: string / lesson_slots?: { slot_date: string; slot_time: string } / learne..."
 
-### 2026-07-23T11:33:43.919Z | saved | lib/supabase/server.ts
+### 2026-11-25T06:54:57.539Z | saved | app/instructor/progress/page.tsx
 - Summary: Saved without a textual diff.
-- Before: 33 lines | 974 chars | hash 39362bee37fa | preview: "import { createServerClient } from '@supabase/ssr' / import { cookies } from 'next/headers' / const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL / const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KE..."
-- After: 33 lines | 974 chars | hash 39362bee37fa | preview: "import { createServerClient } from '@supabase/ssr' / import { cookies } from 'next/headers' / const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL / const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KE..."
+- Before: 284 lines | 16,871 chars | hash 28f206accb78 | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / type Booking = { / booking_id: str..."
+- After: 284 lines | 16,871 chars | hash 28f206accb78 | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / type Booking = { / booking_id: str..."
 
-### 2026-07-23T11:33:43.918Z | saved | lib/supabase/client.ts
+### 2026-11-25T06:54:43.571Z | saved | app/instructor/progress/page.tsx
+- Summary: Line 6: replaced 423 lines with 279 lines.
+- Before: 428 lines | 21,723 chars | hash 0dbc90eadf67 | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { CheckCircle2, Star } from..."
+- After: 284 lines | 16,871 chars | hash 28f206accb78 | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / type Booking = { / booking_id: str..."
+- Previous fragment: "import { CheckCircle2, Star } from 'lucide-react' / type Booking = { / booking_id: string / learner_id: string / lesson_slots?: { slot_date: string; slot_time: string } / learne..."
+- Current fragment: "type Booking = { / booking_id: string / learner_id: string / lesson_slots?: { slot_date: string; slot_time: string } / learner?: { first_name: string; surname: string; user_id?:..."
+
+### 2026-11-25T06:08:59.739Z | saved | app/admin/notification/page.tsx
+
+### 2026-11-25T06:07:32.527Z | saved | app/admin/dashboard/page.tsx
+
+### 2026-11-25T06:06:09.201Z | saved | app/admin/dashboard/page.tsx
+
+### 2026-11-25T06:05:10.889Z | saved | lib/supabase/client.ts
+
+### 2026-11-25T06:04:48.309Z | saved | lib/supabase/client.ts
+
+### 2026-11-19T10:40:39.963Z | saved | app/learner/practice/page.tsx
 - Summary: Saved without a textual diff.
-- Before: 20 lines | 642 chars | hash 366fb8254cb3 | preview: "import { createBrowserClient } from '@supabase/ssr' / const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL / const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY / if (!supabaseUrl || !supabaseAnonKey..."
-- After: 20 lines | 642 chars | hash 366fb8254cb3 | preview: "import { createBrowserClient } from '@supabase/ssr' / const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL / const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY / if (!supabaseUrl || !supabaseAnonKey..."
+- Before: 481 lines | 27,190 chars | hash 51792253f91e | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci..."
+- After: 481 lines | 27,190 chars | hash 51792253f91e | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci..."
 
-### 2026-07-23T10:59:40.572Z | saved | lib/supabase/server.ts
+### 2026-11-19T10:11:05.640Z | saved | app/learner/payments/page.tsx
+- Summary: Line 6: removed 1 line.
+- Before: 295 lines | 14,384 chars | hash 86df6ce253bf | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { AlertTriangle, ArrowLeft,..."
+- After: 295 lines | 14,373 chars | hash 4eb1ffdb93a6 | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { AlertTriangle, CheckCircl..."
+- Previous fragment: "ArrowLeft,"
+
+### 2026-11-19T09:48:59.570Z | saved | app/learner/practice/page.tsx
 - Summary: Saved without a textual diff.
-- Before: 33 lines | 903 chars | hash a7a1e586abd2 | preview: "import { createServerClient } from '@supabase/ssr' / import { cookies } from 'next/headers' / const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL / const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KE..."
-- After: 33 lines | 903 chars | hash a7a1e586abd2 | preview: "import { createServerClient } from '@supabase/ssr' / import { cookies } from 'next/headers' / const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL / const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KE..."
+- Before: 481 lines | 27,190 chars | hash 51792253f91e | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci..."
+- After: 481 lines | 27,190 chars | hash 51792253f91e | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci..."
 
-### 2026-07-23T11:33:33.977Z | saved | lib/supabase/client.ts
+### 2026-11-19T09:48:55.359Z | saved | app/learner/practice/page.tsx
+- Summary: Saved without a textual diff.
+- Before: 481 lines | 27,190 chars | hash 51792253f91e | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci..."
+- After: 481 lines | 27,190 chars | hash 51792253f91e | preview: "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci..."
 
-### 2026-07-23T11:33:06.248Z | saved | app/learner/lessons/page.tsx
+### 2026-11-19T09:47:38.592Z | saved | app/learner/payments/page.tsx
 
-### 2026-07-23T11:33:06.234Z | saved | app/instructor/progress/page.tsx
-
-### 2026-07-23T11:33:06.213Z | saved | app/admin/payments/page.tsx
-
-### 2026-07-23T11:33:06.072Z | saved | app/admin/dashboard/page.tsx
-
-### 2026-07-23T11:32:46.734Z | saved | app/learner/lessons/page.tsx
-
-### 2026-07-23T11:32:46.631Z | saved | app/admin/dashboard/page.tsx
-
-### 2026-07-23T11:32:46.586Z | saved | app/admin/payments/page.tsx
-
-### 2026-07-23T11:32:46.551Z | saved | app/instructor/progress/page.tsx
-
-### 2026-07-23T11:17:58.738Z | saved | app/login/page.tsx
+### 2026-11-19T09:47:22.177Z | saved | app/learner/materials/page.tsx
 
 
 ## Hot Files
-- app/admin/learner/page.tsx (6 tracked changes)
-- lib/supabase/client.ts (6 tracked changes)
-- lib/supabase/server.ts (5 tracked changes)
-- app/login/page.tsx (4 tracked changes)
-- app/admin/dashboard/page.tsx (3 tracked changes)
-- app/admin/lessons/page.tsx (3 tracked changes)
-- .env.local (2 tracked changes)
-- app/admin/instructor/page.tsx (2 tracked changes)
+- app/admin/lessons/page.tsx (10 tracked changes)
+- app/learner/lessons/page.tsx (6 tracked changes)
+- app/instructor/progress/page.tsx (4 tracked changes)
+- app/admin/instructor/page.tsx (3 tracked changes)
+- app/learner/practice/page.tsx (3 tracked changes)
+- app/admin/dashboard/page.tsx (2 tracked changes)
+- app/admin/settings/page.tsx (2 tracked changes)
+- app/learner/notification (2 tracked changes)
 
 ## Git Snapshot
 - Branch: blackboxai/learner-admin-consistency
-- HEAD: 2026-07-22 b95372e removed errors
-- Working tree summary: 10 modifieds
+- HEAD: 2026-07-23 250ff19 removed code error
+- Working tree summary: 27 modifieds, 1 deleted, 9 untrackeds
+- M README.md
 - M app/admin/dashboard/page.tsx
-- M app/admin/payments/page.tsx
-- M app/instructor/progress/page.tsx
-- M app/learner/lessons/page.tsx
-- M app/login/page.tsx
-- M graphify-out/WORKSPACE_MEMORY.md
-- M lib/supabase/client.ts
-- M lib/supabase/server.ts
-- M workspace.json
-- M workspacememory.md
+- M app/admin/instructor/page.tsx
+- M app/admin/layout.tsx
+- M app/admin/learner/page.tsx
+- M app/admin/lessons/page.tsx
+- M app/admin/notification/page.tsx
+- M app/admin/settings/page.tsx
+- M app/instructor/dashboard/page.tsx
+- M app/instructor/layout.tsx
+- M app/instructor/lessons/page.tsx
+- M app/instructor/notifications/page.tsx
+- Additional git status lines were omitted for brevity.
 
 ## GitHub Snapshot
 GitHub Repository: k-elly-Tsiks/drive-today-dsms

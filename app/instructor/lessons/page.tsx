@@ -20,6 +20,30 @@ type Booking = {
   learner?: { first_name: string; surname: string; phone_number?: string; email?: string }
 }
 
+type PerformanceDraft = {
+  booking_id: string
+  steering_rating: number
+  parking_rating: number
+  reversing_rating: number
+  road_awareness_rating: number
+  comments: string
+}
+
+function isRating(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= 5
+}
+
+function isPerformanceDraft(value: unknown): value is PerformanceDraft {
+  if (typeof value !== 'object' || value === null) return false
+  const draft = value as Record<string, unknown>
+  return typeof draft.booking_id === 'string'
+    && isRating(draft.steering_rating)
+    && isRating(draft.parking_rating)
+    && isRating(draft.reversing_rating)
+    && isRating(draft.road_awareness_rating)
+    && typeof draft.comments === 'string'
+}
+
 const supabase = createClient()
 
 // --- Skeleton Components ---
@@ -38,7 +62,7 @@ const SkeletonPulse = () => (
 )
 
 const SkeletonStat = () => (
-  <div style={{ background: 'white', borderRadius: '16px', padding: '20px', border: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+  <div className="instructor-card" style={{ background: 'white', borderRadius: '16px', padding: '20px', border: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
     <div style={{ flex: 1 }}>
       <div className="skeleton-item" style={{ height: '13px', width: '60px', borderRadius: '4px', marginBottom: '8px' }} />
       <div className="skeleton-item" style={{ height: '24px', width: '40px', borderRadius: '4px' }} />
@@ -48,7 +72,7 @@ const SkeletonStat = () => (
 )
 
 const SkeletonLesson = () => (
-  <div style={{ background: 'white', padding: '20px', borderRadius: '16px', border: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+  <div className="instructor-card" style={{ background: 'white', padding: '20px', borderRadius: '16px', border: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
       <div style={{ display: 'flex', gap: '20px' }}>
         <div className="skeleton-item" style={{ height: '16px', width: '100px', borderRadius: '4px' }} />
@@ -85,11 +109,14 @@ export default function InstructorLessonsPage() {
   const [performanceNotes, setPerformanceNotes] = useState<string>('')
 
   const [savingProgress, setSavingProgress] = useState(false)
+  const [performanceDraftKey, setPerformanceDraftKey] = useState('')
+  const [performanceDraftReady, setPerformanceDraftReady] = useState(false)
 
   const [cancelReasonOption, setCancelReasonOption] = useState<string>('')
   const [cancelOtherDetails, setCancelOtherDetails] = useState('')
   
   const [message, setMessage] = useState<string | null>(null)
+  const [actionError, setActionError] = useState('')
   const router = useRouter()
 
   const loadBookings = useCallback(async () => {
@@ -99,12 +126,43 @@ export default function InstructorLessonsPage() {
 
     const { data, error } = await supabase
       .from('lesson_bookings')
-      .select(`*, lesson_slots (slot_date, slot_time), learner:users!lesson_bookings_learner_id_fkey (first_name, surname, phone_number, email)`)
+      .select(`booking_id, learner_id, slot_id, status, cancellation_reason, lesson_slots (slot_date, slot_time), learner:users!lesson_bookings_learner_id_fkey (first_name, surname, phone_number, email)`)
       .eq('instructor_id', user.id)
       .order('created_at', { ascending: false })
+      .limit(200)
 
-    if (!error && data) {
-      setBookings(data as Booking[])
+    if (error) {
+      setActionError(`Could not load lessons: ${error.message}`)
+    } else if (data) {
+      const loadedBookings = data as Booking[]
+      setBookings(loadedBookings)
+      setActionError('')
+
+      const draftKey = `instructor-performance-draft:${user.id}`
+      setPerformanceDraftKey(draftKey)
+      try {
+        const savedDraft = sessionStorage.getItem(draftKey)
+        if (savedDraft) {
+          const parsedDraft: unknown = JSON.parse(savedDraft)
+          if (isPerformanceDraft(parsedDraft)) {
+            const draftBooking = loadedBookings.find(booking =>
+              booking.booking_id === parsedDraft.booking_id && booking.status === 'completed'
+            )
+            if (draftBooking) {
+              setSelectedBooking(draftBooking)
+              setSteeringRating(parsedDraft.steering_rating)
+              setParkingRating(parsedDraft.parking_rating)
+              setReversingRating(parsedDraft.reversing_rating)
+              setRoadAwarenessRating(parsedDraft.road_awareness_rating)
+              setPerformanceNotes(parsedDraft.comments)
+              setShowProgressSheet(true)
+            }
+          }
+        }
+      } catch {
+        setActionError('Could not restore the unsaved performance draft from this browser session.')
+      }
+      setPerformanceDraftReady(true)
     }
     setLoading(false)
   }, [router])
@@ -117,11 +175,37 @@ export default function InstructorLessonsPage() {
     void run()
   }, [loadBookings])
 
+  function updatePerformanceDraft(updates: Partial<Omit<PerformanceDraft, 'booking_id'>>) {
+    if (!selectedBooking) return
+    const draft: PerformanceDraft = {
+      booking_id: selectedBooking.booking_id,
+      steering_rating: updates.steering_rating ?? steeringRating,
+      parking_rating: updates.parking_rating ?? parkingRating,
+      reversing_rating: updates.reversing_rating ?? reversingRating,
+      road_awareness_rating: updates.road_awareness_rating ?? roadAwarenessRating,
+      comments: updates.comments ?? performanceNotes,
+    }
+
+    setSteeringRating(draft.steering_rating)
+    setParkingRating(draft.parking_rating)
+    setReversingRating(draft.reversing_rating)
+    setRoadAwarenessRating(draft.road_awareness_rating)
+    setPerformanceNotes(draft.comments)
+
+    if (!performanceDraftReady || !performanceDraftKey) return
+    try {
+      sessionStorage.setItem(performanceDraftKey, JSON.stringify(draft))
+    } catch {
+      setActionError('Could not save the unsaved performance draft in this browser session.')
+    }
+  }
+
 
 
   // --- ACTIONS ---
   async function markLessonComplete() {
     if (!selectedBooking) return
+    setActionError('')
     const { error } = await supabase
       .from('lesson_bookings')
       .update({ status: 'completed' })
@@ -129,18 +213,24 @@ export default function InstructorLessonsPage() {
 
     if (!error) {
       setBookings(prev => prev.map(b => b.booking_id === selectedBooking.booking_id ? { ...b, status: 'completed' } : b))
+      setSelectedBooking({ ...selectedBooking, status: 'completed' })
+      updatePerformanceDraft({})
       setConfirmingComplete(false)
       setShowProgressSheet(true)
+    } else {
+      setActionError(`Could not mark lesson complete: ${error.message}`)
     }
   }
 
   async function savePerformanceRecord() {
     if (!selectedBooking) return
     setSavingProgress(true)
+    setActionError('')
 
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
+      setActionError('Your session expired. Sign in again before saving this performance record.')
       setSavingProgress(false)
       return
     }
@@ -160,6 +250,13 @@ export default function InstructorLessonsPage() {
       })
 
     if (!error) {
+      if (performanceDraftKey) {
+        try {
+          sessionStorage.removeItem(performanceDraftKey)
+        } catch {
+          setActionError('Performance was saved, but its local draft could not be cleared.')
+        }
+      }
 
       setMessage(`Performance saved for ${selectedBooking.learner?.first_name}`)
       setShowProgressSheet(false)
@@ -176,6 +273,8 @@ export default function InstructorLessonsPage() {
       setTimeout(() => setMessage(null), 3500)
 
       await loadBookings()
+    } else {
+      setActionError(`Could not save performance: ${error.message}`)
     }
 
     setSavingProgress(false)
@@ -194,6 +293,8 @@ export default function InstructorLessonsPage() {
       setShowCancelDialog(false)
       setMessage('Lesson marked as cancelled.')
       setTimeout(() => setMessage(null), 3500)
+    } else {
+      setActionError(`Could not cancel lesson: ${error.message}`)
     }
   }
 
@@ -219,16 +320,16 @@ export default function InstructorLessonsPage() {
   )
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px', fontFamily: 'sans-serif' }}>
+    <div className="instructor-page instructor-lessons" style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px', fontFamily: 'sans-serif' }}>
       <SkeletonPulse />
       
-      <div style={{ marginBottom: '24px' }}>
+      <div className="instructor-page-header" style={{ marginBottom: '24px' }}>
         <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#111827', margin: '0 0 5px' }}>Lessons Management</h1>
         <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>Configure scheduling and manage active bookings</p>
       </div>
 
       {/* STAT CARDS */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+      <div className="instructor-grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '24px' }}>
         {loading ? (
           <>
             <SkeletonStat /><SkeletonStat /><SkeletonStat /><SkeletonStat />
@@ -242,6 +343,7 @@ export default function InstructorLessonsPage() {
           ].map((stat, i) => {
             return (
               <div
+                className="instructor-card"
                 key={i}
                 onClick={() => setActiveTab(stat.tab)}
                 style={{
@@ -266,7 +368,7 @@ export default function InstructorLessonsPage() {
 
       {/* Navigation and Search */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '24px', alignItems: 'center' }}>
-        <div style={{ display: 'flex', background: '#f3f4f6', padding: '4px', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+        <div className="instructor-tabs" style={{ display: 'flex', background: '#f3f4f6', padding: '4px', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
           {['Today', 'Upcoming', 'History'].map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)} style={{
               padding: '10px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '14px',
@@ -275,10 +377,11 @@ export default function InstructorLessonsPage() {
             }}>{tab}</button>
           ))}
         </div>
-        <input type="text" placeholder="Search learner..." value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 1, padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none' }} />
+        <input className="instructor-field" type="text" placeholder="Search learner..." value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 1, padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none' }} />
       </div>
 
       {message && <div style={{ background: '#fffbeb', border: '1px solid #fb923c', color: '#9a3412', padding: '12px 16px', borderRadius: '12px', marginBottom: '20px', fontWeight: '700' }}>{message}</div>}
+      {actionError && <div role="alert" style={{ background: '#fee2e2', border: '1px solid #fecaca', color: '#991b1b', padding: '12px 16px', borderRadius: '12px', marginBottom: '20px', fontWeight: '700' }}>{actionError}</div>}
 
       {/* LESSON LIST */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -288,11 +391,11 @@ export default function InstructorLessonsPage() {
             <SkeletonLesson />
             <SkeletonLesson />
           </>
-        ) : displayList.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '40px', background: 'white', borderRadius: '16px', color: '#6b7280' }}>No lessons found.</div>
+        ) : actionError.startsWith('Could not load lessons:') ? null : displayList.length === 0 ? (
+          <div className="instructor-empty" style={{ textAlign: 'center', padding: '40px', background: 'white', borderRadius: '16px', color: '#6b7280' }}>No lessons found.</div>
         ) : (
           displayList.map((b) => (
-            <div key={b.booking_id} style={{ background: 'white', padding: '20px', borderRadius: '16px', border: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div key={b.booking_id} className="instructor-card" style={{ background: 'white', padding: '20px', borderRadius: '16px', border: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: '700', color: '#111827' }}>
@@ -345,7 +448,7 @@ export default function InstructorLessonsPage() {
       {/* PERFORMANCE RECORDING SHEET */}
       {showProgressSheet && selectedBooking && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(3px)', display: 'flex', justifyContent: 'flex-end', zIndex: 2000 }}>
-          <div style={{ width: '100%', maxWidth: '450px', background: 'white', height: '100%', padding: '30px', boxShadow: '-5px 0 25px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column' }}>
+          <div className="instructor-card" style={{ width: '100%', maxWidth: '450px', background: 'white', height: '100%', padding: '30px', boxShadow: '-5px 0 25px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <h2 style={{ fontSize: '20px', fontWeight: '900' }}>Record Performance</h2>
               <button onClick={() => setShowProgressSheet(false)} style={{ border: 'none', background: '#f3f4f6', borderRadius: '50%', padding: '8px', cursor: 'pointer' }}><X size={20}/></button>
@@ -356,7 +459,7 @@ export default function InstructorLessonsPage() {
                 <label style={{ fontWeight: '800', fontSize: '13px', marginBottom: '10px', display: 'block', textTransform: 'uppercase' }}>🎯 Steering</label>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   {[1, 2, 3, 4, 5].map(s => (
-                    <Star key={s} size={30} onClick={() => setSteeringRating(s)} fill={steeringRating >= s ? "#f97316" : "none"} color={steeringRating >= s ? "#f97316" : "#d1d5db"} style={{ cursor: 'pointer' }} />
+                    <Star key={s} size={30} onClick={() => updatePerformanceDraft({ steering_rating: s })} fill={steeringRating >= s ? "#f97316" : "none"} color={steeringRating >= s ? "#f97316" : "#d1d5db"} style={{ cursor: 'pointer' }} />
                   ))}
                 </div>
               </div>
@@ -365,7 +468,7 @@ export default function InstructorLessonsPage() {
                 <label style={{ fontWeight: '800', fontSize: '13px', marginBottom: '10px', display: 'block', textTransform: 'uppercase' }}>🅿 Parking</label>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   {[1, 2, 3, 4, 5].map(s => (
-                    <Star key={s} size={30} onClick={() => setParkingRating(s)} fill={parkingRating >= s ? "#f97316" : "none"} color={parkingRating >= s ? "#f97316" : "#d1d5db"} style={{ cursor: 'pointer' }} />
+                    <Star key={s} size={30} onClick={() => updatePerformanceDraft({ parking_rating: s })} fill={parkingRating >= s ? "#f97316" : "none"} color={parkingRating >= s ? "#f97316" : "#d1d5db"} style={{ cursor: 'pointer' }} />
                   ))}
                 </div>
               </div>
@@ -374,7 +477,7 @@ export default function InstructorLessonsPage() {
                 <label style={{ fontWeight: '800', fontSize: '13px', marginBottom: '10px', display: 'block', textTransform: 'uppercase' }}>🔄 Reversing</label>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   {[1, 2, 3, 4, 5].map(s => (
-                    <Star key={s} size={30} onClick={() => setReversingRating(s)} fill={reversingRating >= s ? "#f97316" : "none"} color={reversingRating >= s ? "#f97316" : "#d1d5db"} style={{ cursor: 'pointer' }} />
+                    <Star key={s} size={30} onClick={() => updatePerformanceDraft({ reversing_rating: s })} fill={reversingRating >= s ? "#f97316" : "none"} color={reversingRating >= s ? "#f97316" : "#d1d5db"} style={{ cursor: 'pointer' }} />
                   ))}
                 </div>
               </div>
@@ -383,19 +486,19 @@ export default function InstructorLessonsPage() {
                 <label style={{ fontWeight: '800', fontSize: '13px', marginBottom: '10px', display: 'block', textTransform: 'uppercase' }}>👁 Road</label>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   {[1, 2, 3, 4, 5].map(s => (
-                    <Star key={s} size={30} onClick={() => setRoadAwarenessRating(s)} fill={roadAwarenessRating >= s ? "#f97316" : "none"} color={roadAwarenessRating >= s ? "#f97316" : "#d1d5db"} style={{ cursor: 'pointer' }} />
+                    <Star key={s} size={30} onClick={() => updatePerformanceDraft({ road_awareness_rating: s })} fill={roadAwarenessRating >= s ? "#f97316" : "none"} color={roadAwarenessRating >= s ? "#f97316" : "#d1d5db"} style={{ cursor: 'pointer' }} />
                   ))}
                 </div>
               </div>
             </div>
 
             <label style={{ fontWeight: '800', fontSize: '13px', marginBottom: '10px', display: 'block', textTransform: 'uppercase' }}>Lesson Notes</label>
-            <textarea 
-              value={performanceNotes} onChange={e => setPerformanceNotes(e.target.value)}
+            <textarea className="instructor-field"
+              value={performanceNotes} onChange={e => updatePerformanceDraft({ comments: e.target.value })}
               placeholder="Enter details about what was covered, learner strengths, and areas for improvement..."
               style={{ flex: 1, width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid #e5e7eb', fontSize: '15px', outline: 'none', resize: 'none', marginBottom: '20px' }}
             />
-            <button onClick={savePerformanceRecord} disabled={savingProgress} style={{
+            <button className="instructor-primary-button" onClick={savePerformanceRecord} disabled={savingProgress} style={{
               background: '#f97316', color: 'white', border: 'none', padding: '16px', borderRadius: '14px', fontWeight: '900',
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
             }}>
@@ -408,7 +511,7 @@ export default function InstructorLessonsPage() {
       {/* Confirmation Modals */}
       {confirmingComplete && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ background: 'white', padding: '30px', borderRadius: '20px', width: '90%', maxWidth: '400px' }}>
+          <div className="instructor-card" style={{ background: 'white', padding: '30px', borderRadius: '20px', width: '90%', maxWidth: '400px' }}>
             <h3 style={{ margin: '0 0 10px', fontSize: '18px', fontWeight: '900' }}>Confirm Complete</h3>
 <p style={{ color: '#6b7280', margin: '0 0 20px' }}>Mark this lesson as complete? You can then record the learner progress notes.</p>
             <div style={{ display: 'flex', gap: '12px' }}>
@@ -421,16 +524,16 @@ export default function InstructorLessonsPage() {
 
       {showCancelDialog && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ background: 'white', padding: '30px', borderRadius: '20px', width: '90%', maxWidth: '400px' }}>
+          <div className="instructor-card" style={{ background: 'white', padding: '30px', borderRadius: '20px', width: '90%', maxWidth: '400px' }}>
             <h3 style={{ margin: '0 0 20px', fontSize: '18px', fontWeight: '900' }}>Cancel Lesson</h3>
-            <select value={cancelReasonOption} onChange={e => setCancelReasonOption(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #e5e7eb', marginBottom: '15px' }}>
+            <select className="instructor-field" value={cancelReasonOption} onChange={e => setCancelReasonOption(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #e5e7eb', marginBottom: '15px' }}>
               <option value="">-- Select reason --</option>
               <option value="No fuel">No fuel</option>
               <option value="Vehicle breakdown">Vehicle breakdown</option>
               <option value="Personal emergency">Personal emergency</option>
               <option value="Other">Other</option>
             </select>
-            {cancelReasonOption === 'Other' && <input placeholder="Details..." value={cancelOtherDetails} onChange={e => setCancelOtherDetails(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #e5e7eb', marginBottom: '15px' }} />}
+            {cancelReasonOption === 'Other' && <input className="instructor-field" placeholder="Details..." value={cancelOtherDetails} onChange={e => setCancelOtherDetails(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #e5e7eb', marginBottom: '15px' }} />}
             <div style={{ display: 'flex', gap: '12px' }}>
               <button onClick={() => setShowCancelDialog(false)} style={{ flex: 1, padding: '12px', border: '1px solid #e5e7eb', borderRadius: '12px' }}>Back</button>
               <button onClick={cancelLesson} style={{ flex: 1, padding: '12px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '700' }}>Confirm Cancel</button>

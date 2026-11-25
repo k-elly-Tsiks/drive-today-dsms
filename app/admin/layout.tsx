@@ -21,14 +21,7 @@ import {
   Moon,
 } from 'lucide-react'
 
-type Notification = {
-  notification_id: string
-  type: string
-  message: string
-  is_read: boolean
-  created_at: string
-  recipient_id: string
-}
+import { type Notification } from './types'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [adminName, setAdminName] = useState('')

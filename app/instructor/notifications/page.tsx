@@ -114,7 +114,7 @@ export default function InstructorNotificationsPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px' }}>
+      <div className="instructor-page instructor-notifications" style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px' }}>
         <style>{`@keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
@@ -123,9 +123,9 @@ export default function InstructorNotificationsPage() {
           </div>
           <Skeleton w="116px" h="38px" r="10px" />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', marginBottom: '24px' }}>
+        <div className="instructor-grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', marginBottom: '24px' }}>
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} style={{ background: 'white', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', borderTop: `3px solid ${i === 1 ? '#dc2626' : i === 2 ? '#059669' : i === 3 ? orange : blue}` }}>
+            <div key={i} className="instructor-card" style={{ background: 'white', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', borderTop: `3px solid ${i === 1 ? '#dc2626' : i === 2 ? '#059669' : i === 3 ? orange : blue}` }}>
               <Skeleton w="42px" h="26px" r="5px" />
               <Skeleton w="58px" h="11px" r="4px" />
             </div>
@@ -138,7 +138,7 @@ export default function InstructorNotificationsPage() {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} style={{ background: 'white', borderRadius: '12px', padding: '16px 20px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', border: '1px solid #f3f4f6', display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+            <div key={i} className="instructor-card" style={{ background: 'white', borderRadius: '12px', padding: '16px 20px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', border: '1px solid #f3f4f6', display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
               <Skeleton w="42px" h="42px" r="50%" />
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', marginBottom: '10px' }}>
@@ -156,9 +156,9 @@ export default function InstructorNotificationsPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px' }}>
+    <div className="instructor-page instructor-notifications" style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px' }}>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+      <div className="instructor-page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <h1 style={{ color: blue, fontSize: '22px', fontWeight: '800', margin: 0 }}>
             🔔 Notifications
@@ -168,11 +168,11 @@ export default function InstructorNotificationsPage() {
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
           {unreadCount > 0 && (
-            <button onClick={markAllAsRead} disabled={markingAll} style={{ padding: '10px 18px', borderRadius: '10px', border: `2px solid ${blue}`, background: 'white', color: blue, fontSize: '13px', fontWeight: '600', cursor: markingAll ? 'not-allowed' : 'pointer' }}>
+            <button className="instructor-secondary-button" onClick={markAllAsRead} disabled={markingAll} style={{ padding: '10px 18px', borderRadius: '10px', border: `2px solid ${blue}`, background: 'white', color: blue, fontSize: '13px', fontWeight: '600', cursor: markingAll ? 'not-allowed' : 'pointer' }}>
               {markingAll ? 'Marking...' : '✓ Mark all as read'}
             </button>
           )}
-          <button onClick={() => router.push('/instructor/dashboard')} style={{ padding: '10px 18px', borderRadius: '10px', border: 'none', background: blue, color: 'white', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+          <button className="instructor-primary-button" onClick={() => router.push('/instructor/dashboard')} style={{ padding: '10px 18px', borderRadius: '10px', border: 'none', background: blue, color: 'white', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
             ← Dashboard
           </button>
         </div>
@@ -185,14 +185,14 @@ export default function InstructorNotificationsPage() {
           { label: 'Read',   value: notifications.length - unreadCount, colour: '#059669' },
           { label: 'Today',  value: notifications.filter(n => n.created_at?.startsWith(new Date().toISOString().split('T')[0])).length, colour: orange },
         ].map((stat, i) => (
-          <div key={i} style={{ background: 'white', borderRadius: '12px', padding: '16px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', borderTop: `3px solid ${stat.colour}` }}>
+          <div key={i} className="instructor-card" style={{ background: 'white', borderRadius: '12px', padding: '16px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', borderTop: `3px solid ${stat.colour}` }}>
             <p style={{ margin: '0 0 4px', fontSize: '24px', fontWeight: '800', color: stat.colour }}>{stat.value}</p>
             <p style={{ margin: 0, fontSize: '11px', color: '#6b7280' }}>{stat.label}</p>
           </div>
         ))}
       </div>
 
-      <div style={{ display: 'flex', gap: '4px', background: 'white', borderRadius: '12px', padding: '4px', marginBottom: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', width: 'fit-content' }}>
+      <div className="instructor-tabs" style={{ display: 'flex', gap: '4px', background: 'white', borderRadius: '12px', padding: '4px', marginBottom: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', width: 'fit-content' }}>
         {[{ id: 'all', label: '🔔 All' }, { id: 'unread', label: '🔴 Unread' }, { id: 'read', label: '✅ Read' }].map(tab => (
           <button key={tab.id} onClick={() => setFilter(tab.id)}
             style={{ padding: '10px 20px', borderRadius: '10px', border: 'none', background: filter === tab.id ? `linear-gradient(135deg, ${blue}, ${orange})` : 'transparent', color: filter === tab.id ? 'white' : '#6b7280', fontSize: '13px', fontWeight: '700', cursor: 'pointer' }}>
@@ -203,13 +203,13 @@ export default function InstructorNotificationsPage() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {filteredNotifications.length === 0 ? (
-          <div style={{ background: 'white', borderRadius: '14px', padding: '60px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+          <div className="instructor-empty" style={{ background: 'white', borderRadius: '14px', padding: '60px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
             <p style={{ fontSize: '48px', marginBottom: '12px' }}>🔔</p>
             <p style={{ color: '#374151', fontSize: '16px', fontWeight: '600', margin: 0 }}>You are all caught up!</p>
           </div>
         ) : (
           filteredNotifications.map(notification => (
-            <div key={notification.notification_id}
+            <div key={notification.notification_id} className="instructor-card"
               style={{ background: notification.is_read ? 'white' : '#f0f4ff', borderRadius: '12px', padding: '16px 20px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', border: notification.is_read ? '1px solid #f3f4f6' : `1px solid ${lightBlue}`, display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
               <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: `${getTypeColour(notification.type)}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>
                 {getTypeIcon(notification.type)}

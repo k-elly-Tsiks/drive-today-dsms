@@ -265,6 +265,11 @@ export default function AdminDashboard() {
     setDecliningUser(user)
   }
 
+  function navigateToApproval(user: PendingUser) {
+    const path = user.role === 'instructor' ? '/admin/instructor' : '/admin/learner'
+    router.push(`${path}?selected=${encodeURIComponent(user.user_id)}`)
+  }
+
   const avatarColors = ['#ff5a00', '#2563eb', '#059669', '#7c3aed', '#0891b2']
 
   // Option 2 Minimal Style Configurations for metric blocks
@@ -527,11 +532,25 @@ export default function AdminDashboard() {
                 </div>
               )
               : pendingUsers.map((user, idx) => {
-                const timeDiff = new Date().getTime() - new Date(user.created_at).getTime()
-                const hours = Math.floor(timeDiff / 3600000)
-                const timeAgo = hours < 1 ? 'Just now' : hours < 24 ? `${hours}h ago` : `${Math.floor(hours / 24)}d ago`
+                const requestDate = new Date(user.created_at)
+                const formattedRequestDate = requestDate.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
                 return (
-                  <div key={user.user_id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: idx !== pendingUsers.length - 1 ? `1px solid ${theme.border}` : 'none', gap: '8px' }}>
+                  <div
+                    key={user.user_id}
+                    onClick={() => navigateToApproval(user)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '12px 0',
+                      borderBottom: idx !== pendingUsers.length - 1 ? `1px solid ${theme.border}` : 'none',
+                      gap: '8px',
+                      cursor: 'pointer',
+                      transition: 'background 0.15s ease',
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = '#f8fafc' }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}
+                  >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
                       <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: avatarColors[idx % avatarColors.length], display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '700', fontSize: '12px', flexShrink: 0 }}>
                         {user.first_name.charAt(0)}{user.surname.charAt(0)}
@@ -539,18 +558,18 @@ export default function AdminDashboard() {
                       <div style={{ minWidth: 0 }}>
                         <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: theme.textMain }}>{user.first_name} {user.surname}</p>
                         <p style={{ margin: 0, fontSize: '11px', color: theme.textMuted }}>
-                          Submitted {timeAgo} • <span style={{ textTransform: 'capitalize', fontWeight: '600', color: user.role === 'instructor' ? '#7c3aed' : '#2563eb' }}>{user.role}</span>
+                          Requested {formattedRequestDate} • <span style={{ textTransform: 'capitalize', fontWeight: '600', color: user.role === 'instructor' ? '#7c3aed' : '#2563eb' }}>{user.role}</span>
                         </p>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', minWidth: '150px' }}>
                       <button
-                        onClick={() => handleApproveClick(user)}
-                        style={{ padding: '6px 12px', borderRadius: '8px', border: 'none', background: '#22c55e', color: '#ffffff', fontSize: '12px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}
+                        onClick={e => { e.stopPropagation(); handleApproveClick(user) }}
+                        style={{ padding: '6px 10px', borderRadius: '8px', border: '1px solid rgba(22,163,74,0.25)', background: 'transparent', color: '#16a34a', fontSize: '12px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}
                       >Approve</button>
                       <button
-                        onClick={() => handleDeclineClick(user)}
-                        style={{ padding: '6px 12px', borderRadius: '8px', border: `1.5px solid ${theme.border}`, background: 'transparent', color: '#dc2626', fontSize: '12px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}
+                        onClick={e => { e.stopPropagation(); handleDeclineClick(user) }}
+                        style={{ padding: '6px 10px', borderRadius: '8px', border: '1px solid rgba(220,38,38,0.25)', background: 'transparent', color: '#dc2626', fontSize: '12px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}
                       >Decline</button>
                     </div>
                   </div>

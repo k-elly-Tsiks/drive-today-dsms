@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { CalendarDays, Clock4, AlertTriangle, Phone, ListChecks, ArrowLeft } from 'lucide-react'
+import { CalendarDays, Clock4, AlertTriangle, ListChecks } from 'lucide-react'
 
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -28,6 +28,8 @@ type LearnerProfile = {
   first_name: string
   surname: string
   slots_allocated?: number
+  allowed_slots?: number | null
+  driving_class?: string | null
 }
 
 function Skeleton({ w = '100%', h = '14px', r = '6px' }: { w?: string; h?: string; r?: string }) {
@@ -54,6 +56,8 @@ export default function LearnerLessonsPage() {
   const [learner, setLearner] = useState<LearnerProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedSlots, setSelectedSlots] = useState<string[]>([])
+  const [selectionStorageKey, setSelectionStorageKey] = useState('')
+  const [selectionStorageReady, setSelectionStorageReady] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
@@ -95,37 +99,76 @@ export default function LearnerLessonsPage() {
       return
     }
 
-    const { data: learnerData } = await supabase
-      .from('users')
-      .select('*')
-      .eq('user_id', user.id)
-      .single()
+    const now = new Date()
+    const today = [now.getFullYear(), now.getMonth() + 1, now.getDate()].map(n => String(n).padStart(2, '0')).join('-')
+    const currentTime = now.toTimeString().slice(0, 5)
 
-    setLearner(learnerData)
+    const [learnerResult, bookingsResult, slotsResult] = await Promise.all([
+      supabase
+        .from('users')
+        .select('user_id, first_name, surname, slots_allocated, allowed_slots, driving_class')
+        .eq('user_id', user.id)
+        .single(),
+      supabase
+        .from('lesson_bookings')
+        .select(`
+          booking_id, status, slot_id, instructor_id, cancellation_reason,
+          lesson_slots (slot_date, slot_time),
+          instructor:users!lesson_bookings_instructor_id_fkey (
+            first_name, surname, phone_number
+          )
+        `)
+        .eq('learner_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(200),
+      supabase
+        .from('lesson_slots')
+        .select('slot_id, slot_date, slot_time, status')
+        .eq('status', 'available')
+        .or(`slot_date.gt.${today},and(slot_date.eq.${today},slot_time.gte.${currentTime})`)
+        .order('slot_date', { ascending: true })
+        .order('slot_time', { ascending: true })
+        .limit(60),
+    ])
 
-    const { data: bookingsData } = await supabase
-      .from('lesson_bookings')
-      .select(`
-        *,
-        lesson_slots (slot_date, slot_time),
-        instructor:users!lesson_bookings_instructor_id_fkey (
-          first_name, surname, phone_number
-        )
-      `)
-      .eq('learner_id', user.id)
-      .order('created_at', { ascending: false })
+    const loadError = learnerResult.error || bookingsResult.error || slotsResult.error
+    if (loadError) {
+      setError(`Could not load lesson data: ${loadError.message}`)
+      setLoading(false)
+      return
+    }
+    setError('')
 
-    setBookings(bookingsData || [])
+    const storageKey = `learner-lesson-slot-selection:${user.id}`
+    let restoredSlots: string[] = []
+    try {
+      const savedSelection = sessionStorage.getItem(storageKey)
+      if (savedSelection) {
+        const parsedSelection: unknown = JSON.parse(savedSelection)
+        if (Array.isArray(parsedSelection)) {
+          restoredSlots = parsedSelection.filter((slotId): slotId is string => typeof slotId === 'string')
+        }
+      }
+    } catch {
+      setError('Could not restore your selected lesson slots from this browser session.')
+    }
 
-    const { data: slotsData } = await supabase
-      .from('lesson_slots')
-      .select('*')
-      .eq('status', 'available')
-      .gte('slot_date', new Date().toISOString().split('T')[0])
-      .order('slot_date', { ascending: true })
-      .order('slot_time', { ascending: true })
+    const availableSlotIds = new Set((slotsResult.data || []).map((slot: Slot) => slot.slot_id))
+    const usedBookings = (bookingsResult.data || []).filter((booking: Booking) => booking.status !== 'cancelled').length
+    const allocatedSlots = Math.max(
+      Number(learnerResult.data?.slots_allocated) || 0,
+      Number(learnerResult.data?.allowed_slots) || 0,
+    )
+    const maxSelectableSlots = Math.max(0, allocatedSlots - usedBookings)
 
-    setAvailableSlots(slotsData || [])
+    setLearner(learnerResult.data)
+    setBookings(bookingsResult.data || [])
+    setAvailableSlots(slotsResult.data || [])
+    const validRestoredSlots = restoredSlots.filter(slotId => availableSlotIds.has(slotId)).slice(0, maxSelectableSlots)
+    setSelectedSlots(validRestoredSlots)
+    if (validRestoredSlots.length > 0) setActiveTab('book')
+    setSelectionStorageKey(storageKey)
+    setSelectionStorageReady(true)
     setLoading(false)
   }, [])
 
@@ -140,9 +183,12 @@ export default function LearnerLessonsPage() {
     }
   }, [loadData])
 
-  const scheduledCount = bookings.filter(b => b.status === 'scheduled').length
-  const slotsAllocated = learner?.slots_allocated || 0
-  const remainingSlots = Math.max(0, slotsAllocated - scheduledCount)
+  const usedSlotsCount = bookings.filter(b => b.status !== 'cancelled').length
+  const slotsAllocated = Math.max(
+    Number(learner?.slots_allocated) || 0,
+    Number(learner?.allowed_slots) || 0,
+  )
+  const remainingSlots = Math.max(0, slotsAllocated - usedSlotsCount)
 
   const today = new Date().toISOString().split('T')[0]
   const upcomingBookings = bookings.filter(b => b.status === 'scheduled' && (b.lesson_slots?.slot_date ?? '') >= today)
@@ -154,11 +200,20 @@ export default function LearnerLessonsPage() {
   )
 
   function toggleSlot(slotId: string) {
-    setSelectedSlots(prev => {
-      if (prev.includes(slotId)) return prev.filter(s => s !== slotId)
-      if (prev.length >= remainingSlots) return prev
-      return [...prev, slotId]
-    })
+    if (!selectedSlots.includes(slotId) && selectedSlots.length >= remainingSlots) return
+
+    const nextSelection = selectedSlots.includes(slotId)
+      ? selectedSlots.filter(selectedSlotId => selectedSlotId !== slotId)
+      : [...selectedSlots, slotId]
+    setSelectedSlots(nextSelection)
+
+    if (selectionStorageReady && selectionStorageKey) {
+      try {
+        sessionStorage.setItem(selectionStorageKey, JSON.stringify(nextSelection))
+      } catch {
+        setError('Could not save your selected lesson slots in this browser session.')
+      }
+    }
   }
 
   async function confirmBooking() {
@@ -171,11 +226,14 @@ export default function LearnerLessonsPage() {
     setError('')
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) {
+      setConfirming(false)
+      return
+    }
 
     const { data: instructors } = await supabase
       .from('users')
-      .select('user_id')
+      .select('user_id, instructor_driving_classes')
       .eq('role', 'instructor')
       .eq('status', 'approved')
 
@@ -185,13 +243,29 @@ export default function LearnerLessonsPage() {
       return
     }
 
+    const learnerClass = learner?.driving_class?.trim() || ''
+
+    const eligibleInstructors = instructors.filter((instructor: { user_id: string; instructor_driving_classes?: string | string[] | null }) => {
+      if (!learnerClass) return true
+      if (!instructor.instructor_driving_classes) return false
+      if (Array.isArray(instructor.instructor_driving_classes)) {
+        return instructor.instructor_driving_classes.includes(learnerClass)
+      }
+      return instructor.instructor_driving_classes
+        .split(',')
+        .map(c => c.trim())
+        .includes(learnerClass)
+    })
+
+    const selectedPool = eligibleInstructors.length > 0 ? eligibleInstructors : instructors
+
     const { data: allBookings } = await supabase
       .from('lesson_bookings')
       .select('instructor_id')
       .eq('status', 'scheduled')
 
     const workloadMap: Record<string, number> = {}
-    instructors.forEach((i: { user_id: string }) => {
+    selectedPool.forEach((i: { user_id: string }) => {
       workloadMap[i.user_id] = 0
     })
 
@@ -215,12 +289,15 @@ export default function LearnerLessonsPage() {
       status: 'scheduled',
     }))
 
-    const { error: bookingError } = await supabase
-      .from('lesson_bookings')
-      .insert(bookingsToInsert)
+    const { error: bookingError } = await supabase.from('lesson_bookings').insert(bookingsToInsert)
 
     if (bookingError) {
-      setError('Failed to book lessons. Please try again.')
+      if (bookingError.message.includes('This lesson slot is no longer available.')) {
+        setError('One or more selected slots were just booked by another learner. Please choose different slots.')
+        await loadData()
+      } else {
+        setError(`Failed to book lessons: ${bookingError.message}`)
+      }
       setConfirming(false)
       return
     }
@@ -244,6 +321,13 @@ export default function LearnerLessonsPage() {
     setSuccessMessage(`${selectedSlots.length} lesson(s) booked successfully!`)
     setTimeout(() => setSuccessMessage(''), 4000)
 
+    if (selectionStorageKey) {
+      try {
+        sessionStorage.removeItem(selectionStorageKey)
+      } catch {
+        setError('Lessons were booked, but the selected-slot draft could not be cleared.')
+      }
+    }
     setSelectedSlots([])
     setActiveTab('upcoming')
     setConfirming(false)
@@ -281,11 +365,6 @@ export default function LearnerLessonsPage() {
       setCancelling(false)
       return
     }
-
-    await supabase
-      .from('lesson_slots')
-      .update({ status: 'available' })
-      .eq('slot_id', selectedBooking.slot_id)
 
     if (selectedBooking.instructor_id) {
       await supabase.from('notifications').insert({
@@ -330,18 +409,12 @@ export default function LearnerLessonsPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+      <div className="learner-page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
         <div>
           <h1 style={{ color: blue, fontSize: '22px', fontWeight: '800', margin: 0 }}>My Lessons</h1>
 
           <p style={{ color: '#6b7280', fontSize: '13px', margin: '4px 0 0' }}>View and manage your lesson bookings</p>
         </div>
-              <button
-          onClick={() => router.push('/learner/dashboard')}
-          style={{ padding: '10px 18px', borderRadius: '10px', border: 'none', background: blue, color: 'white', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
-        >
-          <ArrowLeft size={16} /> Dashboard
-        </button>
 
       </div>
 
@@ -377,14 +450,14 @@ export default function LearnerLessonsPage() {
             </div>
           ) : (
             <p style={{ color: 'white', fontSize: '20px', fontWeight: '800', margin: 0 }}>
-              {scheduledCount} of {slotsAllocated} slots used
+              {usedSlotsCount} of {slotsAllocated} slots used
             </p>
           )}
         </div>
         <div style={{ display: 'flex', gap: '16px' }}>
           {[
             { label: 'Allocated', value: slotsAllocated, colour: 'rgba(255,255,255,0.9)' },
-            { label: 'Booked', value: scheduledCount, colour: orange },
+            { label: 'Used', value: usedSlotsCount, colour: orange },
             { label: 'Remaining', value: remainingSlots, colour: '#6ee7b7' },
           ].map((item, i) => (
             <div key={i} style={{ textAlign: 'center' }}>
@@ -493,6 +566,7 @@ export default function LearnerLessonsPage() {
                         <div>
                           <p style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: '700', color: '#111827' }}>{booking.instructor ? `${booking.instructor.first_name} ${booking.instructor.surname}` : 'Unassigned Instructor'}</p>
                           <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>{booking.lesson_slots?.slot_time ? booking.lesson_slots.slot_time.slice(0, 5) : '--:--'}</p>
+                          <p style={{ margin: '4px 0 0', fontSize: '11px', color: '#6b7280' }}>Class: {learner?.driving_class || 'Not specified'}</p>
                           {booking.instructor?.phone_number && (
                             <p style={{ margin: '4px 0 0', fontSize: '11px', color: '#9ca3af' }}>📞 {booking.instructor.phone_number}</p>
                           )}
@@ -516,6 +590,28 @@ export default function LearnerLessonsPage() {
 
           {activeTab === 'book' && (
             <div>
+              {upcomingBookings.length > 0 && (
+                <div style={{ background: 'white', borderRadius: '14px', padding: '20px', marginBottom: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+                  <p style={{ margin: 0, fontWeight: '800', color: blue }}>Your booked lessons</p>
+                  <p style={{ margin: '8px 0 16px', color: '#6b7280', fontSize: '13px' }}>These scheduled lessons are already booked for your current class.</p>
+                  <div style={{ display: 'grid', gap: '12px' }}>
+                    {upcomingBookings.map(booking => (
+                      <div key={booking.booking_id} style={{ borderRadius: '14px', border: '1px solid #e5e7eb', padding: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
+                        <div>
+                          <p style={{ margin: 0, fontSize: '14px', fontWeight: '700', color: '#111827' }}>
+                            {booking.lesson_slots?.slot_date ? new Date(booking.lesson_slots.slot_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '--'} at {booking.lesson_slots?.slot_time?.slice(0, 5) || '--:--'}
+                          </p>
+                          <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#6b7280' }}>Class: {learner?.driving_class || 'Not specified'}</p>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+                          <span style={{ fontSize: '11px', fontWeight: '700', color: '#6b7280' }}>{booking.instructor ? `${booking.instructor.first_name} ${booking.instructor.surname}` : 'Instructor TBA'}</span>
+                          {booking.status && <span style={{ padding: '4px 10px', borderRadius: '999px', background: booking.status === 'scheduled' ? '#eff6ff' : '#f0fdf4', color: booking.status === 'scheduled' ? '#2563eb' : '#16a34a', fontSize: '11px', fontWeight: '700' }}>{booking.status}</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               {remainingSlots <= 0 ? (
                 <div style={{ background: 'white', borderRadius: '14px', padding: '40px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
                   <p style={{ fontSize: '40px', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><AlertTriangle size={30} color="#f97316" /></p>
@@ -600,6 +696,7 @@ export default function LearnerLessonsPage() {
                             {booking.lesson_slots?.slot_date ? new Date(booking.lesson_slots.slot_date).toLocaleDateString('en-GB') : 'N/A'}{' '}
                             at {booking.lesson_slots?.slot_time ? booking.lesson_slots.slot_time.slice(0, 5) : '--:--'}
                           </p>
+                          <p style={{ margin: '4px 0 0', fontSize: '11px', color: '#6b7280' }}>Class: {learner?.driving_class || 'Not specified'}</p>
                         </div>
                         <div>{statusBadge(booking.status)}</div>
                       </div>
@@ -669,4 +766,3 @@ export default function LearnerLessonsPage() {
     </div>
   )
 }
-

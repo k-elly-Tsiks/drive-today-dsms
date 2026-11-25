@@ -195,7 +195,7 @@ export default function LearnerProfilePage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px' }}>
+      <div className="instructor-page instructor-profile" style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px' }}>
         <style>{`@keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
           <div>
@@ -204,8 +204,8 @@ export default function LearnerProfilePage() {
           </div>
           <Skeleton w="116px" h="38px" r="10px" />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-          <div style={{ background: 'white', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+        <div className="instructor-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div className="instructor-card" style={{ background: 'white', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
               <Skeleton w="80px" h="80px" r="50%" />
               <Skeleton w="190px" h="18px" r="5px" />
@@ -226,7 +226,7 @@ export default function LearnerProfilePage() {
             <div style={{ marginTop: '18px' }}><Skeleton w="100%" h="42px" r="8px" /></div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ background: 'white', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+            <div className="instructor-card" style={{ background: 'white', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
               <Skeleton w="160px" h="14px" r="4px" />
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '18px' }}>
                 {Array.from({ length: 5 }).map((_, i) => (
@@ -237,7 +237,7 @@ export default function LearnerProfilePage() {
                 ))}
               </div>
             </div>
-            <div style={{ background: 'white', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+            <div className="instructor-card" style={{ background: 'white', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
               <Skeleton w="170px" h="14px" r="4px" />
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginTop: '18px' }}>
                 <Skeleton w="52px" h="52px" r="50%" />
@@ -261,8 +261,8 @@ export default function LearnerProfilePage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+    <div className="instructor-page instructor-profile" style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px' }}>
+      <div className="instructor-page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
         <div>
           <h1 style={{ color: blue, fontSize: '22px', fontWeight: '800', margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
             <User size={20} color={blue} /> My Profile
@@ -271,6 +271,7 @@ export default function LearnerProfilePage() {
         </div>
         <button
           onClick={() => router.push('/learner/dashboard')}
+          className="instructor-primary-button"
           style={{ padding: '10px 18px', borderRadius: '10px', border: 'none', background: blue, color: 'white', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}
         >
           <ChevronLeft size={16} /> Dashboard
@@ -288,8 +289,8 @@ export default function LearnerProfilePage() {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-        <div style={{ background: 'white', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+      <div className="instructor-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        <div className="instructor-card" style={{ background: 'white', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
             <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: orange, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', color: 'white', fontWeight: '800', fontSize: '28px' }}>
               {learner?.first_name?.charAt(0)}{learner?.surname?.charAt(0)}
@@ -340,13 +341,13 @@ export default function LearnerProfilePage() {
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>
                     Phone Number *
                   </label>
-                  <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px', outline: 'none' }} />
+                  <input className="instructor-field" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px', outline: 'none' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>
                     Residential Address
                   </label>
-                  <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px', outline: 'none' }} />
+                  <input className="instructor-field" type="text" value={address} onChange={(e) => setAddress(e.target.value)} style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px', outline: 'none' }} />
                 </div>
               </>
             ) : (
@@ -375,12 +376,12 @@ export default function LearnerProfilePage() {
             {editing ? (
               <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
                 <button onClick={() => { setEditing(false); setError('') }} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #e5e7eb', background: 'white', color: '#374151', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>Cancel</button>
-                <button onClick={saveProfile} disabled={saving} style={{ flex: 2, padding: '10px', borderRadius: '8px', border: 'none', background: saving ? '#e5e7eb' : `linear-gradient(135deg, ${blue}, ${orange})`, color: saving ? '#9ca3af' : 'white', fontSize: '13px', fontWeight: '700', cursor: saving ? 'not-allowed' : 'pointer' }}>
+                <button className="instructor-primary-button" onClick={saveProfile} disabled={saving} style={{ flex: 2, padding: '10px', borderRadius: '8px', border: 'none', background: saving ? '#e5e7eb' : `linear-gradient(135deg, ${blue}, ${orange})`, color: saving ? '#9ca3af' : 'white', fontSize: '13px', fontWeight: '700', cursor: saving ? 'not-allowed' : 'pointer' }}>
                   {saving ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             ) : (
-              <button onClick={() => setEditing(true)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: `2px solid ${blue}`, background: 'white', color: blue, fontSize: '13px', fontWeight: '700', cursor: 'pointer', marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <button className="instructor-secondary-button" onClick={() => setEditing(true)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: `2px solid ${blue}`, background: 'white', color: blue, fontSize: '13px', fontWeight: '700', cursor: 'pointer', marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                 <Edit3 size={16} /> Edit Profile
               </button>
             )}
@@ -388,7 +389,7 @@ export default function LearnerProfilePage() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ background: 'white', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+          <div className="instructor-card" style={{ background: 'white', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
             <h3 style={{ color: blue, fontSize: '14px', fontWeight: '700', margin: '0 0 16px', paddingBottom: '8px', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', gap: 10 }}>
               <Car size={16} color={blue} /> Licence Information
             </h3>
@@ -397,7 +398,7 @@ export default function LearnerProfilePage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>Driving Class</label>
-                  <select value={drivingClass} onChange={(e) => setDrivingClass(e.target.value)} style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px', outline: 'none' }}>
+                  <select className="instructor-field" value={drivingClass} onChange={(e) => setDrivingClass(e.target.value)} style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px', outline: 'none' }}>
                     <option value="">Select...</option>
                     {['Provisional', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5'].map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
@@ -410,7 +411,7 @@ export default function LearnerProfilePage() {
                 ].map((f, i) => (
                   <div key={i}>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>{f.label}</label>
-                    <input type={f.type} value={f.val} onChange={(e) => f.set(e.target.value)} style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px', outline: 'none' }} />
+                    <input className="instructor-field" type={f.type} value={f.val} onChange={(e) => f.set(e.target.value)} style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px', outline: 'none' }} />
                   </div>
                 ))}
               </div>
@@ -432,7 +433,7 @@ export default function LearnerProfilePage() {
             )}
           </div>
 
-          <div style={{ background: 'white', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+          <div className="instructor-card" style={{ background: 'white', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
             <h3 style={{ color: blue, fontSize: '14px', fontWeight: '700', margin: '0 0 16px', paddingBottom: '8px', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', gap: 10 }}>
               <User size={16} color={blue} /> Assigned Instructor
             </h3>
@@ -474,4 +475,3 @@ export default function LearnerProfilePage() {
     </div>
   )
 }
-

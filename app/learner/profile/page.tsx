@@ -3,6 +3,21 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import {
+  ArrowLeft,
+  BadgeCheck,
+  Cake,
+  CarFront,
+  CheckCircle2,
+  CircleAlert,
+  IdCard,
+  Mail,
+  MapPin,
+  Pencil,
+  Phone,
+  UserRound,
+  UserRoundCheck,
+} from 'lucide-react'
 
 type LearnerProfile = {
   user_id: string
@@ -69,7 +84,6 @@ export default function LearnerProfilePage() {
 
   const blue = '#1e293b'
   const orange = '#ff5a00'
-  const lightBlue = '#fff2eb'
 
   // ─── Auth + data ─────────────────────────────────────────────────────────────
 
@@ -176,7 +190,7 @@ export default function LearnerProfilePage() {
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+        <div className="learner-page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
           <div>
             <Skeleton w="160px" h="26px" r="6px" />
             <div style={{ marginTop: '8px' }}><Skeleton w="260px" h="13px" r="4px" /></div>
@@ -236,28 +250,37 @@ export default function LearnerProfilePage() {
     <div style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+      <div className="learner-page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
         <div>
-          <h1 style={{ color: blue, fontSize: '22px', fontWeight: '800', margin: 0 }}>👤 My Profile</h1>
+          <h1 style={{ display: 'flex', alignItems: 'center', gap: '10px', color: blue, fontSize: '22px', fontWeight: '800', margin: 0 }}>
+            <UserRound size={22} color={orange} aria-hidden="true" />
+            My Profile
+          </h1>
           <p style={{ color: '#6b7280', fontSize: '13px', margin: '4px 0 0' }}>View and update your personal information</p>
         </div>
         <button
           onClick={() => router.push('/learner/dashboard')}
           style={{ padding: '10px 18px', borderRadius: '10px', border: 'none', background: blue, color: 'white', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
         >
-          ← Dashboard
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <ArrowLeft size={16} aria-hidden="true" /> Dashboard
+          </span>
         </button>
       </div>
 
       {/* Success / Error */}
       {successMessage && (
         <div style={{ background: '#d1fae5', border: '1px solid #6ee7b7', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px', color: '#065f46', fontSize: '13px', fontWeight: '600' }}>
-          ✅ {successMessage}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <CheckCircle2 size={17} aria-hidden="true" /> {successMessage}
+          </span>
         </div>
       )}
       {error && (
         <div style={{ background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px', color: '#991b1b', fontSize: '13px', fontWeight: '600' }}>
-          ❌ {error}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <CircleAlert size={17} aria-hidden="true" /> {error}
+          </span>
         </div>
       )}
 
@@ -274,7 +297,9 @@ export default function LearnerProfilePage() {
               {learner?.first_name} {learner?.second_name} {learner?.surname}
             </h2>
             <span style={{ background: '#d1fae5', color: '#065f46', padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700' }}>
-              ✅ Approved Learner
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <BadgeCheck size={13} aria-hidden="true" /> Approved Learner
+              </span>
             </span>
           </div>
 
@@ -285,13 +310,13 @@ export default function LearnerProfilePage() {
             </h3>
 
             {[
-              { label: 'ID Number',    value: learner?.id_number,     icon: '🪪' },
-              { label: 'Date of Birth', value: learner?.date_of_birth ? new Date(learner.date_of_birth).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : null, icon: '🎂' },
-              { label: 'Gender',       value: learner?.gender,        icon: '👤' },
-              { label: 'Email',        value: learner?.email,         icon: '📧' },
+              { label: 'ID Number', value: learner?.id_number, icon: <IdCard size={17} /> },
+              { label: 'Date of Birth', value: learner?.date_of_birth ? new Date(learner.date_of_birth).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : null, icon: <Cake size={17} /> },
+              { label: 'Gender', value: learner?.gender, icon: <UserRound size={17} /> },
+              { label: 'Email', value: learner?.email, icon: <Mail size={17} /> },
             ].map((item, i) => (
               <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                <span style={{ fontSize: '16px', flexShrink: 0 }}>{item.icon}</span>
+                <span style={{ display: 'inline-flex', color: orange, flexShrink: 0 }}>{item.icon}</span>
                 <div>
                   <p style={{ margin: 0, fontSize: '11px', color: '#9ca3af' }}>{item.label}</p>
                   <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#374151' }}>{item.value || '—'}</p>
@@ -314,14 +339,14 @@ export default function LearnerProfilePage() {
             ) : (
               <>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                  <span style={{ fontSize: '16px' }}>📱</span>
+                  <Phone size={17} color={orange} aria-hidden="true" />
                   <div>
                     <p style={{ margin: 0, fontSize: '11px', color: '#9ca3af' }}>Phone Number</p>
                     <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#374151' }}>{learner?.phone_number || '—'}</p>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                  <span style={{ fontSize: '16px' }}>🏠</span>
+                  <MapPin size={17} color={orange} aria-hidden="true" />
                   <div>
                     <p style={{ margin: 0, fontSize: '11px', color: '#9ca3af' }}>Address</p>
                     <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#374151' }}>{learner?.address || '—'}</p>
@@ -339,7 +364,9 @@ export default function LearnerProfilePage() {
               </div>
             ) : (
               <button onClick={() => setEditing(true)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: `2px solid ${blue}`, background: 'white', color: blue, fontSize: '13px', fontWeight: '700', cursor: 'pointer', marginTop: '8px' }}>
-                ✏️ Edit Profile
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                  <Pencil size={15} aria-hidden="true" /> Edit Profile
+                </span>
               </button>
             )}
           </div>
@@ -351,7 +378,9 @@ export default function LearnerProfilePage() {
           {/* Licence information */}
           <div style={{ background: 'white', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
             <h3 style={{ color: blue, fontSize: '14px', fontWeight: '700', margin: '0 0 16px', paddingBottom: '8px', borderBottom: '1px solid #f3f4f6' }}>
-              🚗 Licence Information
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                <CarFront size={17} color={orange} aria-hidden="true" /> Licence Information
+              </span>
             </h3>
 
             {editing ? (
@@ -390,7 +419,9 @@ export default function LearnerProfilePage() {
           {/* Assigned instructor */}
           <div style={{ background: 'white', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
             <h3 style={{ color: blue, fontSize: '14px', fontWeight: '700', margin: '0 0 16px', paddingBottom: '8px', borderBottom: '1px solid #f3f4f6' }}>
-              👨‍🏫 Assigned Instructor
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                <UserRoundCheck size={17} color={orange} aria-hidden="true" /> Assigned Instructor
+              </span>
             </h3>
             {instructor ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -399,13 +430,17 @@ export default function LearnerProfilePage() {
                 </div>
                 <div>
                   <p style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: '#111827' }}>{instructor.first_name} {instructor.surname}</p>
-                  <p style={{ margin: '2px 0', fontSize: '12px', color: '#6b7280' }}>📱 {instructor.phone_number}</p>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>🚗 {instructor.driving_classes_taught || 'All classes'}</p>
+                  <p style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: '2px 0', fontSize: '12px', color: '#6b7280' }}>
+                    <Phone size={14} color={orange} aria-hidden="true" /> {instructor.phone_number}
+                  </p>
+                  <p style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0, fontSize: '12px', color: '#6b7280' }}>
+                    <CarFront size={14} color={orange} aria-hidden="true" /> {instructor.driving_classes_taught || 'All classes'}
+                  </p>
                 </div>
               </div>
             ) : (
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                <p style={{ fontSize: '32px', margin: '0 0 8px' }}>👨‍🏫</p>
+                <UserRoundCheck size={30} color={orange} aria-hidden="true" style={{ marginBottom: '8px' }} />
                 <p style={{ color: '#9ca3af', fontSize: '13px', margin: 0 }}>No instructor assigned yet. Book a lesson to get assigned an instructor.</p>
               </div>
             )}
@@ -413,7 +448,9 @@ export default function LearnerProfilePage() {
 
           {/* Lesson allocation */}
           <div style={{ background: blue, borderRadius: '14px', padding: '20px' }}>
-            <h3 style={{ color: 'white', fontSize: '14px', fontWeight: '700', margin: '0 0 16px' }}>📅 Lesson Allocation</h3>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'white', fontSize: '14px', fontWeight: '700', margin: '0 0 16px' }}>
+              <BadgeCheck size={17} aria-hidden="true" /> Lesson Allocation
+            </h3>
             <p style={{ margin: 0, fontSize: '28px', fontWeight: '800', color: 'white' }}>{learner?.slots_allocated || 0}</p>
             <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>Slots Allocated</p>
             <p style={{ margin: '12px 0 0', fontSize: '12px', color: 'rgba(255,255,255,0.65)' }}>

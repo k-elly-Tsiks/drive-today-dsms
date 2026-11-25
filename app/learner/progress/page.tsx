@@ -36,6 +36,7 @@ export default function LearnerProgressPage() {
   const [progressRecords, setProgressRecords] = useState<ProgressRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedRecord, setExpandedRecord] = useState<string | null>(null)
+  const [loadError, setLoadError] = useState('')
 
   const router = useRouter()
   const routerRef = useRef(router)
@@ -52,7 +53,7 @@ export default function LearnerProgressPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { routerRef.current.push('/login'); return }
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('progress_tracking')
       .select(`
         *,
@@ -66,7 +67,14 @@ export default function LearnerProgressPage() {
       .eq('learner_id', user.id)
       .order('recorded_at', { ascending: false })
 
+    if (error) {
+      setLoadError(`Could not load your progress records: ${error.message}`)
+      setLoading(false)
+      return
+    }
+
     setProgressRecords(data || [])
+    setLoadError('')
     setLoading(false)
   }, [])
 
@@ -122,7 +130,7 @@ export default function LearnerProgressPage() {
     return (
       <div style={{ minHeight: '100vh', background: '#f4f5f7', padding: '24px' }}>
         <style>{`@keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+        <div className="learner-page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
           <div>
             <Skeleton w="180px" h="26px" r="6px" />
             <div style={{ marginTop: '8px' }}><Skeleton w="300px" h="13px" r="4px" /></div>
@@ -167,9 +175,14 @@ export default function LearnerProgressPage() {
 
   return (
     <div>
+      {loadError && (
+        <div role="alert" style={{ background: '#fee2e2', border: '1px solid #fecaca', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px', color: '#991b1b', fontSize: '13px', fontWeight: '600' }}>
+          {loadError}
+        </div>
+      )}
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+      <div className="learner-page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
         <div>
           <h1 style={{ color: blue, fontSize: '22px', fontWeight: '800', margin: 0 }}>My Progress</h1>
           <p style={{ color: '#6b7280', fontSize: '13px', margin: '4px 0 0' }}>Track your skill ratings across all lessons</p>
@@ -182,7 +195,7 @@ export default function LearnerProgressPage() {
         </button>
       </div>
 
-      {progressRecords.length === 0 ? (
+      {loadError ? null : progressRecords.length === 0 ? (
         <div style={{ background: 'white', borderRadius: '14px', padding: '60px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
           <TrendingUp size={48} color="#94a3b8" style={{ marginBottom: '12px' }} />
           <p style={{ color: '#374151', fontSize: '16px', fontWeight: '600', margin: '0 0 8px' }}>No progress records yet</p>

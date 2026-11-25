@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DriveSmart Birthday Card Studio</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Great+Vibes&family=Montserrat:wght@400;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .font-script { font-family: 'Great Vibes', cursive; }
+    .font-montserrat { font-family: 'Montserrat', sans-serif; }
+    .font-cinzel { font-family: 'Cinzel', serif; }
+    .font-playfair { font-family: 'Playfair Display', serif; }
+    .font-poppins { font-family: 'Poppins', sans-serif; }
+    
+    .gold-gradient-text {
+      background: linear-gradient(135deg, #FFE259 0%, #FFA751 50%, #E2BA55 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .gold-border-gradient {
+      border-image: linear-gradient(135deg, #fce043, #fbab7e, #e2ba55) 1;
+    }
+    .card-shadow {
+      box-shadow: 0 25px 50px -12px rgba(14, 27, 77, 0.25), 0 0 0 1px rgba(14, 27, 77, 0.05);
+    }
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 8px 32px 0 rgba(14, 27, 77, 0.08);
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8 font-poppins">
+
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <header class="flex flex-col md:flex-row items-center justify-between pb-6 mb-8 border-b border-slate-800 gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-900 to-cyan-500 flex items-center justify-center font-bold text-white text-xl shadow-lg shadow-cyan-500/20">
+            DS
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+              DriveSmart <span class="text-cyan-400 font-normal text-sm px-2 py-0.5 rounded-full bg-cyan-950/60 border border-cyan-800/60">Card Studio</span>
+            </h1>
+            <p class="text-xs text-slate-400">Live Canva-Ready Birthday Card Generator</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button id="btnDownload" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-sm shadow-lg shadow-cyan-500/25 transition-all flex items-center gap-2 cursor-pointer active:scale-95">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+          Export High-Res Card
+        </button>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- Left: Editor Controls -->
+      <div class="lg:col-span-5 space-y-6 bg-slate-800/60 p-6 rounded-2xl border border-slate-700/60 backdrop-blur-md">
+        
+        <!-- Theme Selector -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Choose Card Design Style</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button onclick="setTheme('floral')" id="tab-floral" class="theme-tab px-3 py-2.5 rounded-xl text-xs font-semibold border text-center transition-all bg-cyan-500/20 text-cyan-300 border-cyan-500">
+              🌸 Royal Floral & Gold
+            </button>
+            <button onclick="setTheme('signature')" id="tab-signature" class="theme-tab px-3 py-2.5 rounded-xl text-xs font-semibold border text-center transition-all bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-600">
+              🏎️ Signature Wave
+            </button>
+            <button onclick="setTheme('sapphire')" id="tab-sapphire" class="theme-tab px-3 py-2.5 rounded-xl text-xs font-semibold border text-center transition-all bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-600">
+              ✨ Midnight VIP
+            </button>
+          </div>
+        </div>
+
+        <!-- Inputs Form -->
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Client Name</label>
+            <input type="text" id="inputClientName" value="RUFUS WIGGINS" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/80 border border-slate-700 text-sm text-white focus:outline-none focus:border-cyan-500 transition-colors">
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Preset Greeting Messages</label>
+            <select id="selectPreset" onchange="applyPreset(this.value)" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/80 border border-slate-700 text-xs text-slate-300 focus:outline-none focus:border-cyan-500">
+              <option value="warm">1. Warm & Inspiring (Recommended)</option>
+              <option value="executive">2. Executive & Prestigious</option>
+              <option value="promo">3. Birthday VIP Perk (15% OFF)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Birthday Message Body</label>
+            <textarea id="inputMessage" rows="4" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/80 border border-slate-700 text-sm text-white focus:outline-none focus:border-cyan-500 transition-colors">Wishing you a wonderful birthday filled with joy, success, and good health.
+
+Thank you for choosing DriveSmart Car Rental. We celebrate you today and look forward to being part of your next journey!</textarea>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Sign-Off</label>
+              <input type="text" id="inputSignOff" value="Warmest regards," class="w-full px-3.5 py-2 rounded-xl bg-slate-900/80 border border-slate-700 text-xs text-white focus:outline-none focus:border-cyan-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Company Signature</label>
+              <input type="text" id="inputCompany" value="DriveSmart Car Rental" class="w-full px-3.5 py-2 rounded-xl bg-slate-900/80 border border-slate-700 text-xs text-white focus:outline-none focus:border-cyan-500">
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-slate-700/60">
+            <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-300 select-none">
+              <input type="checkbox" id="checkPromo" onchange="togglePromoBadge()" class="rounded border-slate-700 text-cyan-500 focus:ring-0">
+              <span>Include VIP 15% Birthday Discount Ribbon</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Canva Quick Guide -->
+        <div class="p-4 rounded-xl bg-cyan-950/30 border border-cyan-900/40 text-xs text-cyan-200/80 space-y-1.5">
+          <div class="font-semibold text-cyan-300 flex items-center gap-1.5">
+            <span>💡 Canva Pro Tip</span>
+          </div>
+          <p>You can export this as a high-definition image with 1 click, or import the blank base into Canva to layer elements!</p>
+        </div>
+      </div>
+
+      <!-- Right: Live Card Preview Area -->
+      <div class="lg:col-span-7 flex flex-col items-center justify-center">
+        
+        <!-- CARD CONTAINER (Fixed 3:4 aspect ratio: 540px x 720px) -->
+        <div id="cardPreview" class="w-[450px] sm:w-[500px] h-[667px] sm:h-[740px] relative rounded-2xl overflow-hidden card-shadow select-none transition-all duration-300 bg-white">
+          
+          <!-- ================= THEME 1: ROYAL FLORAL & GOLD (ELEVATED) ================= -->
+          <div id="theme-view-floral" class="absolute inset-0 flex flex-col justify-between p-8 bg-gradient-to-b from-[#f4f8fc] via-[#e8f1f9] to-[#d6e7f7]">
+            
+            <!-- Luxury Gold Foil Corner Border Accent Top Left -->
+            <div class="absolute top-0 left-0 w-36 h-36 pointer-events-none">
+              <svg viewBox="0 0 100 100" class="w-full h-full text-blue-900 opacity-90">
+                <!-- Botanical Florals & Leaves in Sapphire & Gold -->
+                <path d="M0,0 C30,5 60,20 70,50 C40,40 20,40 0,0" fill="#1B194F"/>
+                <path d="M0,0 C15,25 35,45 60,55 C40,65 15,45 0,0" fill="#00A3E0" opacity="0.8"/>
+                <path d="M10,0 C25,20 45,35 65,40" stroke="#D4AF37" stroke-width="2" fill="none"/>
+                <circle cx="28" cy="28" r="8" fill="#1B194F"/>
+                <circle cx="28" cy="28" r="5" fill="#00A3E0"/>
+                <circle cx="28" cy="28" r="2" fill="#FFFFFF"/>
+                <!-- Petals -->
+                <ellipse cx="20" cy="18" rx="6" ry="10" transform="rotate(-30 20 18)" fill="#00A3E0" opacity="0.9"/>
+                <ellipse cx="36" cy="18" rx="6" ry="10" transform="rotate(30 36 18)" fill="#1B194F"/>
+                <ellipse cx="18" cy="36" rx="6" ry="10" transform="rotate(-70 18 36)" fill="#1B194F"/>
+                <ellipse cx="38" cy="36" rx="6" ry="10" transform="rotate(70 38 36)" fill="#00A3E0" opacity="0.9"/>
+                <!-- Gold sparkles -->
+                <circle cx="55" cy="15" r="2" fill="#D4AF37"/>
+                <circle cx="72" cy="30" r="1.5" fill="#D4AF37"/>
+                <circle cx="45" cy="55" r="2" fill="#D4AF37"/>
+              </svg>
+            </div>
+
+            <!-- Luxury Gold Foil Corner Border Accent Bottom Right -->
+            <div class="absolute bottom-0 right-0 w-44 h-44 pointer-events-none transform rotate-180">
+              <svg viewBox="0 0 100 100" class="w-full h-full text-blue-900 opacity-90">
+                <path d="M0,0 C30,5 60,20 70,50 C40,40 20,40 0,0" fill="#1B194F"/>
+                <path d="M0,0 C15,25 35,45 60,55 C40,65 15,45 0,0" fill="#00A3E0" opacity="0.8"/>
+                <path d="M10,0 C25,20 45,35 65,40" stroke="#D4AF37" stroke-width="2" fill="none"/>
+                <circle cx="32" cy="32" r="10" fill="#1B194F"/>
+                <circle cx="32" cy="32" r="6" fill="#00A3E0"/>
+                <circle cx="32" cy="32" r="2.5" fill="#FFFFFF"/>
+                <ellipse cx="22" cy="20" rx="7" ry="12" transform="rotate(-30 22 20)" fill="#00A3E0" opacity="0.9"/>
+                <ellipse cx="42" cy="20" rx="7" ry="12" transform="rotate(30 42 20)" fill="#1B194F"/>
+                <circle cx="65" cy="20" r="2.5" fill="#D4AF37"/>
+                <circle cx="80" cy="40" r="2" fill="#D4AF37"/>
+                <circle cx="50" cy="70" r="2" fill="#D4AF37"/>
+              </svg>
+            </div>
+
+            <!-- Card Header: Brand Logo -->
+            <div class="flex flex-col items-center pt-2 relative z-10">
+              <div class="flex items-center gap-2.5">
+                <!-- DriveSmart Steering Wheel Icon -->
+                <div class="w-10 h-10 rounded-full bg-[#1B194F] flex items-center justify-center p-1.5 shadow-md shadow-blue-950/20">
+                  <svg viewBox="0 0 24 24" class="w-full h-full text-white" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="9"/>
+                    <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/>
+                    <path d="M12 3v6M12 15v6M3 12h6M15 12h6"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="text-xl font-extrabold tracking-tight text-[#1B194F] leading-none">
+                    Drive<span class="text-[#00A3E0]">Smart</span>
+                  </div>
+                  <div class="text-[9px] font-medium tracking-wider text-[#1B194F] uppercase">
+                    Car Rental
+                  </div>
+                </div>
+              </div>
+              <div class="text-[8px] italic tracking-widest text-slate-500 mt-0.5">
+                confidence in motion...
+              </div>
+            </div>
+
+            <!-- Title & Emblem -->
+            <div class="text-center relative z-10 my-2">
+              <div class="font-script text-4xl text-[#00A3E0] leading-none -mb-2">Happy</div>
+              <div class="font-montserrat text-3xl font-black tracking-wider text-[#1B194F] uppercase">
+                BIRTHDAY
+              </div>
+              
+              <!-- Luxury Divider with Gold Gift Box -->
+              <div class="flex items-center justify-center gap-3 mt-1.5">
+                <div class="w-12 h-[1.5px] bg-gradient-to-r from-transparent via-[#D4AF37] to-[#D4AF37]"></div>
+                <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-[#1B194F] to-[#00A3E0] flex items-center justify-center shadow-sm">
+                  <svg class="w-3.5 h-3.5 text-[#FFE259]" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.65-.5-.65C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1h-2V5c0-.55.45-1 1-1zM9 4c.55 0 1 .45 1 1v1H8c-.55 0-1-.45-1-1s.45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76V14h2V8.76L15.38 12 17 10.83 14.92 8H20v6z"/>
+                  </svg>
+                </div>
+                <div class="w-12 h-[1.5px] bg-gradient-to-l from-transparent via-[#D4AF37] to-[#D4AF37]"></div>
+              </div>
+            </div>
+
+            <!-- Glass Message Card -->
+            <div class="relative z-10 glass-panel rounded-2xl p-5 mx-2 text-center shadow-lg border border-white/80">
+              
+              <!-- Client Name Ribbon/Pill -->
+              <div class="inline-flex items-center justify-center gap-1.5 px-4 py-1 rounded-full bg-[#1B194F] text-white shadow-sm mb-3">
+                <span class="text-[10px] uppercase font-medium tracking-widest text-cyan-300">Dear:</span>
+                <span class="text-xs font-bold tracking-wider uppercase" id="previewClientNameFloral">RUFUS WIGGINS</span>
+              </div>
+
+              <!-- Message Body -->
+              <div class="text-[#1B194F] text-xs font-normal leading-relaxed whitespace-pre-line min-h-[70px]" id="previewMessageFloral">
+                Wishing you a wonderful birthday filled with joy, success, and good health.
+
+Thank you for choosing DriveSmart Car Rental. We celebrate you today!
+              </div>
+
+              <!-- Promo Badge (Optional) -->
+              <div id="promoBadgeFloral" class="hidden mt-3 pt-2 border-t border-blue-100 flex items-center justify-center gap-2 text-[10px] font-bold text-[#D4AF37] bg-blue-950/5 py-1 rounded-lg">
+                <span>🎁 SPECIAL BIRTHDAY PRIVILEGE: 15% OFF YOUR NEXT RENTAL</span>
+              </div>
+
+              <!-- Sign-off -->
+              <div class="mt-4 text-center">
+                <div class="text-[11px] font-medium text-slate-500" id="previewSignOffFloral">Warmest regards,</div>
+                <div class="text-xs font-bold text-[#1B194F]" id="previewCompanyFloral">DriveSmart Car Rental</div>
+              </div>
+            </div>
+
+            <!-- Footer Contact Strip -->
+            <div class="relative z-10 pt-2 text-center border-t border-blue-200/60 flex items-center justify-between px-2 text-[9px] text-[#1B194F]">
+              <span class="font-semibold">📞 +263 774623600</span>
+              <span class="font-bold text-[#00A3E0]">🌐 www.drivesmart.co.zw</span>
+              <span class="font-semibold">✉️ sales@drivesmart.co.zw</span>
+            </div>
+
+          </div>
+
+
+          <!-- ================= THEME 2: SIGNATURE WAVE & CAR ================= -->
+          <div id="theme-view-signature" class="hidden absolute inset-0 flex flex-col justify-between p-8 bg-white">
+            
+            <!-- Top Navy Wave & Gold Arc -->
+            <div class="absolute top-0 left-0 right-0 h-28 pointer-events-none">
+              <svg viewBox="0 0 500 120" preserveAspectRatio="none" class="w-full h-full">
+                <path d="M0,0 L500,0 L500,40 Q250,110 0,50 Z" fill="#1B194F"/>
+                <path d="M0,52 Q250,112 500,42" stroke="#D4AF37" stroke-width="3" fill="none"/>
+              </svg>
+            </div>
+
+            <!-- Top Left Floating Balloons -->
+            <div class="absolute top-3 right-5 w-24 h-28 pointer-events-none">
+              <svg viewBox="0 0 100 120" class="w-full h-full">
+                <circle cx="45" cy="40" r="22" fill="#1B194F"/>
+                <circle cx="70" cy="35" r="20" fill="#00A3E0"/>
+                <circle cx="55" cy="55" r="18" fill="#D4AF37"/>
+                <path d="M45,62 Q40,90 50,110" stroke="#D4AF37" stroke-width="1" fill="none"/>
+                <path d="M70,55 Q65,85 50,110" stroke="#00A3E0" stroke-width="1" fill="none"/>
+              </svg>
+            </div>
+
+            <!-- Header -->
+            <div class="relative z-10 pt-2">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center p-1 shadow-md">
+                  <div class="text-[#1B194F] font-black text-sm">DS</div>
+                </div>
+                <div>
+                  <div class="text-base font-extrabold text-white leading-none">Drive<span class="text-cyan-300">Smart</span></div>
+                  <div class="text-[7px] text-white/80 uppercase">Car Rental</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Title & Dear Banner -->
+            <div class="relative z-10 mt-6">
+              <div class="font-script text-4xl text-[#00A3E0]">Happy</div>
+              <div class="font-montserrat text-3xl font-black text-[#1B194F] uppercase tracking-tight -mt-2">
+                BIRTHDAY!
+              </div>
+
+              <div class="mt-2 inline-flex items-center px-4 py-1 bg-[#1B194F] rounded-r-full text-white text-xs font-bold tracking-wider">
+                DEAR: <span class="ml-1 text-cyan-300 uppercase" id="previewClientNameSig">RUFUS WIGGINS</span>
+              </div>
+            </div>
+
+            <!-- Body Message -->
+            <div class="relative z-10 pr-12 my-2">
+              <div class="text-[#1B194F] text-xs leading-relaxed whitespace-pre-line" id="previewMessageSig">
+                Wishing you a wonderful birthday filled with joy, success, and good health.
+
+Thank you for choosing DriveSmart. We celebrate you today!
+              </div>
+              <div class="mt-3 text-xs font-semibold text-[#00A3E0]" id="previewCompanySig">
+                Best regards, DriveSmart
+              </div>
+            </div>
+
+            <!-- Bottom Car Vector Illustration & Dark Navy Contact Footer -->
+            <div class="relative z-10 mt-auto">
+              <!-- Modern Car Line-Art Vector -->
+              <div class="w-full flex justify-end -mb-4 pr-2">
+                <svg viewBox="0 0 300 80" class="w-64 text-[#1B194F]" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20,60 C40,60 50,55 70,45 C90,35 120,20 160,20 C200,20 230,35 270,45 C285,50 295,60 300,65 L10,65 Z" fill="#F0F6FC" stroke="#1B194F"/>
+                  <circle cx="70" cy="65" r="12" fill="#1B194F"/>
+                  <circle cx="70" cy="65" r="6" fill="#FFFFFF"/>
+                  <circle cx="230" cy="65" r="12" fill="#1B194F"/>
+                  <circle cx="230" cy="65" r="6" fill="#FFFFFF"/>
+                  <path d="M100,22 L150,22 L145,40 L90,40 Z" fill="#00A3E0" opacity="0.3"/>
+                  <path d="M155,22 L200,22 L215,40 L150,40 Z" fill="#00A3E0" opacity="0.3"/>
+                </svg>
+              </div>
+
+              <!-- Navy Contact Footer -->
+              <div class="bg-[#1B194F] rounded-xl p-3 text-white flex flex-wrap items-center justify-between text-[8px] gap-2">
+                <div class="flex items-center gap-1">📞 +263 774623600 / 738144648</div>
+                <div class="flex items-center gap-1">✉️ sales@drivesmart.co.zw</div>
+                <div class="font-bold text-cyan-300">🌐 www.drivesmart.co.zw</div>
+              </div>
+            </div>
+
+          </div>
+
+
+          <!-- ================= THEME 3: MIDNIGHT VIP GLASSER ================= -->
+          <div id="theme-view-sapphire" class="hidden absolute inset-0 flex flex-col justify-between p-8 bg-gradient-to-b from-[#0A0E27] via-[#0E1B4D] to-[#060919] text-white">
+            
+            <!-- Glow background specks -->
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-600/20 via-transparent to-transparent pointer-events-none"></div>
+
+            <!-- Top Header -->
+            <div class="flex items-center justify-between relative z-10 border-b border-blue-800/40 pb-3">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-cyan-500 flex items-center justify-center font-black text-slate-950 text-xs">
+                  DS
+                </div>
+                <div>
+                  <div class="text-sm font-bold text-white tracking-wider">Drive<span class="text-cyan-400">Smart</span></div>
+                  <div class="text-[7px] text-cyan-300/70 tracking-widest uppercase">VIP Client Edition</div>
+                </div>
+              </div>
+              <div class="px-2 py-0.5 rounded-full border border-amber-400/40 bg-amber-500/10 text-amber-300 text-[8px] font-bold tracking-widest uppercase">
+                ★ Platinum ★
+              </div>
+            </div>
+
+            <!-- Title -->
+            <div class="text-center relative z-10 my-2">
+              <div class="font-cinzel text-xs tracking-[0.3em] text-amber-300 uppercase">Executive Greetings</div>
+              <div class="font-montserrat text-3xl font-black tracking-wider text-white uppercase mt-1">
+                HAPPY <span class="gold-gradient-text">BIRTHDAY</span>
+              </div>
+            </div>
+
+            <!-- Frosted Glass Card Plate -->
+            <div class="relative z-10 bg-slate-900/70 backdrop-blur-md rounded-2xl p-5 border border-cyan-500/30 shadow-2xl text-center">
+              <div class="text-[10px] tracking-widest uppercase text-cyan-400 font-semibold mb-1">Honoring Our Valued Client</div>
+              <div class="text-base font-bold text-white uppercase tracking-wider mb-3" id="previewClientNameSap">RUFUS WIGGINS</div>
+              
+              <div class="text-xs text-slate-300 leading-relaxed whitespace-pre-line" id="previewMessageSap">
+                Wishing you miles of happiness, prosperity, and success on your special day.
+
+Thank you for your trusted partnership with DriveSmart Car Rental.
+              </div>
+
+              <div class="mt-4 pt-3 border-t border-slate-800 text-xs font-semibold text-amber-400" id="previewSignOffSap">
+                DriveSmart Car Rental • confidence in motion...
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="relative z-10 flex items-center justify-between text-[8px] text-slate-400 pt-2 border-t border-slate-800">
+              <span>Zimbabwe: +263 774623600</span>
+              <span class="text-cyan-400 font-bold">www.drivesmart.co.zw</span>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- HTML2Canvas CDN for direct high-res download -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <script>
+    let currentTheme = 'floral';
+
+    const presets = {
+      warm: `Wishing you a wonderful birthday filled with joy, success, and good health.\n\nThank you for choosing DriveSmart Car Rental. We celebrate you today and look forward to being part of your next journey!`,
+      executive: `On behalf of the leadership and staff at DriveSmart Car Rental, we extend our warmest wishes for a joyful and successful birthday.\n\nThank you for your loyalty and continued trust in our services.`,
+      promo: `Wishing you a fantastic birthday and an incredible year ahead!\n\n🎁 Birthday Privilege: Enjoy 15% OFF or a Complimentary Vehicle Upgrade on your next booking.\n\nUse Code: BDAYSMART`
+    };
+
+    function setTheme(theme) {
+      currentTheme = theme;
+      document.querySelectorAll('.theme-tab').forEach(el => {
+        el.className = "theme-tab px-3 py-2.5 rounded-xl text-xs font-semibold border text-center transition-all bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-600";
+      });
+      
+      const activeTab = document.getElementById(`tab-${theme}`);
+      if (activeTab) {
+        activeTab.className = "theme-tab px-3 py-2.5 rounded-xl text-xs font-semibold border text-center transition-all bg-cyan-500/20 text-cyan-300 border-cyan-500 shadow-md shadow-cyan-500/10";
+      }
+
+      document.getElementById('theme-view-floral').classList.add('hidden');
+      document.getElementById('theme-view-signature').classList.add('hidden');
+      document.getElementById('theme-view-sapphire').classList.add('hidden');
+
+      document.getElementById(`theme-view-${theme}`).classList.remove('hidden');
+      updateAll();
+    }
+
+    function applyPreset(key) {
+      document.getElementById('inputMessage').value = presets[key];
+      if (key === 'promo') {
+        document.getElementById('checkPromo').checked = true;
+      }
+      updateAll();
+    }
+
+    function togglePromoBadge() {
+      const isChecked = document.getElementById('checkPromo').checked;
+      const promoBadge = document.getElementById('promoBadgeFloral');
+      if (promoBadge) {
+        if (isChecked) promoBadge.classList.remove('hidden');
+        else promoBadge.classList.add('hidden');
+      }
+    }
+
+    function updateAll() {
+      const name = document.getElementById('inputClientName').value || 'VALUED CLIENT';
+      const msg = document.getElementById('inputMessage').value;
+      const signOff = document.getElementById('inputSignOff').value;
+      const company = document.getElementById('inputCompany').value;
+
+      // Update Floral
+      document.getElementById('previewClientNameFloral').innerText = name;
+      document.getElementById('previewMessageFloral').innerText = msg;
+      document.getElementById('previewSignOffFloral').innerText = signOff;
+      document.getElementById('previewCompanyFloral').innerText = company;
+
+      // Update Signature
+      document.getElementById('previewClientNameSig').innerText = name;
+      document.getElementById('previewMessageSig').innerText = msg;
+      document.getElementById('previewCompanySig').innerText = `${signOff} ${company}`;
+
+      // Update Sapphire
+      document.getElementById('previewClientNameSap').innerText = name;
+      document.getElementById('previewMessageSap').innerText = msg;
+      document.getElementById('previewSignOffSap').innerText = `${company} • confidence in motion...`;
+    }
+
+    // Bind inputs
+    document.getElementById('inputClientName').addEventListener('input', updateAll);
+    document.getElementById('inputMessage').addEventListener('input', updateAll);
+    document.getElementById('inputSignOff').addEventListener('input', updateAll);
+    document.getElementById('inputCompany').addEventListener('input', updateAll);
+
+    // Export handler
+    document.getElementById('btnDownload').addEventListener('click', () => {
+      const card = document.getElementById('cardPreview');
+      if (window.html2canvas) {
+        html2canvas(card, {
+          scale: 3, // High DPI / Print quality
+          useCORS: true,
+          backgroundColor: null
+        }).then(canvas => {
+          const link = document.createElement('a');
+          link.download = `DriveSmart_Birthday_Card_${document.getElementById('inputClientName').value.replace(/\\s+/g, '_')}.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        });
+      } else {
+        alert('Rendering engine loaded. Please try again.');
+      }
+    });
+
+    // Init
+    updateAll();
+  </script>
+</body>
+</html>

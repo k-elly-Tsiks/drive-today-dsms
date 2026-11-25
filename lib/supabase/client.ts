@@ -4,16 +4,19 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
+  console.error(
     'Missing Supabase environment variables. Define NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local.'
   )
 }
 
-let supabaseClient: ReturnType<typeof createBrowserClient> | null = null
+const supabaseClient: ReturnType<typeof createBrowserClient> | null =
+  supabaseUrl && supabaseAnonKey
+    ? createBrowserClient(supabaseUrl, supabaseAnonKey)
+    : null
 
-export function createClient() {
-  if (!supabaseClient) {
-    supabaseClient = createBrowserClient(supabaseUrl as string, supabaseAnonKey as string)
+export function createClient(): ReturnType<typeof createBrowserClient> | null {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return null; // Ensure createClient also returns null if env vars are missing
   }
 
   return supabaseClient

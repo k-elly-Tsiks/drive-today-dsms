@@ -40,6 +40,7 @@ type Booking = {
     slot_date: string
     slot_time: string
   }
+  lesson_class?: string | null
   learner?: {
     first_name: string
     surname: string
@@ -256,7 +257,6 @@ function first<T>(val: T | T[] | undefined | null): T | null {
     setActionLoading(true)
     const { error } = await supabase.from('lesson_bookings').update({ status: 'cancelled', cancellation_reason: cancelReason }).eq('booking_id', selectedBooking.booking_id)
     if (!error) {
-      await supabase.from('lesson_slots').update({ status: 'available' }).eq('slot_id', selectedBooking.slot_id)
       showToast('Booking cancelled'); setShowCancelModal(false); loadData()
     }
     setActionLoading(false)
@@ -291,25 +291,40 @@ function first<T>(val: T | T[] | undefined | null): T | null {
     } catch (err: unknown) { showToast((err as Error).message, 'error') } finally { setActionLoading(false) }
   }
 
-  const computedSlots = slots.map(slot => ({
-    ...slot,
-    actual_status: bookings.some(b => b.slot_id === slot.slot_id && b.status !== 'cancelled') ? 'booked' : slot.status
-  }))
+  const today = new Date().toISOString().split('T')[0]
+
+  const computedSlots = slots.map(slot => {
+    const hasScheduledBooking = bookings.some(b => b.slot_id === slot.slot_id && b.status === 'scheduled')
+    const actual_status = slot.status === 'booked' || hasScheduledBooking ? 'booked' : slot.status
+    return { ...slot, actual_status }
+  })
 
   const filteredSlots = computedSlots.filter(s => s.slot_date?.includes(search) && (filterStatus === 'all' || s.actual_status === filterStatus))
-const filteredBookings = bookings.filter(b => {
-    const learnerData = first(b.learner);
-    const firstName = learnerData?.first_name || '';
-    const surname = learnerData?.surname || '';
-    const name = `${firstName} ${surname}`.toLowerCase();
-    return name.includes(search.toLowerCase()) && (filterStatus === 'all' || b.status === filterStatus);
-  });
+
+  const filteredBookings = bookings.filter(b => {
+    const learnerData = first(b.learner)
+    const firstName = learnerData?.first_name || ''
+    const surname = learnerData?.surname || ''
+    const name = `${firstName} ${surname}`.toLowerCase()
+    return name.includes(search.toLowerCase()) && (filterStatus === 'all' || b.status === filterStatus)
+  })
+
+  const historyBookings = bookings.filter(b => {
+    const slot = first(b.lesson_slots)
+    if (!slot?.slot_date) return b.status !== 'scheduled'
+    return b.status === 'completed' || b.status === 'cancelled' || slot.slot_date < today
+  })
+
+  const activeBookingsCount = bookings.filter(b => {
+    const slot = first(b.lesson_slots)
+    return b.status === 'scheduled' && slot?.slot_date !== undefined && slot.slot_date >= today
+  }).length
 
   const stats = [
     { label: 'Total Capacity', val: computedSlots.length, icon: <Layers size={18} color="#6366f1" />, bg: '#eef2ff' },
     { label: 'Available Slots', val: computedSlots.filter(s => s.actual_status === 'available').length, icon: <CheckCircle size={18} color="#10b981" />, bg: '#f0fdf4' },
-    { label: 'Active Bookings', val: computedSlots.filter(s => s.actual_status === 'booked').length, icon: <Users size={18} color="#2563eb" />, bg: '#eff6ff' },
-    { label: 'Total History', val: bookings.length, icon: <History size={18} color="#ff5a00" />, bg: '#fff2eb' }
+    { label: 'Active Bookings', val: activeBookingsCount, icon: <Users size={18} color="#2563eb" />, bg: '#eff6ff' },
+    { label: 'Total History', val: historyBookings.length, icon: <History size={18} color="#ff5a00" />, bg: '#fff2eb' }
   ]
 
   return (
@@ -451,6 +466,24 @@ const filteredBookings = bookings.filter(b => {
             >
               All Bookings
             </button>
+            <button 
+              className="tab-btn" 
+              onClick={() => { setActiveTab('history'); setFilterStatus('all'); }} 
+              style={{ 
+                background: activeTab === 'history' ? '#fff1eb' : 'transparent', 
+                color: activeTab === 'history' ? '#ff5a00' : '#64748b', 
+                boxShadow: activeTab === 'history' ? '0 1px 3px rgba(0,0,0,0.05)' : 'none',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '8px 16px',
+                fontWeight: '600',
+                fontSize: '13px',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              History
+            </button>
           </div>
 
           {/* Search Box */}
@@ -500,9 +533,16 @@ const filteredBookings = bookings.filter(b => {
                 <div style={{ textAlign: 'center', padding: '48px', color: '#64748b', fontSize: '13.5px', fontWeight: '500' }}>No slots found.</div>
               ) : filteredSlots.map(slot => (
                 <div key={slot.slot_id} className="row-hover" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 120px', padding: '16px 24px', alignItems: 'center', borderTop: '1px solid #f1f5f9' }}>
-                  <span style={{ fontWeight: '700', fontSize: '14px', color: '#1e293b', textAlign: 'left' }}>{new Date(slot.slot_date).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+                  <div>
+                    <div style={{ fontWeight: '700', fontSize: '14px', color: '#1e293b', textAlign: 'left' }}>{new Date(slot.slot_date).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+                  </div>
                   <span style={{ fontWeight: '600', color: '#64748b', textAlign: 'center' }}>{slot.slot_time.slice(0, 5)}</span>
-                  <div style={{ display: 'flex', justifyContent: 'center' }}><StatusBadge status={slot.actual_status} /></div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                    <StatusBadge status={slot.actual_status} />
+                    <div style={{ fontSize: '11px', color: '#64748b' }}>
+                      {slot.actual_status === 'available' ? '0 / 1 booked' : slot.actual_status === 'booked' ? '1 / 1 booked' : 'Unavailable'}
+                    </div>
+                  </div>
                   
                   {/* Action Drodown Dots Context Menu for slots, matching how it looks when its on all booking */}
                   <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }} onClick={e => e.stopPropagation()}>
@@ -571,7 +611,91 @@ const filteredBookings = bookings.filter(b => {
                 </div>
               ))}
             </div>
-          ) : (
+          ) : activeTab === 'bookings' ? (
+            <div style={{ minWidth: '1000px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.5fr 1.5fr 1fr 150px', padding: '14px 24px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#64748b', fontSize: '11px', fontWeight: '700', letterSpacing: '0.5px' }}>
+                <span style={{ textAlign: 'left' }}>LEARNER</span>
+                <span style={{ textAlign: 'left' }}>INSTRUCTOR</span>
+                <span style={{ textAlign: 'center' }}>SCHEDULE</span>
+                  <span style={{ textAlign: 'center' }}>STATUS</span>
+                  <span style={{ textAlign: 'center' }}>CLASS</span>
+                <span style={{ textAlign: 'center' }}>ACTIONS</span>
+              </div>
+              {loading ? (
+                <div style={{ padding: '40px' }}><Skeleton h="120px" /></div>
+              ) : filteredBookings.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '48px', color: '#64748b', fontSize: '13.5px', fontWeight: '500' }}>No bookings found.</div>
+              ) : filteredBookings.map((b, idx) => {
+                const learner = first(b.learner)
+                const instructor = first(b.instructor)
+                const slot = first(b.lesson_slots)
+
+                return (
+                  <div key={b.booking_id} className="row-hover" style={{ display: 'grid', gridTemplateColumns: '2fr 1.5fr 1.5fr 1fr 150px', padding: '16px 24px', alignItems: 'center', borderTop: '1px solid #f1f5f9' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'flex-start' }}>
+                      <Avatar name={`${learner?.first_name || 'U'} ${learner?.surname || ''}`} idx={idx} />
+                      <div style={{ textAlign: 'left' }}>
+                        <div style={{ fontWeight: '700', fontSize: '14px', color: '#1e293b' }}>
+                          {learner?.first_name} {learner?.surname}
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                          {learner?.phone_number}
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '600', color: instructor ? '#1e293b' : '#94a3b8', justifyContent: 'flex-start' }}>
+                      {instructor ? `${instructor.first_name} ${instructor.surname}` : 'Unassigned'}
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontWeight: '700', fontSize: '13px', color: '#1e293b' }}>
+                        {slot?.slot_date ? new Date(slot.slot_date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : '---'}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#64748b' }}>
+                        {slot?.slot_time?.slice(0, 5) || '--:--'}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                      <StatusBadge status={b.status} />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'center', color: '#64748b' }}>
+                      {b.lesson_class || '—'}
+                    </div>
+                    <div style={{ position: 'relative', display: 'flex', justifyContent: 'flex-end', paddingRight: 8 }} onClick={e => e.stopPropagation()}>
+                      <button 
+                        onClick={() => setOpenMenu(openMenu === b.booking_id ? null : b.booking_id)} 
+                        style={{ border: 'none', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: openMenu === b.booking_id ? '#ff5a00' : '#94a3b8', background: openMenu === b.booking_id ? '#fff1eb' : 'transparent', transition: 'all 0.15s ease', marginLeft: 6 }}
+                      >
+                        <MoreVertical size={16} />
+                      </button>
+                      {openMenu === b.booking_id && (
+                        <div ref={menuRef} style={{ position: 'absolute', right: '100%', top: '0', background: 'white', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.03)', zIndex: 100, width: '180px', overflow: 'hidden', marginRight: '8px' }}>
+                          {b.status === 'scheduled' ? (
+                            <>
+                              <button className="menu-item" onClick={() => { setSelectedBooking(b); setShowAssignModal(true); setOpenMenu(null); }}>
+                                <UserPlus size={14} color="#2563eb" /> Assign Instructor
+                              </button>
+                              <button className="menu-item" onClick={() => {
+                                if (learner) { setEditingUser({ ...learner, user_id: b.learner_id }); setEditFirstName(learner.first_name); setEditSurname(learner.surname); setEditPhone(learner.phone_number || ''); setShowUserEditModal(true); setOpenMenu(null); }
+                              }}>
+                                <UserCog size={14} color="#f97316" /> Edit Learner
+                              </button>
+                              <button className="menu-item" style={{ color: '#dc2626' }} onClick={() => { setSelectedBooking(b); setShowCancelModal(true); setOpenMenu(null); }}>
+                                <XCircle size={14} color="#dc2626" /> Cancel Booking
+                              </button>
+                            </>
+                          ) : (
+                            <div style={{ padding: '12px 14px', fontSize: '12px', color: '#94a3b8', fontWeight: '500', textAlign: 'center' }}>
+                              No actions active
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ) : activeTab === 'history' ? (
             <div style={{ minWidth: '1000px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.5fr 1.5fr 1fr 150px', padding: '14px 24px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#64748b', fontSize: '11px', fontWeight: '700', letterSpacing: '0.5px' }}>
                 <span style={{ textAlign: 'left' }}>LEARNER</span>
@@ -582,84 +706,81 @@ const filteredBookings = bookings.filter(b => {
               </div>
               {loading ? (
                 <div style={{ padding: '40px' }}><Skeleton h="120px" /></div>
-              ) : filteredBookings.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '48px', color: '#64748b', fontSize: '13.5px', fontWeight: '500' }}>No bookings found.</div>
-              ) : filteredBookings.map((b, idx) => {
-  // Extract real data for this specific row
-  const learner = first(b.learner);
-  const instructor = first(b.instructor);
-  const slot = first(b.lesson_slots);
+              ) : historyBookings.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '48px', color: '#64748b', fontSize: '13.5px', fontWeight: '500' }}>No history available.</div>
+              ) : historyBookings.map((b, idx) => {
+                const learner = first(b.learner)
+                const instructor = first(b.instructor)
+                const slot = first(b.lesson_slots)
 
-  return (
-    <div key={b.booking_id} className="row-hover" style={{ display: 'grid', gridTemplateColumns: '2fr 1.5fr 1.5fr 1fr 150px', padding: '16px 24px', alignItems: 'center', borderTop: '1px solid #f1f5f9' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'flex-start' }}>
-        {/* Use Real Name for Avatar and Display */}
-        <Avatar name={`${learner?.first_name || 'U'} ${learner?.surname || ''}`} idx={idx} />
-        <div style={{ textAlign: 'left' }}>
-          <div style={{ fontWeight: '700', fontSize: '14px', color: '#1e293b' }}>
-            {learner?.first_name} {learner?.surname}
-          </div>
-          <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-            {learner?.phone_number}
-          </div>
-        </div>
-      </div>
-      
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '600', color: instructor ? '#1e293b' : '#94a3b8', justifyContent: 'flex-start' }}>
-        {instructor ? <>{instructor.first_name} {instructor.surname}</> : <span>Unassigned</span>}
-      </div>
-
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontWeight: '700', fontSize: '13px', color: '#1e293b' }}>
-          {slot?.slot_date ? new Date(slot.slot_date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : '---'}
-        </div>
-        <div style={{ fontSize: '11px', color: '#64748b' }}>
-          {slot?.slot_time?.slice(0, 5) || '--:--'}
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <StatusBadge status={b.status} />
-      </div>
-      
-      {/* Action Dots Menu */}
-      <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }} onClick={e => e.stopPropagation()}>
-        <button 
-          onClick={() => setOpenMenu(openMenu === b.booking_id ? null : b.booking_id)} 
-          style={{ border: 'none', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: openMenu === b.booking_id ? '#ff5a00' : '#94a3b8', background: openMenu === b.booking_id ? '#fff1eb' : 'transparent', transition: 'all 0.15s ease' }}
-        >
-          <MoreVertical size={16} />
-        </button>
-        
-        {openMenu === b.booking_id && (
-          <div ref={menuRef} style={{ position: 'absolute', right: '100%', top: '0', background: 'white', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.03)', zIndex: 100, width: '180px', overflow: 'hidden', marginRight: '8px' }}>
-            {b.status === 'scheduled' ? (
-              <>
-                <button className="menu-item" onClick={() => { setSelectedBooking(b); setShowAssignModal(true); setOpenMenu(null); }}>
-                  <UserPlus size={14} color="#2563eb" /> Assign Instructor
-                </button>
-                <button className="menu-item" onClick={() => {
-                  if (learner) { setEditingUser({ ...learner, user_id: b.learner_id }); setEditFirstName(learner.first_name); setEditSurname(learner.surname); setEditPhone(learner.phone_number || ''); setShowUserEditModal(true); setOpenMenu(null); }
-                }}>
-                  <UserCog size={14} color="#f97316" /> Edit Learner
-                </button>
-                <button className="menu-item" style={{ color: '#dc2626' }} onClick={() => { setSelectedBooking(b); setShowCancelModal(true); setOpenMenu(null); }}>
-                  <XCircle size={14} color="#dc2626" /> Cancel Booking
-                </button>
-              </>
-            ) : (
-              <div style={{ padding: '12px 14px', fontSize: '12px', color: '#94a3b8', fontWeight: '500', textAlign: 'center' }}>
-                No actions active
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-})}
+                return (
+                  <div key={b.booking_id} className="row-hover" style={{ display: 'grid', gridTemplateColumns: '2fr 1.5fr 1.5fr 1fr 150px', padding: '16px 24px', alignItems: 'center', borderTop: '1px solid #f1f5f9' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'flex-start' }}>
+                      <Avatar name={`${learner?.first_name || 'U'} ${learner?.surname || ''}`} idx={idx} />
+                      <div style={{ textAlign: 'left' }}>
+                        <div style={{ fontWeight: '700', fontSize: '14px', color: '#1e293b' }}>
+                          {learner?.first_name} {learner?.surname}
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                          {learner?.phone_number}
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '600', color: instructor ? '#1e293b' : '#94a3b8', justifyContent: 'flex-start' }}>
+                      {instructor ? `${instructor.first_name} ${instructor.surname}` : 'Unassigned'}
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontWeight: '700', fontSize: '13px', color: '#1e293b' }}>
+                        {slot?.slot_date ? new Date(slot.slot_date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : '---'}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#64748b' }}>
+                        {slot?.slot_time?.slice(0, 5) || '--:--'}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                      <StatusBadge status={b.status} />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'center', paddingRight: 8 }} onClick={e => e.stopPropagation()}>
+                      <button onClick={() => setOpenMenu(openMenu === b.booking_id ? null : b.booking_id)} style={{ border: 'none', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: openMenu === b.booking_id ? '#ff5a00' : '#94a3b8', background: openMenu === b.booking_id ? '#fff1eb' : 'transparent', transition: 'all 0.15s ease' }}>
+                        <MoreVertical size={16} />
+                      </button>
+                      {openMenu === b.booking_id && (
+                        <div ref={menuRef} style={{ position: 'absolute', right: '100%', top: '0', background: 'white', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.03)', zIndex: 100, width: '180px', overflow: 'hidden', marginRight: '8px' }}>
+                          {b.status === 'scheduled' ? (
+                            <>
+                              <button className="menu-item" onClick={() => { setSelectedBooking(b); setShowAssignModal(true); setOpenMenu(null); }}>
+                                <UserPlus size={14} color="#2563eb" /> Assign Instructor
+                              </button>
+                              <button className="menu-item" onClick={() => {
+                                const learner = first(b.learner)
+                                if (learner) {
+                                  setEditingUser({ ...learner, user_id: b.learner_id })
+                                  setEditFirstName(learner.first_name)
+                                  setEditSurname(learner.surname)
+                                  setEditPhone(learner.phone_number || '')
+                                  setShowUserEditModal(true)
+                                }
+                                setOpenMenu(null)
+                              }}>
+                                <UserCog size={14} color="#f97316" /> Edit Learner
+                              </button>
+                              <button className="menu-item" style={{ color: '#dc2626' }} onClick={() => { setSelectedBooking(b); setShowCancelModal(true); setOpenMenu(null); }}>
+                                <XCircle size={14} color="#dc2626" /> Cancel Booking
+                              </button>
+                            </>
+                          ) : (
+                            <div style={{ padding: '12px 14px', fontSize: '12px', color: '#94a3b8', fontWeight: '500', textAlign: 'center' }}>
+                              No actions active
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -697,9 +818,11 @@ const filteredBookings = bookings.filter(b => {
             </div>
             <div style={{ display: 'flex', gap: '10px' }}>
               <button onClick={() => setShowCreateModal(false)} className="custom-btn-secondary" style={{ flex: 1, justifyContent: 'center' }}>Cancel</button>
-              <button onClick={createSlot} disabled={actionLoading} className="custom-btn-primary" style={{ flex: 2, justifyContent: 'center' }}>
-                {actionLoading ? 'Creating...' : 'Create Slot'}
-              </button>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', flex: 2, justifyContent: 'flex-end' }}>
+                <button onClick={createSlot} disabled={actionLoading} className="custom-btn-primary" style={{ justifyContent: 'center' }}>
+                  {actionLoading ? 'Creating...' : 'Create Slot'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

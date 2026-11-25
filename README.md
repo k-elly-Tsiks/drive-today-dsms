@@ -20,6 +20,21 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Password recovery
+
+Password resets are admin-approved and do not send an email. To configure this feature:
+
+1. Apply `supabase/migrations/20261101000000_password_reset_permissions.sql` to the Supabase project.
+2. Set `SUPABASE_SERVICE_ROLE_KEY` in the server environment (never expose it with a `NEXT_PUBLIC_` prefix). Keep the existing public Supabase URL and anon key as configured.
+3. In **Settings → Account Password Reset**, an administrator selects a learner or instructor and chooses **Allow Password Reset**. This grants one reset for 24 hours; the admin can revoke the grant before it is used.
+4. The user selects **Forgot password?** on Login, enters the approved email, chooses **Next**, then enters and confirms a new password. After the password is changed, the user can sign in with the new password. The reset flow does not replace the current browser session; this keeps an administrator signed in when helping multiple users from the same browser.
+
+Because this flow intentionally does not verify ownership of the email address, administrators should confirm the person's identity before granting permission. Reset permissions are held server-side and can only be changed by an authenticated admin.
+
+## Lesson slot booking and cleanup
+
+Apply `supabase/migrations/20261119000000_exclusive_lesson_slots_and_expiry.sql` to the Supabase project. It reserves a slot for one scheduled learner at the database level, makes it available again if that booking is cancelled, and schedules a daily cleanup of past slots that have no booking history. The migration enables the `pg_cron` extension for the scheduled cleanup.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

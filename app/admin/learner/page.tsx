@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { 
   Search, 
   Filter, 
@@ -35,6 +35,7 @@ type Learner = {
   status: 'approved' | 'pending' | 'rejected' | 'suspended'
   role: string
   slots_allocated?: number
+  allowed_slots?: number | null
   driving_class?: string | null
   // optional debug field (only if column exists)
   driving_classes_taken?: string | null
@@ -140,6 +141,8 @@ export default function LearnersPage() {
   const [toast, setToast]                   = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
 
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const selectedLearnerId = searchParams.get('selected')
   const supabase = createClient()
   const menuRef = useRef<HTMLDivElement | null>(null)
 
@@ -160,6 +163,13 @@ export default function LearnersPage() {
     document.addEventListener('mousedown', handleOutsideClick)
     return () => document.removeEventListener('mousedown', handleOutsideClick)
   }, [])
+
+  useEffect(() => {
+    if (!loading && selectedLearnerId && learners.length > 0) {
+      const learner = learners.find(l => l.user_id === selectedLearnerId)
+      if (learner) setViewLearner(learner)
+    }
+  }, [loading, selectedLearnerId, learners])
 
   // ── Data Loading ──────────────────────────────────────────────────────────
 
@@ -295,19 +305,24 @@ export default function LearnersPage() {
       return
     }
     setActionLoading(true)
-    const { error } = await supabase.from('users').update({ slots_allocated: num }).eq('user_id', slotsModal.user_id)
-    if (!error) {
-      setLearners(prev => prev.map(l => l.user_id === slotsModal.user_id ? { ...l, slots_allocated: num } : l))
+    const { data: updatedLearner, error } = await supabase
+      .from('users')
+      .update({ slots_allocated: num, allowed_slots: num })
+      .eq('user_id', slotsModal.user_id)
+      .select('user_id')
+      .maybeSingle()
+    if (!error && updatedLearner) {
+      setLearners(prev => prev.map(l => l.user_id === slotsModal.user_id ? { ...l, slots_allocated: num, allowed_slots: num } : l))
       
       if (viewLearner && viewLearner.user_id === slotsModal.user_id) {
-        setViewLearner(prev => prev ? { ...prev, slots_allocated: num } : null)
+        setViewLearner(prev => prev ? { ...prev, slots_allocated: num, allowed_slots: num } : null)
       }
 
       showToast('Booking slots reallocated effectively.', 'success')
       setSlotsModal(null)
       setSlotsInput('')
     } else {
-      showToast('Failed to update slot parameters.', 'error')
+      showToast(error?.message || 'No learner record was updated.', 'error')
     }
     setActionLoading(false)
   }
@@ -318,9 +333,12 @@ export default function LearnersPage() {
     const { learner, type } = confirmModal
     const newStatus = (type === 'approve' || type === 'reactivate') ? 'approved' : 'suspended'
     
-    type StatusPayload = { status: Learner['status']; slots_allocated?: number }
+    type StatusPayload = { status: Learner['status']; slots_allocated?: number; allowed_slots?: number }
     const payload: StatusPayload = { status: newStatus }
-    if (type === 'approve') payload.slots_allocated = parseInt(slotsInput) || 0
+    if (type === 'approve') {
+      payload.slots_allocated = parseInt(slotsInput) || 0
+      payload.allowed_slots = payload.slots_allocated
+    }
 
     const { error } = await supabase.from('users').update(payload).eq('user_id', learner.user_id)
     if (!error) {
@@ -479,7 +497,7 @@ export default function LearnersPage() {
                       </div>
                       <div>
                         <div className="info-label">Available Slots</div>
-                        <div className="info-value" style={{ color: '#ff5a00', margin: 0 }}><Ticket size={15} color="#ff5a00" /> <b>{viewLearner.slots_allocated || 0} slots</b></div>
+                        <div className="info-value" style={{ color: '#ff5a00', margin: 0 }}><Ticket size={15} color="#ff5a00" /> <b>{Math.max(Number(viewLearner.slots_allocated) || 0, Number(viewLearner.allowed_slots) || 0)} slots</b></div>
                       </div>
                     </div>
 
@@ -565,7 +583,7 @@ export default function LearnersPage() {
                       </div>
                       <div>
                         <div className="info-label">Available Slots</div>
-                        <div className="info-value" style={{ color: '#ff5a00', margin: 0 }}><Ticket size={15} color="#ff5a00" /> <b>{viewLearner.slots_allocated || 0} slots</b></div>
+                        <div className="info-value" style={{ color: '#ff5a00', margin: 0 }}><Ticket size={15} color="#ff5a00" /> <b>{Math.max(Number(viewLearner.slots_allocated) || 0, Number(viewLearner.allowed_slots) || 0)} slots</b></div>
                       </div>
                     </div>
 
@@ -802,7 +820,7 @@ export default function LearnersPage() {
 
                       {/* Allocated Slots */}
                       <div style={{ fontWeight: '700', color: '#ff5a00', fontSize: '15px', textAlign: 'center' }}>
-                        {l.slots_allocated ?? 0}
+                        {Math.max(Number(l.slots_allocated) || 0, Number(l.allowed_slots) || 0)}
                       </div>
 
                       {/* Action dots */}
@@ -815,7 +833,7 @@ export default function LearnersPage() {
                           <div ref={menuRef} style={{ position: 'absolute', right: '100%', top: '0', background: 'white', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.02)', zIndex: 100, width: '180px', overflow: 'hidden', marginRight: '4px' }}>
                             <button className="menu-item" onClick={() => { setViewLearner(l); setOpenMenu(null); }}><User size={14} /> View Record</button>
                             <button className="menu-item" onClick={() => { setEditModal(l); setOpenMenu(null); }}><Edit3 size={14} /> Edit Details</button>
-                            <button className="menu-item" onClick={() => { setSlotsModal(l); setSlotsInput(String(l.slots_allocated || 0)); setOpenMenu(null); }}><Ticket size={14} /> Reallocate Slots</button>
+                            <button className="menu-item" onClick={() => { setSlotsModal(l); setSlotsInput(String(Math.max(Number(l.slots_allocated) || 0, Number(l.allowed_slots) || 0))); setOpenMenu(null); }}><Ticket size={14} /> Reallocate Slots</button>
                             {l.status === 'pending' && (
                               <button className="menu-item" style={{ color: '#16a34a' }} onClick={() => { setConfirmModal({ type: 'approve', learner: l }); setOpenMenu(null); }}><CheckCircle size={14} /> Approve Account</button>
                             )}

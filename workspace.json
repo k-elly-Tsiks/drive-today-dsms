@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T11:35:23.004Z",
-  "generatedAtEpochMs": 1784806523004,
+  "generatedAt": "2026-11-25T08:54:41.564Z",
+  "generatedAtEpochMs": 1795596881564,
   "generator": {
     "name": "Code Janitor",
     "feature": "workspace-memory"
@@ -14,37 +14,41 @@
   "workspace": {
     "name": "drive-today-dsms",
     "root": "c:\\Users\\kelly\\Desktop\\drive-today-dsms",
-    "activeFile": null,
-    "refreshReason": "tracked-change",
+    "activeFile": "app/instructor/progress/page.tsx",
+    "refreshReason": "startup",
     "outputFiles": {
       "markdown": "graphify-out/WORKSPACE_MEMORY.md",
       "markdownMirror": "workspacememory.md",
       "structuredManifest": "workspace.json"
     },
     "suggestedStartingPoints": [
-      "app/admin/learner/page.tsx",
-      "lib/supabase/client.ts",
-      "lib/supabase/server.ts",
-      "app/login/page.tsx",
-      "app/admin/dashboard/page.tsx",
+      "app/instructor/progress/page.tsx",
       "app/admin/lessons/page.tsx",
-      ".env.local",
+      "app/learner/lessons/page.tsx",
       "app/admin/instructor/page.tsx",
+      "app/learner/practice/page.tsx",
+      "app/admin/dashboard/page.tsx",
+      "app/admin/settings/page.tsx",
+      "app/learner/notification",
       ".github/modernize/code-migration/.gitignore",
       ".gitignore",
       "AGENTS.md",
       "README.md"
     ],
     "stats": {
-      "totalFiles": 70,
+      "totalFiles": 116,
       "topLevelAreas": [
         {
           "name": "app",
-          "count": 44
+          "count": 48
+        },
+        {
+          "name": "birthday_cards",
+          "count": 36
         },
         {
           "name": "[root]",
-          "count": 17
+          "count": 18
         },
         {
           "name": "public",
@@ -52,6 +56,10 @@
         },
         {
           "name": "lib",
+          "count": 5
+        },
+        {
+          "name": "supabase",
           "count": 2
         },
         {
@@ -65,8 +73,12 @@
           "count": 40
         },
         {
+          "name": ".jpg",
+          "count": 34
+        },
+        {
           "name": ".ts",
-          "count": 6
+          "count": 14
         },
         {
           "name": ".md",
@@ -81,16 +93,12 @@
           "count": 4
         },
         {
+          "name": ".html",
+          "count": 2
+        },
+        {
           "name": ".mjs",
           "count": 2
-        },
-        {
-          "name": "[no extension]",
-          "count": 2
-        },
-        {
-          "name": ".css",
-          "count": 1
         }
       ],
       "keyFiles": [
@@ -255,6 +263,30 @@
           "isKeyFile": false
         },
         {
+          "path": "app/admin/types.ts",
+          "topLevelArea": "app",
+          "extension": ".ts",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/api/admin/password-reset-permission/route.ts",
+          "topLevelArea": "app",
+          "extension": ".ts",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/api/password-reset/complete/route.ts",
+          "topLevelArea": "app",
+          "extension": ".ts",
+          "isKeyFile": false
+        },
+        {
+          "path": "app/api/password-reset/verify/route.ts",
+          "topLevelArea": "app",
+          "extension": ".ts",
+          "isKeyFile": false
+        },
+        {
           "path": "app/favicon.ico",
           "topLevelArea": "app",
           "extension": ".ico",
@@ -339,12 +371,6 @@
           "isKeyFile": false
         },
         {
-          "path": "app/learner/notification/page.tsx",
-          "topLevelArea": "app",
-          "extension": ".tsx",
-          "isKeyFile": false
-        },
-        {
           "path": "app/learner/page.tsx",
           "topLevelArea": "app",
           "extension": ".tsx",
@@ -387,9 +413,231 @@
           "isKeyFile": false
         },
         {
+          "path": "app/reset-password/page.tsx",
+          "topLevelArea": "app",
+          "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
           "path": "app/signup/page.tsx",
           "topLevelArea": "app",
           "extension": ".tsx",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/01_Harare_Full_Blank_Canvas.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/01_Ultra_Luxury_Glassmorphism_Template.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/02_Harare_Hybrid_Canva_Template.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/02_Supercar_Sapphire_Chrome_Edition.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/03_Harare_Hybrid_Filled_Sample.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/03_VIP_Gold_Navy_Ribbon_Edition.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/04_Modern_Electric_Blue_Card.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/05_Electric_Blue_Blank_Template.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/06_Minimalist_White_Cyan_Edition.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/07_Harare_Master_Blank_Card_Template.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/08_Harare_Master_Card_Blank_Message_Area.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/09_DriveSmart_Master_Merged_Edition.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/Download_Birthday_Cards.html",
+          "topLevelArea": "birthday_cards",
+          "extension": ".html",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/DriveSmart_Canva_Template_Balanced_Close_HD.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/DriveSmart_Canva_Template_Balanced_Close.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/DriveSmart_Canva_Template_Close_Spacing_HD.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/DriveSmart_Canva_Template_Close_Spacing.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/DriveSmart_Canva_Template_Editable_Text_HD.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/DriveSmart_Canva_Template_Editable_Text.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/DriveSmart_Canva_Template_Full_Blank_Plate_HD.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/DriveSmart_Canva_Template_Full_Blank_Plate.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/DriveSmart_Canva_Template_Ultra_Close_HD.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/DriveSmart_Canva_Template_Ultra_Close.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/DriveSmart_Live_Card_Studio.html",
+          "topLevelArea": "birthday_cards",
+          "extension": ".html",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/DriveSmart_Master_Canva_Template.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/DriveSmart_Master_Card_Harare.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/DriveSmart_Official_Template.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/DriveSmart_Sample_Filled_Card.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/DriveSmart_Template_1054x1492_Blank_Plate.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/DriveSmart_Template_1054x1492_Direct.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/DriveSmart_Template_1054x1492_Editable.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/DriveSmart_Template_1054x1492_Sample.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/DriveSmart_Template_Editable_Text_HD.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/DriveSmart_Template_Editable_Text.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/DriveSmart_Template_Full_Blank_Plate_HD.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
+          "isKeyFile": false
+        },
+        {
+          "path": "birthday_cards/DriveSmart_Template_Full_Blank_Plate.jpg",
+          "topLevelArea": "birthday_cards",
+          "extension": ".jpg",
           "isKeyFile": false
         },
         {
@@ -405,7 +653,25 @@
           "isKeyFile": false
         },
         {
+          "path": "lib/supabase/admin.ts",
+          "topLevelArea": "lib",
+          "extension": ".ts",
+          "isKeyFile": false
+        },
+        {
           "path": "lib/supabase/client.ts",
+          "topLevelArea": "lib",
+          "extension": ".ts",
+          "isKeyFile": false
+        },
+        {
+          "path": "lib/supabase/password-reset-admin.ts",
+          "topLevelArea": "lib",
+          "extension": ".ts",
+          "isKeyFile": false
+        },
+        {
+          "path": "lib/supabase/password-reset-errors.ts",
           "topLevelArea": "lib",
           "extension": ".ts",
           "isKeyFile": false
@@ -453,6 +719,12 @@
           "isKeyFile": false
         },
         {
+          "path": "proxy.ts",
+          "topLevelArea": "[root]",
+          "extension": ".ts",
+          "isKeyFile": false
+        },
+        {
           "path": "public/file.svg",
           "topLevelArea": "public",
           "extension": ".svg",
@@ -493,6 +765,18 @@
           "topLevelArea": "[root]",
           "extension": ".md",
           "isKeyFile": true
+        },
+        {
+          "path": "supabase/migrations/20261101000000_password_reset_permissions.sql",
+          "topLevelArea": "supabase",
+          "extension": ".sql",
+          "isKeyFile": false
+        },
+        {
+          "path": "supabase/migrations/20261119000000_exclusive_lesson_slots_and_expiry.sql",
+          "topLevelArea": "supabase",
+          "extension": ".sql",
+          "isKeyFile": false
         },
         {
           "path": "TODO.md",
@@ -572,234 +856,204 @@
     }
   },
   "currentStack": {
-    "lastActivityAt": "2026-07-23T11:35:20.875Z",
+    "lastActivityAt": "2026-11-25T06:56:03.194Z",
     "trackedChangeCount": 40,
-    "trackedFileSnapshotCount": 11,
+    "trackedFileSnapshotCount": 17,
     "changeTypeCounts": {
-      "save": 40,
-      "create": 0,
-      "delete": 0,
+      "save": 38,
+      "create": 1,
+      "delete": 1,
       "rename": 0
     }
   },
   "trackedSnapshots": [
     {
-      "filePath": "lib/supabase/server.ts",
-      "updatedAt": 1784806520875,
-      "lineCount": 33,
-      "charCount": 994,
-      "hash": "a9b5d16a9eff",
-      "preview": "import { createServerClient } from '@supabase/ssr' / import { cookies } from 'next/headers' / const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL / const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KE..."
+      "filePath": "app/instructor/progress/page.tsx",
+      "updatedAt": 1795589763194,
+      "lineCount": 428,
+      "charCount": 21723,
+      "hash": "0dbc90eadf67",
+      "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { CheckCircle2, Star } from..."
     },
     {
-      "filePath": "lib/supabase/client.ts",
-      "updatedAt": 1784806423918,
-      "lineCount": 20,
-      "charCount": 642,
-      "hash": "366fb8254cb3",
-      "preview": "import { createBrowserClient } from '@supabase/ssr' / const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL / const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY / if (!supabaseUrl || !supabaseAnonKey..."
+      "filePath": "app/learner/practice/page.tsx",
+      "updatedAt": 1795084839963,
+      "lineCount": 481,
+      "charCount": 27190,
+      "hash": "51792253f91e",
+      "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci..."
     },
     {
-      "filePath": "app/login/page.tsx",
-      "updatedAt": 1784804861423,
-      "lineCount": 348,
-      "charCount": 12296,
-      "hash": "7bdd234e5400",
-      "preview": "'use client' / import { useState } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / export default function LoginPage() { / const [email, setEmail] =..."
+      "filePath": "app/learner/payments/page.tsx",
+      "updatedAt": 1795083065640,
+      "lineCount": 295,
+      "charCount": 14373,
+      "hash": "4eb1ffdb93a6",
+      "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { AlertTriangle, CheckCircl..."
+    },
+    {
+      "filePath": "app/learner/layout.tsx",
+      "updatedAt": 1793529800039,
+      "lineCount": 600,
+      "charCount": 24413,
+      "hash": "6e38d47e9b59",
+      "preview": "'use client' / import { useState, useEffect, useMemo, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter, usePathname } from 'next/navigation' / import { / LayoutDashboar..."
     },
     {
       "filePath": ".env.local",
-      "updatedAt": 1784804729525,
+      "updatedAt": 1793523402023,
       "lineCount": 3,
-      "charCount": 307,
-      "hash": "3f4070709ed4",
+      "charCount": 552,
+      "hash": "9b1ebc038d41",
       "preview": "NEXT_PUBLIC_SUPABASE_URL=https://zbwiumbwdjwnnhbccxdq.supabase.co / NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpid2l1bWJ3ZGp3bm5oYmNjeGRxIiwicm9sZSI6ImFub24iLC..."
     },
     {
-      "filePath": "app/instructor/lessons/page.tsx",
-      "updatedAt": 1784709138378,
-      "lineCount": 443,
-      "charCount": 23665,
-      "hash": "1f0361923609",
-      "preview": "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Layers, CalendarCheck, CheckCir..."
+      "filePath": "app/admin/settings/page.tsx",
+      "updatedAt": 1793517870921,
+      "lineCount": 448,
+      "charCount": 21548,
+      "hash": "05b83ccc44f2",
+      "preview": "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / Settings, / School, / Clock, /..."
     },
     {
-      "filePath": "app/admin/reports/page.tsx",
-      "updatedAt": 1784709106937,
-      "lineCount": 898,
-      "charCount": 46337,
-      "hash": "0114f9f5d49b",
-      "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { / TrendingUp, / TrendingD..."
+      "filePath": "app/learner/lessons/page.tsx",
+      "updatedAt": 1785416155771,
+      "lineCount": 741,
+      "charCount": 31969,
+      "hash": "7fc8c7d9fc5d",
+      "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { CalendarDays, Clock4, AlertTriangle, Phone, ListChecks, ArrowLeft } from 'lucide-react' / import { createClient } from '@/lib/..."
     },
     {
-      "filePath": "app/admin/dashboard/page.tsx",
-      "updatedAt": 1784708999712,
-      "lineCount": 617,
-      "charCount": 34933,
-      "hash": "99c08fbe9aaa",
-      "preview": "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Users, UserCheck, Calendar, Dolla..."
-    },
-    {
-      "filePath": "app/instructor/dashboard/page.tsx",
-      "updatedAt": 1784708961448,
-      "lineCount": 299,
-      "charCount": 11183,
-      "hash": "90a106cf66a1",
-      "preview": "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Calendar, CheckCircle, Clock, Use..."
+      "filePath": "app/admin/lessons/page.tsx",
+      "updatedAt": 1785398133297,
+      "lineCount": 953,
+      "charCount": 52284,
+      "hash": "3d1fb66d7470",
+      "preview": "'use client' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' // / import React, { useState, useEffect, useCallback, useRef } from 'react' / const supabase = createC..."
     }
   ],
   "recentChanges": [
     {
       "type": "save",
-      "path": "lib/supabase/server.ts",
+      "path": "app/instructor/progress/page.tsx",
       "toPath": "",
       "summary": "Saved without a textual diff.",
-      "recordedAt": "2026-07-23T11:35:20.875Z",
-      "recordedAtEpochMs": 1784806520875,
+      "recordedAt": "2026-11-25T06:56:03.194Z",
+      "recordedAtEpochMs": 1795589763194,
       "before": {
         "kind": "text",
-        "lineCount": 33,
-        "charCount": 994,
-        "hash": "a9b5d16a9eff",
-        "preview": "import { createServerClient } from '@supabase/ssr' / import { cookies } from 'next/headers' / const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL / const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KE...",
-        "updatedAt": 1784806520875
+        "lineCount": 428,
+        "charCount": 21723,
+        "hash": "0dbc90eadf67",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { CheckCircle2, Star } from...",
+        "updatedAt": 1795589763194
       },
       "after": {
         "kind": "text",
-        "lineCount": 33,
-        "charCount": 994,
-        "hash": "a9b5d16a9eff",
-        "preview": "import { createServerClient } from '@supabase/ssr' / import { cookies } from 'next/headers' / const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL / const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KE...",
-        "updatedAt": 1784806520875
+        "lineCount": 428,
+        "charCount": 21723,
+        "hash": "0dbc90eadf67",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { CheckCircle2, Star } from...",
+        "updatedAt": 1795589763194
       },
-      "diff": null
-    },
-    {
-      "type": "save",
-      "path": "lib/supabase/server.ts",
-      "toPath": "",
-      "summary": "",
-      "recordedAt": "2026-07-23T11:34:21.403Z",
-      "recordedAtEpochMs": 1784806461403,
-      "before": null,
-      "after": null,
-      "diff": null
-    },
-    {
-      "type": "save",
-      "path": "lib/supabase/server.ts",
-      "toPath": "",
-      "summary": "Saved without a textual diff.",
-      "recordedAt": "2026-07-23T11:33:43.919Z",
-      "recordedAtEpochMs": 1784806423919,
-      "before": {
-        "kind": "text",
-        "lineCount": 33,
-        "charCount": 974,
-        "hash": "39362bee37fa",
-        "preview": "import { createServerClient } from '@supabase/ssr' / import { cookies } from 'next/headers' / const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL / const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KE...",
-        "updatedAt": 1784806423919
-      },
-      "after": {
-        "kind": "text",
-        "lineCount": 33,
-        "charCount": 974,
-        "hash": "39362bee37fa",
-        "preview": "import { createServerClient } from '@supabase/ssr' / import { cookies } from 'next/headers' / const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL / const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KE...",
-        "updatedAt": 1784806423919
-      },
-      "diff": null
-    },
-    {
-      "type": "save",
-      "path": "lib/supabase/client.ts",
-      "toPath": "",
-      "summary": "Saved without a textual diff.",
-      "recordedAt": "2026-07-23T11:33:43.918Z",
-      "recordedAtEpochMs": 1784806423918,
-      "before": {
-        "kind": "text",
-        "lineCount": 20,
-        "charCount": 642,
-        "hash": "366fb8254cb3",
-        "preview": "import { createBrowserClient } from '@supabase/ssr' / const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL / const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY / if (!supabaseUrl || !supabaseAnonKey...",
-        "updatedAt": 1784806423918
-      },
-      "after": {
-        "kind": "text",
-        "lineCount": 20,
-        "charCount": 642,
-        "hash": "366fb8254cb3",
-        "preview": "import { createBrowserClient } from '@supabase/ssr' / const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL / const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY / if (!supabaseUrl || !supabaseAnonKey...",
-        "updatedAt": 1784806423918
-      },
-      "diff": null
-    },
-    {
-      "type": "save",
-      "path": "lib/supabase/server.ts",
-      "toPath": "",
-      "summary": "Saved without a textual diff.",
-      "recordedAt": "2026-07-23T10:59:40.572Z",
-      "recordedAtEpochMs": 1784804380572,
-      "before": {
-        "kind": "text",
-        "lineCount": 33,
-        "charCount": 903,
-        "hash": "a7a1e586abd2",
-        "preview": "import { createServerClient } from '@supabase/ssr' / import { cookies } from 'next/headers' / const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL / const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KE...",
-        "updatedAt": 1784804380572
-      },
-      "after": {
-        "kind": "text",
-        "lineCount": 33,
-        "charCount": 903,
-        "hash": "a7a1e586abd2",
-        "preview": "import { createServerClient } from '@supabase/ssr' / import { cookies } from 'next/headers' / const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL / const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KE...",
-        "updatedAt": 1784804380572
-      },
-      "diff": null
-    },
-    {
-      "type": "save",
-      "path": "lib/supabase/client.ts",
-      "toPath": "",
-      "summary": "",
-      "recordedAt": "2026-07-23T11:33:33.977Z",
-      "recordedAtEpochMs": 1784806413977,
-      "before": null,
-      "after": null,
-      "diff": null
-    },
-    {
-      "type": "save",
-      "path": "app/learner/lessons/page.tsx",
-      "toPath": "",
-      "summary": "",
-      "recordedAt": "2026-07-23T11:33:06.248Z",
-      "recordedAtEpochMs": 1784806386248,
-      "before": null,
-      "after": null,
       "diff": null
     },
     {
       "type": "save",
       "path": "app/instructor/progress/page.tsx",
       "toPath": "",
-      "summary": "",
-      "recordedAt": "2026-07-23T11:33:06.234Z",
-      "recordedAtEpochMs": 1784806386234,
-      "before": null,
-      "after": null,
+      "summary": "Line 6: replaced 279 lines with 423 lines.",
+      "recordedAt": "2026-11-25T06:55:43.116Z",
+      "recordedAtEpochMs": 1795589743116,
+      "before": {
+        "kind": "text",
+        "lineCount": 284,
+        "charCount": 16871,
+        "hash": "28f206accb78",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / type Booking = { / booking_id: str...",
+        "updatedAt": 1795589743115
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 428,
+        "charCount": 21723,
+        "hash": "0dbc90eadf67",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { CheckCircle2, Star } from...",
+        "updatedAt": 1795589743116
+      },
+      "diff": {
+        "lineStart": 6,
+        "removedLines": 279,
+        "addedLines": 423,
+        "summary": "Line 6: replaced 279 lines with 423 lines.",
+        "beforeFragment": "type Booking = { / booking_id: string / learner_id: string / lesson_slots?: { slot_date: string; slot_time: string } / learner?: { first_name: string; surname: string; user_id?:...",
+        "afterFragment": "import { CheckCircle2, Star } from 'lucide-react' / type Booking = { / booking_id: string / learner_id: string / lesson_slots?: { slot_date: string; slot_time: string } / learne..."
+      }
+    },
+    {
+      "type": "save",
+      "path": "app/instructor/progress/page.tsx",
+      "toPath": "",
+      "summary": "Saved without a textual diff.",
+      "recordedAt": "2026-11-25T06:54:57.539Z",
+      "recordedAtEpochMs": 1795589697539,
+      "before": {
+        "kind": "text",
+        "lineCount": 284,
+        "charCount": 16871,
+        "hash": "28f206accb78",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / type Booking = { / booking_id: str...",
+        "updatedAt": 1795589697539
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 284,
+        "charCount": 16871,
+        "hash": "28f206accb78",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / type Booking = { / booking_id: str...",
+        "updatedAt": 1795589697539
+      },
       "diff": null
     },
     {
       "type": "save",
-      "path": "app/admin/payments/page.tsx",
+      "path": "app/instructor/progress/page.tsx",
+      "toPath": "",
+      "summary": "Line 6: replaced 423 lines with 279 lines.",
+      "recordedAt": "2026-11-25T06:54:43.571Z",
+      "recordedAtEpochMs": 1795589683571,
+      "before": {
+        "kind": "text",
+        "lineCount": 428,
+        "charCount": 21723,
+        "hash": "0dbc90eadf67",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { CheckCircle2, Star } from...",
+        "updatedAt": 1795589683571
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 284,
+        "charCount": 16871,
+        "hash": "28f206accb78",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / type Booking = { / booking_id: str...",
+        "updatedAt": 1795589683571
+      },
+      "diff": {
+        "lineStart": 6,
+        "removedLines": 423,
+        "addedLines": 279,
+        "summary": "Line 6: replaced 423 lines with 279 lines.",
+        "beforeFragment": "import { CheckCircle2, Star } from 'lucide-react' / type Booking = { / booking_id: string / learner_id: string / lesson_slots?: { slot_date: string; slot_time: string } / learne...",
+        "afterFragment": "type Booking = { / booking_id: string / learner_id: string / lesson_slots?: { slot_date: string; slot_time: string } / learner?: { first_name: string; surname: string; user_id?:..."
+      }
+    },
+    {
+      "type": "save",
+      "path": "app/admin/notification/page.tsx",
       "toPath": "",
       "summary": "",
-      "recordedAt": "2026-07-23T11:33:06.213Z",
-      "recordedAtEpochMs": 1784806386213,
+      "recordedAt": "2026-11-25T06:08:59.739Z",
+      "recordedAtEpochMs": 1795586939739,
       "before": null,
       "after": null,
       "diff": null
@@ -809,19 +1063,8 @@
       "path": "app/admin/dashboard/page.tsx",
       "toPath": "",
       "summary": "",
-      "recordedAt": "2026-07-23T11:33:06.072Z",
-      "recordedAtEpochMs": 1784806386072,
-      "before": null,
-      "after": null,
-      "diff": null
-    },
-    {
-      "type": "save",
-      "path": "app/learner/lessons/page.tsx",
-      "toPath": "",
-      "summary": "",
-      "recordedAt": "2026-07-23T11:32:46.734Z",
-      "recordedAtEpochMs": 1784806366734,
+      "recordedAt": "2026-11-25T06:07:32.527Z",
+      "recordedAtEpochMs": 1795586852527,
       "before": null,
       "after": null,
       "diff": null
@@ -831,41 +1074,159 @@
       "path": "app/admin/dashboard/page.tsx",
       "toPath": "",
       "summary": "",
-      "recordedAt": "2026-07-23T11:32:46.631Z",
-      "recordedAtEpochMs": 1784806366631,
+      "recordedAt": "2026-11-25T06:06:09.201Z",
+      "recordedAtEpochMs": 1795586769201,
       "before": null,
       "after": null,
       "diff": null
     },
     {
       "type": "save",
-      "path": "app/admin/payments/page.tsx",
+      "path": "lib/supabase/client.ts",
       "toPath": "",
       "summary": "",
-      "recordedAt": "2026-07-23T11:32:46.586Z",
-      "recordedAtEpochMs": 1784806366586,
+      "recordedAt": "2026-11-25T06:05:10.889Z",
+      "recordedAtEpochMs": 1795586710889,
       "before": null,
       "after": null,
       "diff": null
     },
     {
       "type": "save",
-      "path": "app/instructor/progress/page.tsx",
+      "path": "lib/supabase/client.ts",
       "toPath": "",
       "summary": "",
-      "recordedAt": "2026-07-23T11:32:46.551Z",
-      "recordedAtEpochMs": 1784806366551,
+      "recordedAt": "2026-11-25T06:04:48.309Z",
+      "recordedAtEpochMs": 1795586688309,
       "before": null,
       "after": null,
       "diff": null
     },
     {
       "type": "save",
-      "path": "app/login/page.tsx",
+      "path": "app/learner/practice/page.tsx",
+      "toPath": "",
+      "summary": "Saved without a textual diff.",
+      "recordedAt": "2026-11-19T10:40:39.963Z",
+      "recordedAtEpochMs": 1795084839963,
+      "before": {
+        "kind": "text",
+        "lineCount": 481,
+        "charCount": 27190,
+        "hash": "51792253f91e",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci...",
+        "updatedAt": 1795084839962
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 481,
+        "charCount": 27190,
+        "hash": "51792253f91e",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci...",
+        "updatedAt": 1795084839963
+      },
+      "diff": null
+    },
+    {
+      "type": "save",
+      "path": "app/learner/payments/page.tsx",
+      "toPath": "",
+      "summary": "Line 6: removed 1 line.",
+      "recordedAt": "2026-11-19T10:11:05.640Z",
+      "recordedAtEpochMs": 1795083065640,
+      "before": {
+        "kind": "text",
+        "lineCount": 295,
+        "charCount": 14384,
+        "hash": "86df6ce253bf",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { AlertTriangle, ArrowLeft,...",
+        "updatedAt": 1795083065640
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 295,
+        "charCount": 14373,
+        "hash": "4eb1ffdb93a6",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { AlertTriangle, CheckCircl...",
+        "updatedAt": 1795083065640
+      },
+      "diff": {
+        "lineStart": 6,
+        "removedLines": 1,
+        "addedLines": 0,
+        "summary": "Line 6: removed 1 line.",
+        "beforeFragment": "ArrowLeft,",
+        "afterFragment": ""
+      }
+    },
+    {
+      "type": "save",
+      "path": "app/learner/practice/page.tsx",
+      "toPath": "",
+      "summary": "Saved without a textual diff.",
+      "recordedAt": "2026-11-19T09:48:59.570Z",
+      "recordedAtEpochMs": 1795081739570,
+      "before": {
+        "kind": "text",
+        "lineCount": 481,
+        "charCount": 27190,
+        "hash": "51792253f91e",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci...",
+        "updatedAt": 1795081739568
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 481,
+        "charCount": 27190,
+        "hash": "51792253f91e",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci...",
+        "updatedAt": 1795081739570
+      },
+      "diff": null
+    },
+    {
+      "type": "save",
+      "path": "app/learner/practice/page.tsx",
+      "toPath": "",
+      "summary": "Saved without a textual diff.",
+      "recordedAt": "2026-11-19T09:48:55.359Z",
+      "recordedAtEpochMs": 1795081735359,
+      "before": {
+        "kind": "text",
+        "lineCount": 481,
+        "charCount": 27190,
+        "hash": "51792253f91e",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci...",
+        "updatedAt": 1795081735356
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 481,
+        "charCount": 27190,
+        "hash": "51792253f91e",
+        "preview": "'use client' / import { useState, useEffect, useCallback, useRef } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { BookOpen, CheckCircle, Ci...",
+        "updatedAt": 1795081735359
+      },
+      "diff": null
+    },
+    {
+      "type": "save",
+      "path": "app/learner/payments/page.tsx",
       "toPath": "",
       "summary": "",
-      "recordedAt": "2026-07-23T11:17:58.738Z",
-      "recordedAtEpochMs": 1784805478738,
+      "recordedAt": "2026-11-19T09:47:38.592Z",
+      "recordedAtEpochMs": 1795081658592,
+      "before": null,
+      "after": null,
+      "diff": null
+    },
+    {
+      "type": "save",
+      "path": "app/learner/materials/page.tsx",
+      "toPath": "",
+      "summary": "",
+      "recordedAt": "2026-11-19T09:47:22.177Z",
+      "recordedAtEpochMs": 1795081642177,
       "before": null,
       "after": null,
       "diff": null
@@ -873,55 +1234,82 @@
   ],
   "hotFiles": [
     {
-      "filePath": "app/admin/learner/page.tsx",
+      "filePath": "app/admin/lessons/page.tsx",
+      "count": 10
+    },
+    {
+      "filePath": "app/learner/lessons/page.tsx",
       "count": 6
     },
     {
-      "filePath": "lib/supabase/client.ts",
-      "count": 6
-    },
-    {
-      "filePath": "lib/supabase/server.ts",
-      "count": 5
-    },
-    {
-      "filePath": "app/login/page.tsx",
+      "filePath": "app/instructor/progress/page.tsx",
       "count": 4
     },
     {
+      "filePath": "app/admin/instructor/page.tsx",
+      "count": 3
+    },
+    {
+      "filePath": "app/learner/practice/page.tsx",
+      "count": 3
+    },
+    {
       "filePath": "app/admin/dashboard/page.tsx",
-      "count": 3
-    },
-    {
-      "filePath": "app/admin/lessons/page.tsx",
-      "count": 3
-    },
-    {
-      "filePath": ".env.local",
       "count": 2
     },
     {
-      "filePath": "app/admin/instructor/page.tsx",
+      "filePath": "app/admin/settings/page.tsx",
+      "count": 2
+    },
+    {
+      "filePath": "app/learner/notification",
       "count": 2
     }
   ],
   "git": {
     "available": true,
     "branch": "blackboxai/learner-admin-consistency",
-    "headSummary": "2026-07-22 b95372e removed errors",
-    "statusSummary": "10 modifieds",
-    "changedFileCount": 10,
+    "headSummary": "2026-07-23 250ff19 removed code error",
+    "statusSummary": "27 modifieds, 1 deleted, 9 untrackeds",
+    "changedFileCount": 37,
     "statusLines": [
+      "M README.md",
       "M app/admin/dashboard/page.tsx",
-      "M app/admin/payments/page.tsx",
+      "M app/admin/instructor/page.tsx",
+      "M app/admin/layout.tsx",
+      "M app/admin/learner/page.tsx",
+      "M app/admin/lessons/page.tsx",
+      "M app/admin/notification/page.tsx",
+      "M app/admin/settings/page.tsx",
+      "M app/instructor/dashboard/page.tsx",
+      "M app/instructor/layout.tsx",
+      "M app/instructor/lessons/page.tsx",
+      "M app/instructor/notifications/page.tsx",
+      "M app/instructor/profile/page.tsx",
       "M app/instructor/progress/page.tsx",
+      "M app/learner/dashboard/page.tsx",
+      "M app/learner/layout.tsx",
       "M app/learner/lessons/page.tsx",
+      "M app/learner/materials/page.tsx",
+      "D app/learner/notification/page.tsx",
+      "M app/learner/payments/page.tsx",
+      "M app/learner/practice/page.tsx",
+      "M app/learner/profile/page.tsx",
+      "M app/learner/progress/page.tsx",
       "M app/login/page.tsx",
       "M graphify-out/WORKSPACE_MEMORY.md",
       "M lib/supabase/client.ts",
-      "M lib/supabase/server.ts",
       "M workspace.json",
-      "M workspacememory.md"
+      "M workspacememory.md",
+      "?? app/admin/types.ts",
+      "?? app/api/",
+      "?? app/reset-password/",
+      "?? birthday_cards/",
+      "?? lib/supabase/admin.ts",
+      "?? lib/supabase/password-reset-admin.ts",
+      "?? lib/supabase/password-reset-errors.ts",
+      "?? proxy.ts",
+      "?? supabase/"
     ],
     "error": ""
   },
