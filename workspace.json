@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-25T12:38:20.210Z",
-  "generatedAtEpochMs": 1795610300210,
+  "generatedAt": "2026-11-25T12:53:23.936Z",
+  "generatedAtEpochMs": 1795611203936,
   "generator": {
     "name": "Code Janitor",
     "feature": "workspace-memory"
@@ -14,7 +14,7 @@
   "workspace": {
     "name": "drive-today-dsms",
     "root": "c:\\Users\\kelly\\Desktop\\drive-today-dsms",
-    "activeFile": "app/admin/dashboard/page.tsx",
+    "activeFile": null,
     "refreshReason": "tracked-change",
     "outputFiles": {
       "markdown": "graphify-out/WORKSPACE_MEMORY.md",
@@ -23,8 +23,8 @@
     },
     "suggestedStartingPoints": [
       "app/admin/dashboard/page.tsx",
-      "app/admin/lessons/page.tsx",
       "app/learner/lessons/page.tsx",
+      "app/admin/lessons/page.tsx",
       "app/instructor/progress/page.tsx",
       "app/admin/instructor/page.tsx",
       "app/learner/practice/page.tsx",
@@ -910,7 +910,7 @@
     }
   },
   "currentStack": {
-    "lastActivityAt": "2026-11-25T12:38:15.655Z",
+    "lastActivityAt": "2026-11-25T12:46:32.720Z",
     "trackedChangeCount": 40,
     "trackedFileSnapshotCount": 17,
     "changeTypeCounts": {
@@ -923,10 +923,10 @@
   "trackedSnapshots": [
     {
       "filePath": "app/admin/dashboard/page.tsx",
-      "updatedAt": 1795610260670,
-      "lineCount": 663,
-      "charCount": 36583,
-      "hash": "30fbdca5f72e",
+      "updatedAt": 1795610792720,
+      "lineCount": 671,
+      "charCount": 37190,
+      "hash": "7a7153232f54",
       "preview": "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Users, UserCheck, Calendar, Dolla..."
     },
     {
@@ -987,6 +987,42 @@
     }
   ],
   "recentChanges": [
+    {
+      "type": "save",
+      "path": "app/admin/dashboard/page.tsx",
+      "toPath": "",
+      "summary": "Saved without a textual diff.",
+      "recordedAt": "2026-11-25T12:46:32.720Z",
+      "recordedAtEpochMs": 1795610792720,
+      "before": {
+        "kind": "text",
+        "lineCount": 671,
+        "charCount": 37190,
+        "hash": "7a7153232f54",
+        "preview": "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Users, UserCheck, Calendar, Dolla...",
+        "updatedAt": 1795610792719
+      },
+      "after": {
+        "kind": "text",
+        "lineCount": 671,
+        "charCount": 37190,
+        "hash": "7a7153232f54",
+        "preview": "'use client' / import { useState, useEffect, useCallback } from 'react' / import { createClient } from '@/lib/supabase/client' / import { useRouter } from 'next/navigation' / import { Users, UserCheck, Calendar, Dolla...",
+        "updatedAt": 1795610792720
+      },
+      "diff": null
+    },
+    {
+      "type": "save",
+      "path": "app/admin/dashboard/page.tsx",
+      "toPath": "",
+      "summary": "",
+      "recordedAt": "2026-11-25T12:46:32.094Z",
+      "recordedAtEpochMs": 1795610792094,
+      "before": null,
+      "after": null,
+      "diff": null
+    },
     {
       "type": "save",
       "path": "app/admin/dashboard/page.tsx",
@@ -1220,33 +1256,11 @@
       "before": null,
       "after": null,
       "diff": null
-    },
-    {
-      "type": "save",
-      "path": "lib/supabase/client.ts",
-      "toPath": "",
-      "summary": "",
-      "recordedAt": "2026-11-25T06:05:10.889Z",
-      "recordedAtEpochMs": 1795586710889,
-      "before": null,
-      "after": null,
-      "diff": null
-    },
-    {
-      "type": "save",
-      "path": "lib/supabase/client.ts",
-      "toPath": "",
-      "summary": "",
-      "recordedAt": "2026-11-25T06:04:48.309Z",
-      "recordedAtEpochMs": 1795586688309,
-      "before": null,
-      "after": null,
-      "diff": null
     }
   ],
   "hotFiles": [
     {
-      "filePath": "app/admin/lessons/page.tsx",
+      "filePath": "app/admin/dashboard/page.tsx",
       "count": 6
     },
     {
@@ -1254,16 +1268,16 @@
       "count": 6
     },
     {
+      "filePath": "app/admin/lessons/page.tsx",
+      "count": 5
+    },
+    {
       "filePath": "app/instructor/progress/page.tsx",
       "count": 5
     },
     {
-      "filePath": "app/admin/dashboard/page.tsx",
-      "count": 4
-    },
-    {
       "filePath": "app/admin/instructor/page.tsx",
-      "count": 4
+      "count": 3
     },
     {
       "filePath": "app/learner/practice/page.tsx",
@@ -1281,12 +1295,16 @@
   "git": {
     "available": true,
     "branch": "blackboxai/learner-admin-consistency",
-    "headSummary": "2026-11-25 6eb5b55 changes",
-    "statusSummary": "4 modifieds",
-    "changedFileCount": 4,
+    "headSummary": "2026-11-25 802a52e new",
+    "statusSummary": "8 modifieds",
+    "changedFileCount": 8,
     "statusLines": [
       "M app/admin/dashboard/page.tsx",
+      "M app/admin/learner/page.tsx",
+      "M app/learner/dashboard/page.tsx",
+      "M app/learner/lessons/page.tsx",
       "M graphify-out/WORKSPACE_MEMORY.md",
+      "M supabase/migrations/20261126000000_approval_assignment_and_fees.sql",
       "M workspace.json",
       "M workspacememory.md"
     ],

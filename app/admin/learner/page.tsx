@@ -35,7 +35,6 @@ type Learner = {
   status: 'approved' | 'pending' | 'rejected' | 'suspended'
   role: string
   slots_allocated?: number
-  allowed_slots?: number | null
   driving_class?: string | null
   // optional debug field (only if column exists)
   driving_classes_taken?: string | null
@@ -318,7 +317,7 @@ export default function LearnersPage() {
     setSlotsInput('')
     try {
       const used = await countUsedSlots(learner.user_id)
-      const allocated = Math.max(Number(learner.slots_allocated) || 0, Number(learner.allowed_slots) || 0)
+      const allocated = Number(learner.slots_allocated) || 0
       setSlotsUsed(used)
       setSlotsBookable(Math.max(0, allocated - used))
       setSlotsInput(mode === 'extra' ? '1' : String(Math.max(0, allocated - used)))
@@ -343,7 +342,7 @@ export default function LearnersPage() {
     let bookable: number
     try {
       const used = await countUsedSlots(slotsModal.user_id)
-      const allocated = Math.max(Number(slotsModal.slots_allocated) || 0, Number(slotsModal.allowed_slots) || 0)
+      const allocated = Number(slotsModal.slots_allocated) || 0
       total = slotsMode === 'extra' ? Math.max(allocated, used) + num : used + num
       bookable = total - used
     } catch {
@@ -354,15 +353,15 @@ export default function LearnersPage() {
 
     const { data: updatedLearner, error } = await supabase
       .from('users')
-      .update({ slots_allocated: total, allowed_slots: total })
+      .update({ slots_allocated: total })
       .eq('user_id', slotsModal.user_id)
       .select('user_id')
       .maybeSingle()
     if (!error && updatedLearner) {
-      setLearners(prev => prev.map(l => l.user_id === slotsModal.user_id ? { ...l, slots_allocated: total, allowed_slots: total } : l))
+      setLearners(prev => prev.map(l => l.user_id === slotsModal.user_id ? { ...l, slots_allocated: total } : l))
 
       if (viewLearner && viewLearner.user_id === slotsModal.user_id) {
-        setViewLearner(prev => prev ? { ...prev, slots_allocated: total, allowed_slots: total } : null)
+        setViewLearner(prev => prev ? { ...prev, slots_allocated: total } : null)
       }
 
       await supabase.from('notifications').insert({
@@ -388,15 +387,25 @@ export default function LearnersPage() {
     const { learner, type } = confirmModal
     const newStatus = (type === 'approve' || type === 'reactivate') ? 'approved' : 'suspended'
     
-    type StatusPayload = { status: Learner['status']; slots_allocated?: number; allowed_slots?: number }
+    type StatusPayload = { status: Learner['status']; slots_allocated?: number }
     const payload: StatusPayload = { status: newStatus }
     if (type === 'approve') {
-      payload.slots_allocated = parseInt(slotsInput) || 0
-      payload.allowed_slots = payload.slots_allocated
+      const slots = parseInt(slotsInput)
+      if (isNaN(slots) || slots < 1) {
+        showToast('Please allocate at least 1 lesson slot.', 'error')
+        setActionLoading(false)
+        return
+      }
+      payload.slots_allocated = slots
     }
 
-    const { error } = await supabase.from('users').update(payload).eq('user_id', learner.user_id)
-    if (!error) {
+    const { data: saved, error } = await supabase
+      .from('users')
+      .update(payload)
+      .eq('user_id', learner.user_id)
+      .select('user_id')
+      .maybeSingle()
+    if (!error && saved) {
       setLearners(prev => prev.map(l => l.user_id === learner.user_id ? { ...l, ...payload } : l))
       
       if (viewLearner && viewLearner.user_id === learner.user_id) {
@@ -407,7 +416,10 @@ export default function LearnersPage() {
       setConfirmModal(null)
       setSlotsInput('')
     } else {
-      showToast('Could not finalize status changes.', 'error')
+      showToast(
+        `Could not finalize status changes: ${error?.message || 'no learner record was updated.'}`,
+        'error'
+      )
     }
     setActionLoading(false)
   }
@@ -552,7 +564,7 @@ export default function LearnersPage() {
                       </div>
                       <div>
                         <div className="info-label">Available Slots</div>
-                        <div className="info-value" style={{ color: '#ff5a00', margin: 0 }}><Ticket size={15} color="#ff5a00" /> <b>{Math.max(Number(viewLearner.slots_allocated) || 0, Number(viewLearner.allowed_slots) || 0)} slots</b></div>
+                        <div className="info-value" style={{ color: '#ff5a00', margin: 0 }}><Ticket size={15} color="#ff5a00" /> <b>{Number(viewLearner.slots_allocated) || 0} slots</b></div>
                       </div>
                     </div>
 
@@ -638,7 +650,7 @@ export default function LearnersPage() {
                       </div>
                       <div>
                         <div className="info-label">Available Slots</div>
-                        <div className="info-value" style={{ color: '#ff5a00', margin: 0 }}><Ticket size={15} color="#ff5a00" /> <b>{Math.max(Number(viewLearner.slots_allocated) || 0, Number(viewLearner.allowed_slots) || 0)} slots</b></div>
+                        <div className="info-value" style={{ color: '#ff5a00', margin: 0 }}><Ticket size={15} color="#ff5a00" /> <b>{Number(viewLearner.slots_allocated) || 0} slots</b></div>
                       </div>
                     </div>
 
@@ -884,7 +896,7 @@ export default function LearnersPage() {
 
                       {/* Allocated Slots */}
                       <div style={{ fontWeight: '700', color: '#ff5a00', fontSize: '15px', textAlign: 'center' }}>
-                        {Math.max(Number(l.slots_allocated) || 0, Number(l.allowed_slots) || 0)}
+                        {Number(l.slots_allocated) || 0}
                       </div>
 
                       {/* Action dots */}

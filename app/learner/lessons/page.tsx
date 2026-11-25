@@ -29,7 +29,6 @@ type LearnerProfile = {
   first_name: string
   surname: string
   slots_allocated?: number
-  allowed_slots?: number | null
   driving_class?: string | null
 }
 
@@ -108,7 +107,7 @@ export default function LearnerLessonsPage() {
     const [learnerResult, bookingsResult, slotsResult, price] = await Promise.all([
       supabase
         .from('users')
-        .select('user_id, first_name, surname, slots_allocated, allowed_slots, driving_class')
+        .select('user_id, first_name, surname, slots_allocated, driving_class')
         .eq('user_id', user.id)
         .single(),
       supabase
@@ -158,10 +157,7 @@ export default function LearnerLessonsPage() {
 
     const availableSlotIds = new Set((slotsResult.data || []).map((slot: Slot) => slot.slot_id))
     const usedBookings = (bookingsResult.data || []).filter((booking: Booking) => booking.status !== 'cancelled').length
-    const allocatedSlots = Math.max(
-      Number(learnerResult.data?.slots_allocated) || 0,
-      Number(learnerResult.data?.allowed_slots) || 0,
-    )
+    const allocatedSlots = Number(learnerResult.data?.slots_allocated) || 0
     const maxSelectableSlots = Math.max(0, allocatedSlots - usedBookings)
 
     setLearner(learnerResult.data)
@@ -188,10 +184,7 @@ export default function LearnerLessonsPage() {
   }, [loadData])
 
   const usedSlotsCount = bookings.filter(b => b.status !== 'cancelled').length
-  const slotsAllocated = Math.max(
-    Number(learner?.slots_allocated) || 0,
-    Number(learner?.allowed_slots) || 0,
-  )
+  const slotsAllocated = Number(learner?.slots_allocated) || 0
   const remainingSlots = Math.max(0, slotsAllocated - usedSlotsCount)
 
   const today = new Date().toISOString().split('T')[0]

@@ -219,12 +219,24 @@ export default function AdminDashboard() {
     const n = parseInt(slotCount)
     if (!slotCount || isNaN(n) || n < 1) { setModalError('Please enter a valid number of slots (minimum 1).'); return }
     setApproving(true); setModalError('')
-    const { data: approved, error: approveError } = await supabase
+    let { data: approved, error: approveError } = await supabase
       .from('users')
-      .update({ status: 'approved', allowed_slots: n, slots_allocated: n })
+      .update({ status: 'approved', slots_allocated: n })
       .eq('user_id', approvingUser.user_id)
       .select('user_id')
       .maybeSingle()
+
+    if (approveError && (approveError.code === '42703' || approveError.code === 'PGRST204')) {
+      const fallback = await supabase
+        .from('users')
+        .update({ status: 'approved', slots_allocated: n })
+        .eq('user_id', approvingUser.user_id)
+        .select('user_id')
+        .maybeSingle()
+      approved = fallback.data
+      approveError = fallback.error
+    }
+
     if (approveError || !approved) {
       setModalError(approveError?.message || 'The approval was not saved. The database did not allow this change.')
       setApproving(false)
@@ -277,7 +289,6 @@ export default function AdminDashboard() {
   }
 
   function handleApproveClick(user: PendingUser) {
-    setModalError('')
     if (user.role === 'learner') {
       setApprovingUser(user)
       setSlotCount('')
@@ -287,7 +298,6 @@ export default function AdminDashboard() {
   }
 
   function handleDeclineClick(user: PendingUser) {
-    setModalError('')
     setDecliningUser(user)
   }
 
@@ -360,15 +370,13 @@ export default function AdminDashboard() {
             />
             <div style={{ display: 'flex', gap: '12px' }}>
               <button
-                onClick={() => setApprovingUser(null)}
-                disabled={approving}
-                style={{ flex: 1, padding: '12px', borderRadius: '10px', border: `1px solid ${theme.border}`, background: 'transparent', color: theme.textMuted, fontSize: '13px', fontWeight: '600', cursor: approving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}
+                onClick={() => { setApprovingUser(null); setSlotCount(''); setModalError('') }}
+                style={{ flex: 1, padding: '12px', borderRadius: '10px', border: `1px solid ${theme.border}`, background: 'transparent', color: theme.textMuted, fontSize: '13px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}
               >Cancel</button>
               <button
-                onClick={confirmApprove}
-                disabled={approving}
+                onClick={confirmApprove} disabled={approving}
                 style={{ flex: 2, padding: '12px', borderRadius: '10px', border: 'none', background: approving ? theme.textMuted : '#22c55e', color: 'white', fontSize: '13px', fontWeight: '700', cursor: approving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}
-              >{approving ? 'Approving...' : 'Confirm Approval'}</button>
+              >{approving ? 'Approving...' : 'Confirm & Approve'}</button>
             </div>
           </div>
         </div>
@@ -423,9 +431,6 @@ export default function AdminDashboard() {
             <p style={{ fontSize: '14px', color: theme.textMain, marginBottom: '24px', lineHeight: '1.5' }}>
               Are you sure you want to decline this registration request? The profile will be marked as rejected.
             </p>
-            {modalError && (
-              <p style={{ margin: '0 0 14px', fontSize: '12px', color: '#ef4444', background: 'rgba(239,68,68,0.1)', padding: '10px 14px', borderRadius: '10px' }}>{modalError}</p>
-            )}
             <div style={{ display: 'flex', gap: '12px' }}>
               <button
                 onClick={() => setDecliningUser(null)}

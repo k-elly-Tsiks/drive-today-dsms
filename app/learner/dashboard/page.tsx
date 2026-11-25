@@ -12,7 +12,6 @@ import { FirstBookingDialog } from '@/app/learner/_components/first-booking-dial
 type LearnerProfile = {
   first_name: string
   surname: string
-  allowed_slots?: number | null
   slots_allocated?: number | null
 }
 
@@ -85,7 +84,7 @@ export default function LearnerDashboard() {
       { count: completedLessonsCount = 0 },
       { count: activeBookingCount = 0 },
     ] = await Promise.all([
-      supabase.from('users').select('first_name, surname, allowed_slots, slots_allocated').eq('user_id', user.id).single(),
+      supabase.from('users').select('first_name, surname, slots_allocated').eq('user_id', user.id).single(),
       supabase.from('lesson_bookings').select(`
         booking_id, status,
         lesson_slots (slot_date, slot_time),
@@ -101,10 +100,7 @@ export default function LearnerDashboard() {
     const lessons = (lessonData || []) as unknown as Booking[]
 
     const payments = (paymentData || []) as Payment[]
-    const allocated = Math.max(
-      Number(profile?.slots_allocated) || 0,
-      Number(profile?.allowed_slots) || 0,
-    )
+    const allocated = Number(profile?.slots_allocated) || 0
 
     const remainingSlots = Math.max(allocated - activeBookingCount, 0)
 

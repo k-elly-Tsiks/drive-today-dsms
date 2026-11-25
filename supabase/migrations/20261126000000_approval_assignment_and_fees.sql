@@ -1,3 +1,8 @@
+-- 0. An instructor's capacity is set on the admin Instructors page but the
+--    column was never created.
+ALTER TABLE public.users
+  ADD COLUMN IF NOT EXISTS workload_capacity integer;
+
 -- 1. Registration and approval: only administrators may approve accounts,
 --    change roles or change lesson allocations. Everyone else registers as a
 --    pending learner or instructor and cannot promote themselves.
@@ -35,14 +40,12 @@ BEGIN
     END IF;
     NEW.status := 'pending';
     NEW.slots_allocated := 0;
-    NEW.allowed_slots := 0;
     RETURN NEW;
   END IF;
 
   IF NEW.role IS DISTINCT FROM OLD.role
     OR NEW.status IS DISTINCT FROM OLD.status
     OR NEW.slots_allocated IS DISTINCT FROM OLD.slots_allocated
-    OR NEW.allowed_slots IS DISTINCT FROM OLD.allowed_slots
     OR NEW.workload_capacity IS DISTINCT FROM OLD.workload_capacity THEN
     RAISE EXCEPTION 'Only an administrator can change account roles, approval status or lesson allocations.'
       USING ERRCODE = '42501';
@@ -233,7 +236,7 @@ BEGIN
     RAISE EXCEPTION 'Please select at least one slot.' USING ERRCODE = 'P0001';
   END IF;
 
-  allocated := greatest(coalesce(learner.slots_allocated, 0), coalesce(learner.allowed_slots, 0))::integer;
+  allocated := coalesce(learner.slots_allocated, 0)::integer;
   SELECT count(*) INTO used
   FROM public.lesson_bookings AS booking
   WHERE booking.learner_id = auth.uid()
